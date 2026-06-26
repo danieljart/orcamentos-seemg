@@ -8,6 +8,7 @@ import { db } from '../services/db';
 import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio } from '../lib/iss';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 interface CatalogItem {
   item: string;
@@ -161,6 +162,7 @@ export function Editor() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importCandidateItems, setImportCandidateItems] = useState<SelectedItem[]>([]);
   const [importSearchTerm, setImportSearchTerm] = useState('');
+  const [importLocationFilter, setImportLocationFilter] = useState('all');
   const [selectedImportItems, setSelectedImportItems] = useState<Set<string>>(new Set());
 
   const [userSre, setUserSre] = useState('');
@@ -341,6 +343,68 @@ export function Editor() {
           setSelectedItems(restoredItems);
           setHistory([{ items: restoredItems, description: 'Estado Inicial', timestamp: new Date() }]);
           setHistoryIndex(0);
+
+          if (searchParams.get('showImportModal') === 'true') {
+            const pendingStr = sessionStorage.getItem('pendingImportItems');
+            if (pendingStr) {
+              try {
+                const pendingItems = JSON.parse(pendingStr);
+                const itemMap = new Map<string, SelectedItem>();
+                pendingItems.forEach((loaded: any) => {
+                  const itemCode = loaded.item_code || loaded.item;
+                  const isCustom = itemCode.startsWith('2600');
+                  const lookupCode = isCustom ? '260001' : itemCode;
+                  const catItem = data.find(c => c.item === lookupCode);
+                  if (catItem) {
+                    let customData = null;
+                    if (isCustom && loaded.memory) {
+                       try {
+                          const memData = JSON.parse(loaded.memory);
+                          if (memData.custom) customData = memData.custom;
+                       } catch(e) {}
+                    }
+                    const occ = {
+                      id: Math.random().toString(36).substring(2, 11),
+                      quantity: loaded.quantity || '',
+                      memory: loaded.memory || '',
+                      location: loaded.location || ''
+                    };
+                    if (itemMap.has(itemCode)) {
+                      itemMap.get(itemCode)!.occurrences.push(occ);
+                    } else {
+                      itemMap.set(itemCode, {
+                        ...catItem,
+                        item: itemCode,
+                        occurrences: [occ],
+                        ...(customData && {
+                          customCode: customData.code,
+                          customTitle: customData.title,
+                          customDescription: customData.title,
+                          customUnit: customData.unit,
+                          customPrice: customData.price
+                        })
+                      });
+                    }
+                  }
+                });
+                
+                const parsedItems = Array.from(itemMap.values());
+                if (parsedItems.length > 0) {
+                  setImportCandidateItems(parsedItems);
+                  setSelectedImportItems(new Set());
+                  setImportSearchTerm('');
+                  setIsImportModalOpen(true);
+                  sessionStorage.removeItem('pendingImportItems');
+                  // Remove parameter from URL quietly
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.delete('showImportModal');
+                  navigate(`?${newParams.toString()}`, { replace: true });
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          }
         })
         .catch(console.error);
     };
@@ -563,7 +627,7 @@ export function Editor() {
       }
       
       setImportCandidateItems(parsedItems);
-      setSelectedImportItems(new Set(parsedItems.map(i => i.item)));
+      setSelectedImportItems(new Set());
       setImportSearchTerm('');
       setIsImportModalOpen(true);
     } catch (error) {
@@ -1631,8 +1695,8 @@ export function Editor() {
               </button>
             </div>
             
-            <div className="p-4 border-b border-slate-100 bg-white">
-              <div className="relative">
+            <div className="p-4 border-b border-slate-100 bg-white flex flex-col md:flex-row gap-3">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="text"
@@ -1642,12 +1706,26 @@ export function Editor() {
                   onChange={e => setImportSearchTerm(e.target.value)}
                 />
               </div>
+              <div className="w-full md:w-64">
+                <Select value={importLocationFilter} onValueChange={setImportLocationFilter}>
+                  <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-emerald-500 rounded-lg shadow-sm">
+                    <SelectValue placeholder="Local de Intervenção (Todos)" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4}>
+                    <SelectItem value="all">Local de Intervenção (Todos)</SelectItem>
+                    {Array.from(new Set(importCandidateItems.flatMap(i => i.occurrences.map(o => o.location.trim())).filter(Boolean))).sort().map(loc => (
+                      <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="p-4 overflow-y-auto flex-1 bg-slate-50/50">
               <div className="space-y-2">
                 {importCandidateItems
                   .filter(i => {
+                    if (importLocationFilter !== 'all' && !i.occurrences.some((o: any) => o.location.trim() === importLocationFilter)) return false;
                     if (!importSearchTerm) return true;
                     const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                     const term = normalize(importSearchTerm);
@@ -1684,6 +1762,7 @@ export function Editor() {
                   const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                   const term = normalize(importSearchTerm);
                   const filtered = importCandidateItems.filter(i => {
+                    if (importLocationFilter !== 'all' && !i.occurrences.some((o: any) => o.location.trim() === importLocationFilter)) return false;
                     if (!importSearchTerm) return true;
                     return normalize(i.customTitle || i.customDescription || i.description).includes(term) || i.item.includes(term);
                   });

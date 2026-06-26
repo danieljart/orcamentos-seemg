@@ -461,10 +461,18 @@ export function Dashboard() {
       }
 
       // Lê o cabeçalho
-      const escola = ws.getCell('B2').value?.toString() || 'Importada';
-      const codEscola = ws.getCell('D2').value?.toString() || '';
-      const sre = ws.getCell('G2').value?.toString() || '';
-      const municipio = ws.getCell('B3').value?.toString() || '';
+      const escolaRaw = ws.getCell('B2').value?.toString() || 'Importada';
+      const escola = escolaRaw.replace(/^escola\s+estadual:\s*/i, '').replace(/^escola:\s*/i, '').trim();
+      
+      const codEscolaRaw = ws.getCell('D2').value?.toString() || '';
+      const codEscola = codEscolaRaw.replace(/^cod\s+escola:\s*/i, '').replace(/^c[oó]digo:\s*/i, '').trim();
+      
+      const sreRaw = ws.getCell('G2').value?.toString() || '';
+      const sre = sreRaw.replace(/^sre:\s*/i, '').trim();
+      
+      const municipioRaw = ws.getCell('B3').value?.toString() || '';
+      const municipio = municipioRaw.replace(/^munic[ií]pio:\s*/i, '').trim();
+      
       let iss = ws.getCell('D3').value;
       iss = iss !== null && iss !== undefined ? (parseFloat(iss.toString()) * 100).toString() : '5';
       const servicos = ws.getCell('F3').value?.toString() || '';
@@ -502,11 +510,11 @@ export function Dashboard() {
       });
 
       if (importedItems.length > 0) {
-        await db.items.saveAll(newWb.id, importedItems);
+        sessionStorage.setItem('pendingImportItems', JSON.stringify(importedItems));
       }
 
-      showToast(`Planilha importada! Redirecionando...`, "success");
-      setTimeout(() => navigate(`/editor/${newWb.id}`), 1000);
+      showToast(`Planilha importada! Selecione os itens...`, "success");
+      setTimeout(() => navigate(`/editor/${newWb.id}?showImportModal=true`), 1000);
 
     } catch (error) {
       console.error(error);
