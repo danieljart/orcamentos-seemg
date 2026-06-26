@@ -390,8 +390,8 @@ export function Dashboard() {
                     await db.auth.registerPasskey();
                     showToast("Passkey registrado com sucesso!", "success");
                     setShowPasskeyPrompt(false);
-                  } catch (err) {
-                    showToast("Erro ao registrar Passkey", "error");
+                  } catch (err: any) {
+                    showToast(err.message || "Erro ao registrar Passkey", "error");
                   }
                 }}
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -687,7 +687,7 @@ export function Dashboard() {
 
       {/* TOAST NOTIFICATION */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 pointer-events-none">
+        <div className="fixed bottom-6 right-6 z-[100] pointer-events-none">
           <div className={`px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
             <span className="font-medium text-sm">{toast.message}</span>
           </div>

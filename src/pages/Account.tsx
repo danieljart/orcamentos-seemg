@@ -190,10 +190,10 @@ export function Account() {
                   onClick={async () => {
                     try {
                       await db.auth.registerPasskey();
-                      showToast("Dispositivo registrado com sucesso!", "success");
-                      setHasPasskey(true);
+                      showToast('Dispositivo registrado com sucesso!', 'success');
+                      loadPasskeys();
                     } catch (err: any) {
-                      showToast(err.message || "Erro ao registrar Passkey", "error");
+                      showToast(err.message || 'Erro ao registrar dispositivo', 'error');
                     }
                   }}
                   className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 active:scale-[0.98]"
