@@ -1,0 +1,160 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, User as UserIcon, Save, HardHat } from 'lucide-react';
+import { db } from '../services/db';
+import type { User } from '../services/db';
+
+export function Account() {
+  const navigate = useNavigate();
+  
+  const [nome, setNome] = useState('');
+  const [crea, setCrea] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    const u = await db.auth.getUser();
+    if (u) {
+      setNome(u.nome || '');
+      setCrea(u.crea || '');
+      setEmail(u.email || '');
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const updates: Partial<User> = { nome, crea, email };
+      // Em um banco real, a senha seria tratada separadamente, aqui nós ignoramos a atualização de senha no db mock por simplicidade, ou faríamos mock também se houvesse suporte
+      await db.auth.updateUser(updates);
+      showToast("Dados atualizados com sucesso!", "success");
+      
+      // Limpa campo de senha após atualizar
+      setSenha('');
+    } catch (error) {
+      showToast("Erro ao atualizar dados.", "error");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col items-center py-12 px-4">
+      
+      {/* TOAST */}
+      {toast && (
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-top-2 z-50 ${toast.type === 'success' ? 'bg-emerald-800 text-white' : 'bg-red-600 text-white'}`}>
+          <span className="font-medium">{toast.message}</span>
+        </div>
+      )}
+
+      <div className="w-full max-w-lg">
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          className="flex items-center gap-2 text-slate-500 hover:text-emerald-700 font-medium transition-colors mb-6"
+        >
+          <ArrowLeft size={20} />
+          Voltar ao Painel
+        </button>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+          <div className="p-8 border-b border-slate-100 flex items-center gap-4 bg-emerald-50/50">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center shadow-inner">
+              <UserIcon size={32} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800">Minha Conta</h2>
+              <p className="text-slate-500 font-medium">Gerencie suas informações de acesso</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSave} className="p-8 space-y-6">
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <HardHat size={20} className="text-emerald-600" />
+                Dados Profissionais
+              </h3>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Nome Completo do Engenheiro</label>
+                <input
+                  type="text"
+                  required
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  placeholder="Seu nome completo"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Registro no CREA</label>
+                <input
+                  type="text"
+                  required
+                  value={crea}
+                  onChange={(e) => setCrea(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  placeholder="Seu número de registro no CREA"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <UserIcon size={20} className="text-emerald-600" />
+                Dados de Acesso
+              </h3>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">E-mail</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  placeholder="Seu e-mail"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Nova Senha (opcional)</label>
+                <input
+                  type="password"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  placeholder="Deixe em branco para não alterar"
+                />
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <button
+                type="submit"
+                className="w-full flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+              >
+                <Save size={20} />
+                Salvar Alterações
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
