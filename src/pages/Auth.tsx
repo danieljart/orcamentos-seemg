@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Lock, Mail, User as UserIcon, Award, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
 

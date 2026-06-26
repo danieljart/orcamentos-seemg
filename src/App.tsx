@@ -5,6 +5,7 @@ import { Editor } from './pages/Editor';
 import { Account } from './pages/Account';
 import { useEffect, useState } from 'react';
 import { db } from './services/db';
+import { supabase } from './services/supabase';
 import type { User } from './services/db';
 
 export default function App() {
@@ -12,10 +13,37 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    db.auth.getUser().then(u => {
-      setUser(u);
-      setLoading(false);
+    let mounted = true;
+
+    async function loadSession() {
+      const u = await db.auth.getUser();
+      if (mounted) {
+        setUser(u);
+        setLoading(false);
+      }
+    }
+    
+    loadSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN') {
+        const u = await db.auth.getUser();
+        if (mounted) {
+          setUser(u);
+          setLoading(false);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        if (mounted) {
+          setUser(null);
+          setLoading(false);
+        }
+      }
     });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User as UserIcon, Save, HardHat, Lock, Fingerprint } from 'lucide-react';
+import { ArrowLeft, User as UserIcon, Save, HardHat, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
 import type { User } from '../services/db';
 
