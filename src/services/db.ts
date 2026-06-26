@@ -50,9 +50,11 @@ export const db = {
     signIn: async (email: string, nome: string, crea: string): Promise<User> => {
       let existingUser: User | null = null;
       try {
-        const u = localStorage.getItem('user');
+        const u = localStorage.getItem('seemg_auth_user');
         if (u) existingUser = JSON.parse(u);
-      } catch(e){}
+      } catch(e) {
+        console.error(e);
+      }
 
       const user: User = { 
         id: existingUser?.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)), 

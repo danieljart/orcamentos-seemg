@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User as UserIcon, Save, HardHat } from 'lucide-react';
 import { db } from '../services/db';
@@ -19,11 +19,7 @@ export function Account() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     const u = await db.auth.getUser();
     if (u) {
       setNome(u.nome || '');
@@ -32,7 +28,11 @@ export function Account() {
     } else {
       navigate('/login');
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +45,7 @@ export function Account() {
       // Limpa campo de senha após atualizar
       setSenha('');
     } catch (error) {
+      console.error(error);
       showToast("Erro ao atualizar dados.", "error");
     }
   };
