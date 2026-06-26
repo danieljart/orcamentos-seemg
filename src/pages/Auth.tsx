@@ -12,12 +12,12 @@ export function Auth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-
+  const [successMessage, setSuccessMessage] = useState('');
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       if (isRegistering && (!nome || !crea || !sre)) {
@@ -28,7 +28,8 @@ export function Auth() {
       if (isRegistering) {
         user = await db.auth.signUp(email, password, nome, crea, sre);
         if (user) {
-          setError('Cadastro realizado! Verifique seu e-mail para confirmar a conta (caso exigido) ou clique em Entrar.');
+          setSuccessMessage('Cadastro realizado! Verifique a caixa de entrada do seu e-mail para confirmar a conta.');
+          setIsRegistering(false);
           return;
         }
       } else {
@@ -58,14 +59,14 @@ export function Auth() {
             <button 
               type="button"
               className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${!isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              onClick={() => { setIsRegistering(false); setError(''); }}
+              onClick={() => { setIsRegistering(false); setError(''); setSuccessMessage(''); }}
             >
               Login
             </button>
             <button 
               type="button"
               className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              onClick={() => { setIsRegistering(true); setError(''); }}
+              onClick={() => { setIsRegistering(true); setError(''); setSuccessMessage(''); }}
             >
               Criar Conta
             </button>
@@ -75,6 +76,12 @@ export function Auth() {
             {error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
                 {error}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-sm border border-emerald-100">
+                {successMessage}
               </div>
             )}
             
