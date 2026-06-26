@@ -72,9 +72,11 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
       }));
     }
 
-    const lowerSearch = searchTerm.toLowerCase();
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const term = normalize(searchTerm);
+
     const matchingItems = catalog.filter(c => 
-      !c.isCategory && (c.description.toLowerCase().includes(lowerSearch) || c.item.includes(lowerSearch))
+      !c.isCategory && (normalize(c.description).includes(term) || normalize(c.item).includes(term))
     );
 
     const categoriesWithMatches = catalog.filter(c => c.isCategory && c.item.endsWith('0000')).map(cat => ({

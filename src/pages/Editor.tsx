@@ -1649,9 +1649,12 @@ export function Editor() {
                 {importCandidateItems
                   .filter(i => {
                     if (!importSearchTerm) return true;
-                    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                     const term = normalize(importSearchTerm);
-                    return normalize(i.customTitle || i.customDescription || i.description).includes(term) || i.item.includes(term);
+                    const matchText = normalize(i.customTitle || i.customDescription || i.description).includes(term);
+                    const matchCode = normalize(i.item).includes(term);
+                    const matchLocation = i.occurrences && i.occurrences.some((o: any) => normalize(o.location).includes(term));
+                    return matchText || matchCode || matchLocation;
                   })
                   .map(item => (
                     <div key={item.item} className="bg-white border border-slate-200 p-3 rounded-xl flex gap-3 items-start hover:border-emerald-300 transition-colors cursor-pointer" onClick={() => {

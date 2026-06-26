@@ -32,11 +32,12 @@ export function SchoolSearch({ userSre, value, onChange, onSelect, placeholder =
     }
 
     if (value) {
-      const search = value.toLowerCase();
+      const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const search = normalize(value);
       filtered = filtered.filter(e => 
-        e.nome.toLowerCase().includes(search) || 
-        e.codigo.includes(search) ||
-        e.municipio.toLowerCase().includes(search)
+        normalize(e.nome).includes(search) || 
+        normalize(e.codigo).includes(search) ||
+        normalize(e.municipio).includes(search)
       );
     }
 

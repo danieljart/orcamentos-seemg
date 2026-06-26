@@ -567,9 +567,11 @@ export function Dashboard() {
   const availableSREs = Array.from(new Set(workbooks.map(w => w.sre).filter(Boolean))).sort();
 
   const filteredWorkbooks = workbooks.filter(w => {
-    const matchSearch = w.escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        w.municipio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        w.cod_escola.toLowerCase().includes(searchTerm.toLowerCase());
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const term = normalize(searchTerm);
+    const matchSearch = normalize(w.escola).includes(term) ||
+                        normalize(w.municipio).includes(term) ||
+                        normalize(w.cod_escola).includes(term);
     const matchStatus = statusFilter && statusFilter !== 'all' ? (w.status || 'Em andamento').toLowerCase() === statusFilter.toLowerCase() : true;
     const matchSRE = sreFilter && sreFilter !== 'all' ? w.sre === sreFilter : true;
     return matchSearch && matchStatus && matchSRE;
