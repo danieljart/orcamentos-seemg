@@ -116,6 +116,11 @@ export const db = {
       const { error } = await supabase.auth.registerPasskey();
       if (error) throw error;
     },
+    listPasskeys: async (): Promise<any[]> => {
+      const result = await supabase.auth.passkey.list();
+      if (result.error) throw result.error;
+      return result.data || [];
+    },
     updateUser: async (data: Partial<User>): Promise<User> => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Usuário não logado");

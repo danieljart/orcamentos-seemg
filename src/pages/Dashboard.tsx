@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
@@ -31,6 +31,7 @@ export function Dashboard() {
   const [isVersionsModalOpen, setIsVersionsModalOpen] = useState(false);
   const [isQuickEstimateOpen, setIsQuickEstimateOpen] = useState(false);
   const [pendingQuickItems, setPendingQuickItems] = useState<CartItem[] | null>(null);
+  const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
   
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
@@ -63,7 +64,21 @@ export function Dashboard() {
 
   useEffect(() => {
     loadData();
+    checkPasskeyPrompt();
   }, []);
+
+  const checkPasskeyPrompt = async () => {
+    try {
+      const skipped = localStorage.getItem('skip_passkey_prompt');
+      if (skipped) return;
+      const passkeys = await db.auth.listPasskeys();
+      if (passkeys.length === 0) {
+        setShowPasskeyPrompt(true);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     if (!analyticsData.length) return;
@@ -357,6 +372,48 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
+      {/* PASSKEY PROMPT MODAL */}
+      {showPasskeyPrompt && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in zoom-in-95">
+            <div className="w-16 h-16 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center shadow-inner mx-auto mb-4">
+              <Fingerprint size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-center text-slate-800 mb-2">Login mais rápido e seguro?</h3>
+            <p className="text-slate-500 text-center text-sm mb-6">
+              Notamos que você ainda não configurou o login por biometria (Passkey). Com ele você entra na plataforma usando apenas a sua digital ou Face ID, sem precisar digitar senhas.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    await db.auth.registerPasskey();
+                    showToast("Passkey registrado com sucesso!", "success");
+                    setShowPasskeyPrompt(false);
+                  } catch (err) {
+                    showToast("Erro ao registrar Passkey", "error");
+                  }
+                }}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <Fingerprint size={20} />
+                Ativar agora
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.setItem('skip_passkey_prompt', 'true');
+                  setShowPasskeyPrompt(false);
+                }}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 px-4 rounded-xl transition-colors"
+              >
+                Mais tarde
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOAST */}
       <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">

@@ -237,7 +237,7 @@ export function Auth() {
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-4 border border-transparent rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Fingerprint size={20} />
-                  Entrar com Passkey (Digital/Face ID)
+                  Entrar com Passkey
                 </button>
               </>
             )}

@@ -12,6 +12,7 @@ export function Account() {
   const [sre, setSre] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [hasPasskey, setHasPasskey] = useState(false);
   
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -27,6 +28,13 @@ export function Account() {
       setCrea(u.crea || '');
       setSre(u.sre || '');
       setEmail(u.email || '');
+      
+      try {
+        const passkeys = await db.auth.listPasskeys();
+        setHasPasskey(passkeys.length > 0);
+      } catch (err) {
+        // ignore
+      }
     } else {
       navigate('/login');
     }
@@ -168,30 +176,33 @@ export function Account() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <Fingerprint size={20} className="text-emerald-600" />
-                Acesso por Biometria (Passkey)
-              </h3>
-              <p className="text-sm text-slate-500">
-                Você pode registrar seu dispositivo atual (celular, tablet ou notebook) para entrar usando sua impressão digital ou reconhecimento facial, sem precisar de senha!
-              </p>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await db.auth.registerPasskey();
-                    showToast("Dispositivo registrado com sucesso!", "success");
-                  } catch (err: any) {
-                    showToast(err.message || "Erro ao registrar Passkey", "error");
-                  }
-                }}
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 active:scale-[0.98]"
-              >
-                <Fingerprint size={20} />
-                Registrar este dispositivo
-              </button>
-            </div>
+            {!hasPasskey && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <Fingerprint size={20} className="text-emerald-600" />
+                  Acesso por Biometria (Passkey)
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Você pode registrar seu dispositivo atual (celular, tablet ou notebook) para entrar usando sua impressão digital ou reconhecimento facial, sem precisar de senha!
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await db.auth.registerPasskey();
+                      showToast("Dispositivo registrado com sucesso!", "success");
+                      setHasPasskey(true);
+                    } catch (err: any) {
+                      showToast(err.message || "Erro ao registrar Passkey", "error");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 active:scale-[0.98]"
+                >
+                  <Fingerprint size={20} />
+                  Registrar este dispositivo
+                </button>
+              </div>
+            )}
 
             <div className="pt-6">
               <button
