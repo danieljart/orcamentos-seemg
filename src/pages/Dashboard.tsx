@@ -915,7 +915,7 @@ export function Dashboard() {
       {/* MODAL DE VERSÕES */}
       {isVersionsModalOpen && selectedWorkbook && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Clock className="text-emerald-600" /> Versões do Orçamento
@@ -967,21 +967,21 @@ export function Dashboard() {
                           onClick={() => navigate(`/editor/${selectedWorkbook.id}?version=${v.id}`)}
                           className="bg-white border border-slate-200 p-4 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3 group"
                         >
-                          <div className="flex-1">
+                          <div className="flex-1 w-full">
                             <h4 className="font-medium text-slate-700">Versão Salva</h4>
                             <p className="text-xs text-slate-500 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
                             
                             {hasChanges ? (
                               <div className="flex flex-col gap-1.5 mt-3 border-t border-slate-100 pt-3">
                                 {diff.changesDetails.map((c, i) => (
-                                  <div key={i} className="text-[11px] flex flex-col p-1.5 bg-slate-50 rounded border border-slate-100">
-                                    <span className="font-medium text-slate-700 truncate" title={c.title}>
+                                  <div key={i} className="text-[11px] flex flex-col p-2 bg-slate-50 rounded border border-slate-100">
+                                    <span className="font-medium text-slate-700 break-words whitespace-pre-wrap leading-relaxed" title={c.title}>
                                       {c.type === 'added' && <span className="text-emerald-600 font-bold mr-1">[NOVO]</span>}
                                       {c.type === 'removed' && <span className="text-red-500 font-bold mr-1">[REMOVIDO]</span>}
                                       {c.type === 'changed' && <span className="text-amber-600 font-bold mr-1">[ALTERADO]</span>}
                                       {c.title}
                                     </span>
-                                    <div className="mt-0.5">
+                                    <div className="mt-1">
                                       {c.type === 'changed' && (
                                         <span className="text-[10px] text-slate-500">
                                           {Math.abs(c.oldVal - c.newVal) > 0.01 ? (
