@@ -191,7 +191,7 @@ export function Account() {
                     try {
                       await db.auth.registerPasskey();
                       showToast('Dispositivo registrado com sucesso!', 'success');
-                      loadPasskeys();
+                      setHasPasskey(true);
                     } catch (err: any) {
                       showToast(err.message || 'Erro ao registrar dispositivo', 'error');
                     }
