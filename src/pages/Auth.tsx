@@ -7,6 +7,7 @@ export function Auth() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [nome, setNome] = useState('');
   const [crea, setCrea] = useState('');
+  const [sre, setSre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,13 +20,13 @@ export function Auth() {
     setError('');
 
     try {
-      if (isRegistering && (!nome || !crea)) {
+      if (isRegistering && (!nome || !crea || !sre)) {
         throw new Error('Preencha os campos obrigatórios para cadastro.');
       }
       
       let user;
       if (isRegistering) {
-        user = await db.auth.signUp(email, password, nome, crea);
+        user = await db.auth.signUp(email, password, nome, crea, sre);
         if (user) {
           setError('Cadastro realizado! Verifique seu e-mail para confirmar a conta (caso exigido) ou clique em Entrar.');
           return;
@@ -111,6 +112,32 @@ export function Auth() {
                       value={crea}
                       onChange={e => setCrea(e.target.value)}
                     />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">SRE</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Award size={16} className="text-slate-400" />
+                    </div>
+                    <select
+                      required={isRegistering}
+                      className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow bg-white appearance-none"
+                      value={sre}
+                      onChange={e => setSre(e.target.value)}
+                    >
+                      <option value="" disabled>Selecione a SRE</option>
+                      <option value="SRE Metropolitana A">SRE Metropolitana A</option>
+                      <option value="SRE Metropolitana B">SRE Metropolitana B</option>
+                      <option value="SRE Metropolitana C">SRE Metropolitana C</option>
+                      <option value="SRE Caxambu">SRE Caxambu</option>
+                      <option value="SRE Carangola">SRE Carangola</option>
+                      <option value="SRE Varginha">SRE Varginha</option>
+                      <option value="SRE Uberlândia">SRE Uberlândia</option>
+                      <option value="SRE Montes Claros">SRE Montes Claros</option>
+                      <option value="SRE Governador Valadares">SRE Governador Valadares</option>
+                    </select>
                   </div>
                 </div>
               </>

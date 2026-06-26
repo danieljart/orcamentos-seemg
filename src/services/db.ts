@@ -55,12 +55,12 @@ export const db = {
       if (error) return null;
       return data as User;
     },
-    signUp: async (email: string, password: string, nome: string, crea: string): Promise<User | null> => {
+    signUp: async (email: string, password: string, nome: string, crea: string, sre: string): Promise<User | null> => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { nome, crea },
+          data: { nome, crea, sre },
           emailRedirectTo: 'https://orcamentos-seemg.netlify.app'
         }
       });
@@ -70,7 +70,7 @@ export const db = {
       
       // Attempt to return the user from public.users if the trigger already ran, otherwise construct a temporary one
       const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single();
-      return data || { id: authData.user.id, email, nome, crea };
+      return data || { id: authData.user.id, email, nome, crea, sre };
     },
     signIn: async (email: string, password: string): Promise<User> => {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
