@@ -66,7 +66,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
 
   const filteredCategories = useMemo(() => {
     if (!searchTerm) {
-      return catalog.filter(c => c.isCategory).map(cat => ({
+      return catalog.filter(c => c.isCategory && c.item.endsWith('0000')).map(cat => ({
         ...cat,
         children: catalog.filter(c => !c.isCategory && c.item.startsWith(cat.item.substring(0, 2)))
       }));
@@ -77,7 +77,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
       !c.isCategory && (c.description.toLowerCase().includes(lowerSearch) || c.item.includes(lowerSearch))
     );
 
-    const categoriesWithMatches = catalog.filter(c => c.isCategory).map(cat => ({
+    const categoriesWithMatches = catalog.filter(c => c.isCategory && c.item.endsWith('0000')).map(cat => ({
       ...cat,
       children: matchingItems.filter(c => c.item.startsWith(cat.item.substring(0, 2)))
     })).filter(cat => cat.children.length > 0);

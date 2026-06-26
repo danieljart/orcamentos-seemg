@@ -1,0 +1,1250 @@
+[
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "307696",
+    "nome": "COL TIRADENTES PMMG GAMELEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "307718",
+    "nome": "COLÉGIO TIRADENTES PMMG  - NOSSA SENHORA DAS VITÓRIAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "27",
+    "nome": "EE AARÃO REIS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "426",
+    "nome": "EE ALBERTO DELPINO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "591",
+    "nome": "EE ÁLVARO LAUREANO PIMENTEL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "663",
+    "nome": "EE ALZIRA ALBUQUERQUE MOSQUEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "744",
+    "nome": "EE AMÉLIA JOSEFINA KEESEN",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1708",
+    "nome": "EE ASSIS DAS CHAGAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "2089",
+    "nome": "EE BERNARDO MONTEIRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "116",
+    "nome": "EE CABANA DO PAI TOMÁS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "191",
+    "nome": "EE CAIO NÉLSON DE SENA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "434",
+    "nome": "EE CÂNDIDA CABRAL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "515",
+    "nome": "EE CÂNDIDO PORTINARI",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "833",
+    "nome": "EE CARMO GIFFONI",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "990",
+    "nome": "EE CECÍLIA MEIRELES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1074",
+    "nome": "EE CELSO MACHADO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1554",
+    "nome": "EE CRISTIANO MACHADO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1759",
+    "nome": "EE DESEM MÁRIO GONÇALVES MATOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1791",
+    "nome": "EE DESEM RODRIGUES CAMPOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1830",
+    "nome": "EE DIOGO DE VASCONCELOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1872",
+    "nome": "EE DIVINA PROVIDÊNCIA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "442",
+    "nome": "EE DOM CABRAL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "604",
+    "nome": "EE DOMINGAS MARIA DE ALMEIDA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "183",
+    "nome": "EE DR AMARO NEVES BARRETO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1848",
+    "nome": "EE DR ANTÔNIO AUGUSTO SOARES CANEDO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "841",
+    "nome": "EE DR AURINO MORAIS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "922",
+    "nome": "EE DR EUZÉBIO DIAS BICALHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1767",
+    "nome": "EE DR JOSÉ DO PATROCÍNIO DA SILVA PONTES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1082",
+    "nome": "EE DR LUCAS MONTEIRO MACHADO (ecola extinta em 31/12/2025)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1716",
+    "nome": "EE DR PAULO DINIZ CHAGAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "124",
+    "nome": "EE DR SIMÃO TAMM BIAS FORTES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1163",
+    "nome": "EE DUQUE DE CAXIAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1325",
+    "nome": "EE ELISEU LABORNE E VALE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1597",
+    "nome": "EE ELPÍDIO ARISTIDES DE FREITAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "246433",
+    "nome": "EE EMÍLIA CERDEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1406",
+    "nome": "EE ENG FRANCISCO BICALHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1856",
+    "nome": "EE GAL CARLOS LUIZ GUEDES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "2054",
+    "nome": "EE GERALDO JARDIM LINHARES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1953",
+    "nome": "EE GERALDO TEIXEIRA DA COSTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "51",
+    "nome": "EE GUIA LOPES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "132",
+    "nome": "EE GUIMARÃES ROSA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "299",
+    "nome": "EE HERMENEGILDO CHAVES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "451",
+    "nome": "EE HUGO WERNECK",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1929",
+    "nome": "EE JOÃO PAULO I",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1091",
+    "nome": "EE JOSÉ MENDES CORREA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "256",
+    "nome": "EE JOSÉ MIGUEL DO NASCIMENTO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1252",
+    "nome": "EE LAÍCE AGUIAR",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1376",
+    "nome": "EE LÚCIO DOS SANTOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "159",
+    "nome": "EE MANUEL CASASSANTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "311",
+    "nome": "EE MARGARIDA BROCHADO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "477",
+    "nome": "EE MARIETA BROCHADO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "558",
+    "nome": "EE MÁRIO CASASSANTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "639",
+    "nome": "EE MAURÍCIO MURGEL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "710",
+    "nome": "EE MELO VIANA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "795",
+    "nome": "EE MIN ALFREDO VILHENA VALLADÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "957",
+    "nome": "EE N SRA APARECIDA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1031",
+    "nome": "EE N SRA DO BELO RAMO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1112",
+    "nome": "EE ODILON BEHRENS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1279",
+    "nome": "EE OLÍMPIA REZENDE PEREIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1350",
+    "nome": "EE OLÍVIA PINTO DE CASTRO LEITE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1511",
+    "nome": "EE ORDEM E PROGRESSO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1571",
+    "nome": "EE PE EUSTÁQUIO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "2151",
+    "nome": "EE PE JOÃO BOSCO PENIDO BURNIER",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1619",
+    "nome": "EE PE JOÃO BOTELHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "272",
+    "nome": "EE PE JOÃO MARIA KOOYMAN (escola extinta em 31/12/2024)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1694",
+    "nome": "EE PE MATIAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1899",
+    "nome": "EE PEDRO DUTRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "469",
+    "nome": "EE PRINCESA ISABEL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "621",
+    "nome": "EE PROF ALCINDO VIEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "582",
+    "nome": "EE PROF ALISSON PEREIRA GUIMARÃES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "868",
+    "nome": "EE PROF CLÁUDIO BRANDÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "949",
+    "nome": "EE PROF CLÓVIS SALGADO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1104",
+    "nome": "EE PROF FRANCISCO BRANT",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1180",
+    "nome": "EE PROF LEON RENAULT",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1422",
+    "nome": "EE PROF MAGALHÃES DRUMOND",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1503",
+    "nome": "EE PROF MORAIS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "2020",
+    "nome": "EE PROF RICARDO DE SOUZA CRUZ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1741",
+    "nome": "EE PROFA BENVINDA DE CARVALHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1465",
+    "nome": "EE PROFA MARIA AUXILIADORA LANNA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1902",
+    "nome": "EE PROFA MARIA BELMIRA TRINDADE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1309",
+    "nome": "EE PROFA MARIA DO SOCORRO ANDRADE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1988",
+    "nome": "EE PROFA NAIR DE OLIVEIRA SANTANA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "108",
+    "nome": "EE SANDRA RISOLETA DE LIMA HAUCK",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "329",
+    "nome": "EE SANTOS ANJOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "400",
+    "nome": "EE SÃO BENTO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "566",
+    "nome": "EE SÃO SALVADOR",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1201",
+    "nome": "EE SILVIANO BRANDÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1520",
+    "nome": "EE TOMÁS BRANDÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BELO HORIZONTE",
+    "codigo": "1601",
+    "nome": "EE URSULINA DE ANDRADE MELO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7765",
+    "nome": "CESEC DE BETIM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "321061",
+    "nome": "COLÉGIO TIRADENTES DA PMMG DE BETIM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7854",
+    "nome": "EE AMÉLIA SANTANA BARBOSA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "212598",
+    "nome": "EE ANTÔNIO AUGUSTO RIBEIRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7986",
+    "nome": "EE CÂNDIDO PORTINARI",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "8621",
+    "nome": "EE CARLOS DRUMOND DE ANDRADE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7994",
+    "nome": "EE CECÍLIA MEIRELES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7811",
+    "nome": "EE CONSELHEIRO AFONSO PENA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7943",
+    "nome": "EE DEP SIMÃO DA CUNHA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "215082",
+    "nome": "EE DO BAIRRO AMAZONAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "8028",
+    "nome": "EE DO BAIRRO SÃO CAETANO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7871",
+    "nome": "EE DR ORESTES DINIZ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7978",
+    "nome": "EE DR RENATO AZEREDO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "8583",
+    "nome": "EE ESTUDANTE LÍVIA MARA DE CASTRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "361445",
+    "nome": "EE GABRIEL PASSOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "8001",
+    "nome": "EE GRAMONT ALVES GONTIJO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7749",
+    "nome": "EE JOÃO GUIMARÃES ROSA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7862",
+    "nome": "EE JOÃO PAULO I",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7901",
+    "nome": "EE JUSCELINO KUBITSCHEK DE OLIVEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7838",
+    "nome": "EE NASCIMENTO NUNES LEAL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7960",
+    "nome": "EE NEWTON AMARAL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7927",
+    "nome": "EE NOSSA SENHORA DO CARMO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7919",
+    "nome": "EE PROF CARLOS LÚCIO DE ASSIS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "212601",
+    "nome": "EE PROFESSOR OSVALDO FRANCO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7820",
+    "nome": "EE PROFESSORA LOURDES BERNADETE SILVA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "8044",
+    "nome": "EE PROFESSORA VERA MARIA REZENDE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7889",
+    "nome": "EE SARAH KUBITSCHEK",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7951",
+    "nome": "EE SENADOR TEOTÔNIO VILELA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "7935",
+    "nome": "EE TITO LÍVIO DE SOUZA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "BETIM",
+    "codigo": "353787",
+    "nome": "EE VINÍCIUS DE MORAES ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8885",
+    "nome": "CESEC CLEMENTE DE FARIA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "307726",
+    "nome": "COLÉGIO TIRADENTES PMMG CONTAGEM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "368903",
+    "nome": "COLÉGIO TIRADENTES AVELINO CAMARGOS CONTAGEM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8575",
+    "nome": "EE ADRIANO JOSÉ COSTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8516",
+    "nome": "EE BOA VISTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8826",
+    "nome": "EE CATARINA JORGE GONÇALVES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8702",
+    "nome": "EE CONFR ANTÔNIO PEDRO DE CASTRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "349283",
+    "nome": "EE  PADRE RENILDO ANDRADE MAIA (antiga DE ENSINO MÉDIO) contato a partir das 16 hs",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8711",
+    "nome": "EE DEP CLÁUDIO PINHEIRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8541",
+    "nome": "EE DEP RENATO AZEREDO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8508",
+    "nome": "EE DEP SIMÃO DA CUNHA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8729",
+    "nome": "EE DOM BOSCO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8770",
+    "nome": "EE DR JOSÉ ROBERTO DE AGUIAR",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8851",
+    "nome": "EE ELZA MENDONÇA FOULY",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8737",
+    "nome": "EE FRANCISCO FIRMO DE MATOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "9164",
+    "nome": "EE GOVERNADOR ISRAEL PINHEIRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8834",
+    "nome": "EE GUILHERMINO DE OLIVEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8753",
+    "nome": "EE HELENA GUERRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8532",
+    "nome": "EE JOSÉ DA SILVA COUTO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8567",
+    "nome": "EE JUVENTINA PINTO BRANDÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8494",
+    "nome": "EE LAURITA DE MELLO MOREIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8524",
+    "nome": "EE MANOEL DE MATTOS PINHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8591",
+    "nome": "EE MARIA DAS GRAÇAS COSTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "212644",
+    "nome": "EE MARIA DE SALLES FERREIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8869",
+    "nome": "EE MÁRIO ELIAS DE CARVALHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8630",
+    "nome": "EE MIN MIGUEL MENDONÇA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8559",
+    "nome": "EE NAIR MENDES MOREIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8605",
+    "nome": "EE NOVA CONTAGEM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8788",
+    "nome": "EE PADRE CAMARGOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8672",
+    "nome": "EE PE JOSÉ MARIA DE MAN",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8681",
+    "nome": "EE PRESIDENTE TANCREDO NEVES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "326780",
+    "nome": "EE PROF PAULO FREIRE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8796",
+    "nome": "EE PROFA CONCEIÇÃO HILÁRIO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8699",
+    "nome": "EE PROFA LÍGIA MARIA DE MAGALHÃES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8664",
+    "nome": "EE PROFA MARIA COUTINHO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "349275",
+    "nome": "EE ROBERTO FERNANDES (ANTIGA EE DE ENS. MÉDIO)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "8800",
+    "nome": "EE RUY PIMENTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "CONTAGEM",
+    "codigo": "212652",
+    "nome": "EE VINÍCIUS DE MORAES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "8974",
+    "nome": "EE DE LAGOA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "9041",
+    "nome": "EE DE MELO VIANA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "9032",
+    "nome": "EE JOÃO NAZÁRIO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "353868",
+    "nome": "EE MONTE SINAI (ANTIGA EE DE ENSINO MÉDIO)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "9008",
+    "nome": "EE PROF AUGUSTO LUCAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "330647",
+    "nome": "EE PROF RAYMUNDO CÂNDIDO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "8966",
+    "nome": "EE STA QUITÉRIA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "9024",
+    "nome": "EE SANTA TEREZA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "8931",
+    "nome": "EE SÃO TOMAZ DE AQUINO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "9059",
+    "nome": "EE TEÓFILO ALVES DA SILVA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "ESMERALDAS",
+    "codigo": "8958",
+    "nome": "EE VISCONDE DE CAETÉ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9148",
+    "nome": "CESEC DE IBIRITÉ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "231665",
+    "nome": "EE ANTÔNIO MARINHO CAMPOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "322989",
+    "nome": "EE ANTÔNIO PINHEIRO DINIZ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "270407",
+    "nome": "EE CORA CORALINA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "353507",
+    "nome": "EE PROFESSORA HELEY DE ABREU SILVA BASTISTA (ANTIGA EE DE ENSINO FUNDAMENTAL E MEDIO)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9121",
+    "nome": "EE DOS PALMARES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9130",
+    "nome": "EE GYSLAINE DE FREITAS ARAÚJO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "232483",
+    "nome": "EE IMPERATRIZ PIMENTA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9172",
+    "nome": "EE JOÃO ANTÔNIO SIQUEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "223590",
+    "nome": "EE JOÃO FERREIRA DE FREITAS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "7846",
+    "nome": "EE JOSÉ RODRIGUES BETIM",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9181",
+    "nome": "EE JUSCELINO KUBITSCHEK  DE OLIVEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "231657",
+    "nome": "EE MARIA ALVES NAGY VARGA( antiga EE DE CANAÃ)",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9113",
+    "nome": "EE NO PARQUE ELIZABETH",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9091",
+    "nome": "EE PEDRO EVANGELISTA DINIZ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "231673",
+    "nome": "EE PROFA ELZA CARDOSO RANGEL",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IBIRITÉ",
+    "codigo": "9075",
+    "nome": "EE PROFA YOLANDA MARTINS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "",
+    "codigo": "14362",
+    "nome": "EE SANDOVAL SOARES DE AZEVEDO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "254720",
+    "nome": "EE CRISTIANO CHAVES DE OLIVEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "9253",
+    "nome": "EE JOAQUIM JOSÉ PEREIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "212466",
+    "nome": "EE JOELMA ALVES DE OLIVEIRA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "9245",
+    "nome": "EE JOSÉ AMÂNCIO DOS SANTOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "9211",
+    "nome": "EE PROFA MARIA DE MAGALHÃES PINTO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "9229",
+    "nome": "EE RACHEL IANCU STEURMAN",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "IGARAPÉ",
+    "codigo": "9237",
+    "nome": "EE STA CHIARA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "JUATUBA",
+    "codigo": "34436",
+    "nome": "EE JOAQUIM CORREA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "JUATUBA",
+    "codigo": "34410",
+    "nome": "EE MARIA RITA DUARTE",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "M CAMPOS",
+    "codigo": "9199",
+    "nome": "EE CONSELHEIRO AFONSO PENA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "M CAMPOS",
+    "codigo": "9156",
+    "nome": "EE DE MÁRIO CAMPOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "MATEUS LEME",
+    "codigo": "34444",
+    "nome": "EE ALVINO ALCÂNTARA FERNANDES",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "MATEUS LEME",
+    "codigo": "34363",
+    "nome": "EE DOMINGOS JUSTINO RIBEIRO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "MATEUS LEME",
+    "codigo": "34380",
+    "nome": "EE ELIAS SALOMÃO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "MAT LEME",
+    "codigo": "34401",
+    "nome": "EE MANOEL ANTÔNIO DE SOUSA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SÃO JOAQUIM DE BICAS",
+    "codigo": "326798",
+    "nome": "EE ANTÔNIO RIBEIRO DA SILVA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SÃO JOAQUIM DE BICAS",
+    "codigo": "382574",
+    "nome": "EE DE EDUCAÇÃO INFANTIL, ENSINO FUNDAMENTAL, ANOS INICIAIS E FINAIS DE ENSINO MÉDIO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SÃO JOAQUIM DE BICAS",
+    "codigo": "9270",
+    "nome": "EE N SRA DA PAZ",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SÃO JOAQUIM DE BICAS",
+    "codigo": "9288",
+    "nome": "EE PROFA GERALDA EUGÊNIA DA SILVA",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SARZEDO",
+    "codigo": "266094",
+    "nome": "EE JOSÉ PEREIRA DOS SANTOS",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SARZEDO",
+    "codigo": "9202",
+    "nome": "EE PROF ERNESTO CARNEIRO SANTIAGO",
+    "sre": "SRE Metropolitana B"
+  },
+  {
+    "municipio": "SARZEDO",
+    "codigo": "367826",
+    "nome": "PROFESSORA NILZA GOMES BERGMAN (antiga ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL( ANOS INICIAIS) E ENSINO MÉDIO)",
+    "sre": "SRE Metropolitana B"
+  }
+]

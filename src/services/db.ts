@@ -20,6 +20,7 @@ export interface Workbook {
   engenheiro?: string;
   crea?: string;
   data_elaboracao?: string;
+  rev?: string;
   created_at: string;
   updated_at: string;
 }

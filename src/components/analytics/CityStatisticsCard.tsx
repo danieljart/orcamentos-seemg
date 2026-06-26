@@ -34,6 +34,7 @@ export function CityStatisticsCard({
               </div>
             </SelectTrigger>
             <SelectContent position="popper" sideOffset={4}>
+              <SelectItem value="15d">15 dias</SelectItem>
               <SelectItem value="30d">30 dias</SelectItem>
               <SelectItem value="3m">3 meses</SelectItem>
               <SelectItem value="6m">6 meses</SelectItem>

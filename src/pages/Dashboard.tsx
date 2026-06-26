@@ -1,25 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
 import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
+import { SchoolSearch } from '../components/SchoolSearch';
+import { getIssForMunicipio } from '../lib/iss';
+import { AccountSidebar } from '../components/AccountSidebar';
 
-const evaluateMath = (expr: string): string => {
+const evaluateMath = (expr: any): string => {
+  if (!expr && expr !== 0) return '';
   try {
-    let sanitized = expr.replace(/,/g, '.').replace(/x/g, '*');
+    let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
     if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
       return '';
     }
     const result = new Function(`return ${sanitized}`)();
-    if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
-      return Number(result.toFixed(2)).toString();
-    }
-    return '';
-  } catch {
+    return Number.isFinite(result) ? String(Number(result.toFixed(2))) : '';
+  } catch (e) {
     return '';
   }
 };
@@ -32,13 +33,15 @@ export function Dashboard() {
   const [isQuickEstimateOpen, setIsQuickEstimateOpen] = useState(false);
   const [pendingQuickItems, setPendingQuickItems] = useState<CartItem[] | null>(null);
   const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
-  
+  const [isAccountSidebarOpen, setIsAccountSidebarOpen] = useState(false);
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
   
   const [cityData, setCityData] = useState<any[]>([]);
+
   const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, date: Date }[]>([]);
-  const [periodFilter, setPeriodFilter] = useState('30d');
+  const [userName, setUserName] = useState('');
+  const [periodFilter, setPeriodFilter] = useState('15d');
 
   const [totalBalance, setTotalBalance] = useState(0);
 
@@ -53,7 +56,10 @@ export function Dashboard() {
   const [formServicos, setFormServicos] = useState('');
   const [formEngenheiro, setFormEngenheiro] = useState('');
   const [formCrea, setFormCrea] = useState('');
-  const [formDataElaboracao, setFormDataElaboracao] = useState('');
+  const [formDataElaboracao, setFormDataElaboracao] = useState(new Date().toISOString().split('T')[0]);
+  const [formRev, setFormRev] = useState('1');
+
+  const [userSre, setUserSre] = useState('');
 
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -63,9 +69,25 @@ export function Dashboard() {
   };
 
   useEffect(() => {
+    fetchUserProfile();
     loadData();
     checkPasskeyPrompt();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const u = await db.auth.getUser();
+      if (u) {
+        setUserSre(u.sre || '');
+        setFormSRE(u.sre || '');
+        setFormEngenheiro(u.nome || '');
+        if (u.nome) setUserName(u.nome);
+        setFormCrea(u.crea || '');
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
+  };
 
   const checkPasskeyPrompt = async () => {
     try {
@@ -85,7 +107,10 @@ export function Dashboard() {
 
     let filtered = analyticsData;
     const now = new Date();
-    if (periodFilter === '30d') {
+    if (periodFilter === '15d') {
+      const past = new Date(); past.setDate(now.getDate() - 15);
+      filtered = analyticsData.filter(d => d.date >= past);
+    } else if (periodFilter === '30d') {
       const past = new Date(); past.setDate(now.getDate() - 30);
       filtered = analyticsData.filter(d => d.date >= past);
     } else if (periodFilter === '3m') {
@@ -127,7 +152,7 @@ export function Dashboard() {
     
     const user = await db.auth.getUser();
     if (user) {
-      if (user.nome) setFormEngenheiro(user.nome);
+      if (user.nome) { setFormEngenheiro(user.nome); setUserName(user.nome); }
       if (user.crea) setFormCrea(user.crea);
       if (user.sre) setFormSRE(user.sre);
     }
@@ -146,7 +171,8 @@ export function Dashboard() {
         let items: any[] = [];
         const versions = await db.versions.list(wb.id);
         if (versions.length > 0) {
-          items = JSON.parse(versions[0].items_json); 
+          const itemsJson = versions[0].items_json;
+          items = typeof itemsJson === 'string' ? JSON.parse(itemsJson) : itemsJson;
         } else {
           items = await db.items.list(wb.id);
         }
@@ -154,16 +180,48 @@ export function Dashboard() {
         let wbTotal = 0;
         for (const i of items) {
           const code = i.item_code || i.item;
-          const price = catalogMap.get(code) || 0;
-          const qtyStr = i.quantity || '0';
-          const qty = Number(evaluateMath(qtyStr)) || 0;
+          let parsedOccurrences = i.occurrences;
+          let customPrice: number | undefined = undefined;
+
+          if (!parsedOccurrences && i.memory && typeof i.memory === 'string') {
+            if (i.memory.startsWith('{')) {
+              try {
+                const parsed = JSON.parse(i.memory);
+                if (parsed.occurrences) parsedOccurrences = parsed.occurrences;
+                if (parsed.custom && parsed.custom.price !== undefined) customPrice = parsed.custom.price;
+              } catch (e) {}
+            } else if (i.memory.startsWith('[')) {
+              try {
+                parsedOccurrences = JSON.parse(i.memory);
+              } catch (e) {}
+            }
+          }
+
+          // Fallback if cloud items_json has it flat:
+          if (i.customPrice !== undefined) {
+             customPrice = i.customPrice;
+          }
+
+          const price = customPrice !== undefined ? customPrice : (catalogMap.get(code) || 0);
+          
+          let qty = 0;
+          if (parsedOccurrences && Array.isArray(parsedOccurrences)) {
+            qty = parsedOccurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+          } else {
+            qty = Number(evaluateMath(i.quantity || '0')) || 0;
+          }
+
           wbTotal += qty * price;
         }
+        console.log(`[Dashboard Debug] wbTotal:`, wbTotal, `items.length:`, items.length, `items:`, items.slice(0,2));
 
-        const issValue = parseFloat(wb.iss || '5');
-        const bdiPercent = ((1.2 * 1.012 * 1.0059 * 1.0594) / (1 - (0.0065 + 0.03 + (issValue / 100))) - 1) * 100;
-        const totalComBdi = wbTotal * (1 + (bdiPercent / 100));
-
+        let bdiRate = 0.2443;
+        if (wb.iss === '2') bdiRate = 0.2246;
+        else if (wb.iss === '2.5') bdiRate = 0.2279;
+        else if (wb.iss === '3') bdiRate = 0.2312;
+        else if (wb.iss === '4') bdiRate = 0.2377;
+        else if (wb.iss === '5') bdiRate = 0.2443;
+        const totalComBdi = wbTotal * (1 + bdiRate);
         grandTotal += totalComBdi;
         const city = wb.municipio || 'Sem Município';
         cityTotals[city] = (cityTotals[city] || 0) + totalComBdi;
@@ -220,11 +278,12 @@ export function Dashboard() {
       cod_escola: formCodEscola,
       municipio: formMunicipio,
       sre: formSRE,
-      iss: formISS,
       servicos: formServicos,
+      iss: formISS,
       engenheiro: formEngenheiro,
       crea: formCrea,
-      data_elaboracao: formDataElaboracao
+      data_elaboracao: formDataElaboracao,
+      rev: formRev
     });
 
     if (pendingQuickItems && pendingQuickItems.length > 0) {
@@ -417,12 +476,15 @@ export function Dashboard() {
       <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <FileSpreadsheet size={28} className="text-emerald-300" />
-            <h1 className="text-xl font-bold tracking-wide">Orçamentos SEEMG</h1>
+            <FileSpreadsheet size={28} className="text-emerald-300 hidden sm:block" />
+            <div className="flex flex-col">
+              <h1 className="text-lg md:text-xl font-bold tracking-wide leading-tight">Portal de Orçamentos SEE-MG</h1>
+              {userName && <span className="text-xs font-medium text-emerald-100">Engº. {userName}</span>}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <button 
-              onClick={() => navigate('/account')}
+              onClick={() => setIsAccountSidebarOpen(true)}
               className="flex items-center gap-2 text-emerald-200 hover:text-white transition-colors text-sm font-medium"
             >
               <UserIcon size={18} /> Minha Conta
@@ -433,6 +495,14 @@ export function Dashboard() {
               className="flex items-center gap-2 text-emerald-200 hover:text-white transition-colors text-sm font-medium"
             >
               <LogOut size={18} /> Sair
+            </button>
+          </div>
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsAccountSidebarOpen(true)}
+              className="p-2 -mr-2 text-emerald-100 hover:text-white transition-colors"
+            >
+              <Menu size={24} />
             </button>
           </div>
         </div>
@@ -482,7 +552,10 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredWorkbooks.map(wb => (
+          {filteredWorkbooks.map(wb => {
+            const wbAnalytics = analyticsData.find(a => a.id === wb.id);
+            const totalValue = wbAnalytics ? wbAnalytics.total : 0;
+            return (
             <div 
               key={wb.id} 
               onClick={() => handleOpenVersions(wb)}
@@ -499,6 +572,9 @@ export function Dashboard() {
               <h3 className="text-lg font-bold text-slate-800 line-clamp-2 mb-1 group-hover:text-emerald-700 transition-colors">
                 {wb.escola || 'Escola sem nome'}
               </h3>
+              <div className="text-lg font-bold text-emerald-600 mb-2">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+              </div>
               <div className="flex justify-between items-center text-sm text-slate-500 mb-4">
                 <span className="truncate pr-2">{wb.municipio}</span>
                 <span className="shrink-0 text-xs bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-500">{wb.sre}</span>
@@ -524,7 +600,8 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
           {filteredWorkbooks.length === 0 && (
             <div className="col-span-full py-12 text-center text-slate-500">
               Nenhum orçamento encontrado.
@@ -532,6 +609,12 @@ export function Dashboard() {
           )}
         </div>
       </main>
+
+      <AccountSidebar 
+        isOpen={isAccountSidebarOpen} 
+        onClose={() => setIsAccountSidebarOpen(false)} 
+        onLogout={handleLogout} 
+      />
 
       {/* MODAL NOVO ORÇAMENTO */}
       {isModalOpen && (
@@ -550,19 +633,29 @@ export function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Escola Estadual</label>
-                  <input type="text" value={formEscola} onChange={e => setFormEscola(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: E.E. Afonso Pena" />
+                  <SchoolSearch 
+                    value={formEscola} 
+                    onChange={setFormEscola} 
+                    userSre={userSre}
+                    onSelect={(escola) => {
+                      setFormEscola(escola.nome);
+                      setFormCodEscola(escola.codigo);
+                      setFormMunicipio(escola.municipio);
+                      setFormISS(getIssForMunicipio(escola.municipio));
+                    }} 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cód. Escola</label>
-                  <input type="text" value={formCodEscola} onChange={e => setFormCodEscola(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: 12345" />
+                  <input type="text" value={formCodEscola} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" placeholder="Ex: 12345" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Município</label>
-                  <input type="text" value={formMunicipio} onChange={e => setFormMunicipio(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: Belo Horizonte" />
+                  <input type="text" value={formMunicipio} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" placeholder="Ex: Belo Horizonte" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">S.R.E.</label>
-                  <input type="text" value={formSRE} onChange={e => setFormSRE(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input type="text" value={formSRE} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Serviços da Planilha</label>
@@ -575,18 +668,24 @@ export function Dashboard() {
 
                 <div className="col-span-full border-t border-slate-100 mt-2 pt-4">
                   <h3 className="text-sm font-semibold text-slate-700 mb-3">Informações Opcionais Adicionais</h3>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
-                  <input type="text" value={formEngenheiro} onChange={e => setFormEngenheiro(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
-                  <input type="text" value={formCrea} onChange={e => setFormCrea(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
-                  <input type="date" value={formDataElaboracao} onChange={e => setFormDataElaboracao(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className="md:col-span-5">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
+                      <input type="text" value={formEngenheiro} onChange={e => setFormEngenheiro(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
+                      <input type="text" value={formCrea} onChange={e => setFormCrea(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
+                    </div>
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
+                      <input type="date" value={formDataElaboracao} onChange={e => setFormDataElaboracao(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">REV</label>
+                      <input type="number" min="0" value={formRev} onChange={e => setFormRev(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    </div>
+                  </div>
                 </div>
               </div>
               

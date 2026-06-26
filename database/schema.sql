@@ -23,6 +23,7 @@ create table public.workbooks (
   engenheiro text,
   crea text,
   data_elaboracao text,
+  rev text,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );

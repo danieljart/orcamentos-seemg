@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2 } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { db } from '../services/db';
 import type { Workbook } from '../services/db';
+import { SchoolSearch } from '../components/SchoolSearch';
+import { getIssForMunicipio } from '../lib/iss';
 
 interface CatalogItem {
   item: string;
@@ -16,30 +18,60 @@ interface CatalogItem {
   rows: number[];
 }
 
-interface SelectedItem extends CatalogItem {
+export interface SelectedItemOccurrence {
+  id: string;
   quantity: string;
   memory: string;
   location: string;
+}
+
+interface SelectedItem extends CatalogItem {
+  occurrences: SelectedItemOccurrence[];
+  customCode?: string;
+  customTitle?: string;
+  customDescription?: string;
+  customUnit?: string;
+  customPrice?: number;
 }
 
 interface TreeNode extends CatalogItem {
   children: TreeNode[];
 }
 
-const evaluateMath = (expr: string): string => {
+const evaluateMath = (expr: any): string => {
+  if (!expr && expr !== 0) return '';
   try {
-    let sanitized = expr.replace(/,/g, '.').replace(/x/g, '*');
+    let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
     if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
       return '';
     }
     const result = new Function(`return ${sanitized}`)();
-    if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
-      return Number(result.toFixed(2)).toString();
-    }
-    return '';
-  } catch {
+    return Number.isFinite(result) ? String(Number(result.toFixed(2))) : '';
+  } catch (e) {
     return '';
   }
+};
+
+const getMathFormula = (expr: any): string | null => {
+  if (!expr && expr !== 0) return null;
+  let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
+  if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
+    return null;
+  }
+  // Check if it has any math operators, if it's just a number, no need for formula
+  if (!/[+\-*/()]/.test(sanitized)) return null;
+  
+  try {
+    const result = new Function(`return ${sanitized}`)();
+    return Number.isFinite(result) ? sanitized : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+export const getItemTotalQuantity = (item: SelectedItem): number => {
+  if (!item.occurrences) return 0;
+  return item.occurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
 };
 
 function buildTree(items: CatalogItem[]): TreeNode[] {
@@ -47,10 +79,21 @@ function buildTree(items: CatalogItem[]): TreeNode[] {
   const stack: { node: TreeNode, prefix: string }[] = [];
 
   for (const item of items) {
+    // Skip 260002-260006 (old slots), only keep 260001 as the single "Add Custom" button
+    if (['260002', '260003', '260004', '260005', '260006'].includes(item.item)) {
+      continue;
+    }
     const node: TreeNode = { ...item, children: [] };
+    let isCat = item.isCategory;
     
-    if (item.isCategory) {
-      const prefix = item.item.replace(/0+$/, '');
+    if (node.item === '260001') {
+      node.description = '+ Adicionar Item Personalizado';
+      node.isCategory = false;
+      isCat = false;
+    }
+    
+    if (isCat) {
+      const prefix = item.item.replace(/(00)+$/, '');
       while (stack.length > 0 && !prefix.startsWith(stack[stack.length - 1].prefix)) {
         stack.pop();
       }
@@ -92,16 +135,14 @@ export function Editor() {
 
   // Form states for inline editing
   const [activeFormItem, setActiveFormItem] = useState<string | null>(null);
-  const [formMemory, setFormMemory] = useState('');
-  const [formQuantity, setFormQuantity] = useState('');
-  const [formLocation, setFormLocation] = useState('');
+  const [formOccurrences, setFormOccurrences] = useState<SelectedItemOccurrence[]>([]);
+  const [customItemFields, setCustomItemFields] = useState({ code: '', title: '', description: '', unit: '', price: 0 });
 
   // States for right-side inline editing
   const [activeRightEditItem, setActiveRightEditItem] = useState<string | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
-  const [editFormMemory, setEditFormMemory] = useState('');
-  const [editFormQuantity, setEditFormQuantity] = useState('');
-  const [editFormLocation, setEditFormLocation] = useState('');
+  const [editFormOccurrences, setEditFormOccurrences] = useState<SelectedItemOccurrence[]>([]);
+  const [editCustomItemFields, setEditCustomItemFields] = useState({ code: '', title: '', description: '', unit: '', price: 0 });
 
   // States for Header Edit
   const [isHeaderEditModalOpen, setIsHeaderEditModalOpen] = useState(false);
@@ -110,6 +151,8 @@ export function Editor() {
   // Toast Notification state
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
+  const [userSre, setUserSre] = useState('');
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
@@ -117,7 +160,8 @@ export function Editor() {
 
   const updateItems = (newItems: SelectedItem[] | ((prev: SelectedItem[]) => SelectedItem[])) => {
     setSelectedItems(prev => {
-      const next = typeof newItems === 'function' ? newItems(prev) : newItems;
+      let next = typeof newItems === 'function' ? newItems(prev) : newItems;
+      next = [...next].sort((a, b) => a.item.localeCompare(b.item));
       setHistory(h => {
         const newHistory = h.slice(0, historyIndex + 1);
         newHistory.push(next);
@@ -149,18 +193,37 @@ export function Editor() {
   useEffect(() => {
     if (!id || historyIndex === -1) return;
     const saveDraft = async () => {
-      await db.items.saveAll(id, selectedItems.map(i => ({
-        item_code: i.item,
-        quantity: i.quantity,
-        memory: i.memory,
-        location: i.location
-      })));
+      await db.items.saveAll(id, selectedItems.map(i => {
+        const isCustom = i.item.startsWith('2600');
+        const payload = isCustom 
+          ? { occurrences: i.occurrences, custom: { code: i.customCode, title: i.customTitle, description: i.customDescription, unit: i.customUnit, price: i.customPrice } } 
+          : { occurrences: i.occurrences };
+        
+        return {
+          item_code: i.item,
+          quantity: '',
+          memory: JSON.stringify(payload),
+          location: ''
+        } as any;
+      }));
     };
     const timer = setTimeout(saveDraft, 1000);
     return () => clearTimeout(timer);
   }, [selectedItems, id, historyIndex]);
 
+  const fetchUserProfile = async () => {
+    try {
+      const u = await db.auth.getUser();
+      if (u) {
+        setUserSre(u.sre || '');
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
+  };
+
   useEffect(() => {
+    fetchUserProfile();
     if (!id) return;
     
     const loadData = async () => {
@@ -178,8 +241,9 @@ export function Editor() {
         const versions = await db.versions.list(id);
         const version = versions.find(v => v.id === versionId);
         if (version) {
-          loadedItems = JSON.parse(version.items_json);
-          setLastSavedItemsJson(version.items_json);
+          const itemsJson = version.items_json;
+          loadedItems = typeof itemsJson === 'string' ? JSON.parse(itemsJson) : itemsJson;
+          setLastSavedItemsJson(typeof itemsJson === 'string' ? itemsJson : JSON.stringify(itemsJson));
         } else {
           showToast("Versão não encontrada.", "error");
         }
@@ -187,7 +251,8 @@ export function Editor() {
         loadedItems = await db.items.list(id);
         const versions = await db.versions.list(id);
         if (versions.length > 0) {
-          setLastSavedItemsJson(versions[0].items_json);
+          const itemsJson = versions[0].items_json;
+          setLastSavedItemsJson(typeof itemsJson === 'string' ? itemsJson : JSON.stringify(itemsJson));
         } else {
           setLastSavedItemsJson(JSON.stringify(loadedItems));
         }
@@ -200,19 +265,57 @@ export function Editor() {
 
           let restoredItems: SelectedItem[] = [];
           if (loadedItems.length > 0) {
-            restoredItems = loadedItems.map(loaded => {
+            restoredItems = loadedItems.map((loaded): SelectedItem | null => {
               const itemCode = loaded.item_code || loaded.item;
-              const catItem = data.find(c => c.item === itemCode);
+              // Support dynamic custom item IDs like 260001_abc1234
+              const isCustomDynamic = typeof itemCode === 'string' && itemCode.startsWith('260001_');
+              const lookupCode = isCustomDynamic ? '260001' : itemCode;
+              const catItem = data.find(c => c.item === lookupCode);
               if (!catItem) return null;
+              
+              let parsedOccurrences = loaded.occurrences;
+              let customData = null;
+
+              if (!parsedOccurrences && loaded.memory && typeof loaded.memory === 'string') {
+                if (loaded.memory.startsWith('{')) {
+                  try {
+                    const parsed = JSON.parse(loaded.memory);
+                    if (parsed.occurrences) {
+                      parsedOccurrences = parsed.occurrences;
+                      customData = parsed.custom;
+                    }
+                  } catch (e) {}
+                } else if (loaded.memory.startsWith('[')) {
+                  try {
+                    parsedOccurrences = JSON.parse(loaded.memory);
+                  } catch (e) {}
+                }
+              }
+
+              // Fallback for cloud version loading (items_json contains everything)
+              if (loaded.customCode || loaded.customDescription || loaded.customTitle) {
+                 customData = { code: loaded.customCode, title: loaded.customTitle, description: loaded.customDescription, unit: loaded.customUnit, price: loaded.customPrice };
+              }
+
               return {
                 ...(catItem as CatalogItem),
-                quantity: loaded.quantity,
-                memory: loaded.memory,
-                location: loaded.location
+                item: itemCode, // preserve the dynamic ID
+                customCode: customData?.code,
+                customTitle: customData?.title,
+                customDescription: customData?.description,
+                customUnit: customData?.unit,
+                customPrice: customData?.price,
+                occurrences: parsedOccurrences || [{
+                  id: loaded.id || Math.random().toString(36).substring(2, 11),
+                  quantity: loaded.quantity || '',
+                  memory: loaded.memory || '',
+                  location: loaded.location || ''
+                }]
               };
             }).filter((item): item is SelectedItem => item !== null);
           }
           
+          restoredItems.sort((a, b) => a.item.localeCompare(b.item));
           setSelectedItems(restoredItems);
           setHistory([restoredItems]);
           setHistoryIndex(0);
@@ -234,52 +337,119 @@ export function Editor() {
     }
   };
 
-  const handleMathChange = (val: string, setMem: (v:string)=>void, setQtd: (v:string)=>void) => {
-    setMem(val);
-    const result = evaluateMath(val);
-    if (result) {
-      setQtd(result);
-    }
+  const updateOccurrence = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, field: keyof SelectedItemOccurrence, value: string) => {
+    setState(state.map(occ => occ.id === id ? { ...occ, [field]: value } : occ));
   };
+
+  const handleOccurrenceMathChange = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, value: string) => {
+    const result = evaluateMath(value);
+    setState(state.map(occ => occ.id === id ? { ...occ, memory: value, quantity: result ? String(result) : occ.quantity } : occ));
+  };
+
+  const addOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>) => {
+    setState(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
+  };
+
+  const removeOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string) => {
+    setState(prev => prev.filter(occ => occ.id !== id));
+  };
+
 
   const openForm = (item: CatalogItem) => {
-    const existing = selectedItems.find(i => i.item === item.item);
-    if (existing) {
-      setFormMemory(existing.memory);
-      setFormQuantity(existing.quantity);
-      setFormLocation(existing.location);
-    } else {
-      setFormMemory('');
-      setFormQuantity('');
-      setFormLocation('');
+    let targetItem = item;
+    if (item.item === '260001') {
+      setCustomItemFields({ code: '', title: '', description: '', unit: '', price: 0 });
+    } else if (item.item.startsWith('2600')) {
+      setCustomItemFields({ code: item.item, title: '', description: item.description, unit: item.unit, price: item.price });
     }
-    setActiveFormItem(item.item);
+
+    const existing = item.item === '260001' ? undefined : selectedItems.find(i => i.item === targetItem.item);
+    if (existing) {
+      setFormOccurrences(existing.occurrences.length > 0 ? existing.occurrences : [{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
+      if (existing.item.startsWith('2600')) {
+        setCustomItemFields({ 
+          code: existing.customCode || existing.item, 
+          title: existing.customTitle || '',
+          description: existing.customDescription || existing.description, 
+          unit: existing.customUnit || existing.unit, 
+          price: existing.customPrice !== undefined ? existing.customPrice : existing.price 
+        });
+      }
+    } else {
+      setFormOccurrences([{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
+    }
+    setActiveFormItem(targetItem.item);
   };
 
-  const saveForm = (item: CatalogItem) => {
-    const newItem = {
-      ...item,
-      memory: formMemory,
-      quantity: formQuantity,
-      location: formLocation
+  const saveForm = () => {
+    if (!activeFormItem) return;
+    const catItem = catalog.find(c => c.item === activeFormItem || activeFormItem.startsWith(c.item));
+    const baseCatItem = catalog.find(c => c.item === '260001');
+    if (!catItem && !baseCatItem) return;
+
+    const isCustom = activeFormItem === '260001' || activeFormItem.startsWith('2600');
+    const isNewCustom = activeFormItem === '260001';
+
+    const uniqueId = isNewCustom ? `260001_${Math.random().toString(36).substring(2, 9)}` : activeFormItem;
+
+    const sourceItem = isNewCustom ? baseCatItem! : (catItem || baseCatItem!);
+
+    const newItem: SelectedItem = {
+      ...sourceItem,
+      item: uniqueId,
+      occurrences: formOccurrences,
+      ...(isCustom && {
+        customCode: customItemFields.code,
+        customTitle: customItemFields.title,
+        customDescription: customItemFields.description,
+        customUnit: customItemFields.unit,
+        customPrice: Number(customItemFields.price)
+      })
     };
     updateItems(prev => {
-      const exists = prev.find(i => i.item === item.item);
-      if (exists) return prev.map(i => i.item === item.item ? newItem : i);
+      if (isNewCustom) {
+        // Always append new custom item
+        return [...prev, newItem];
+      }
+      const exists = prev.find(i => i.item === activeFormItem);
+      if (exists) return prev.map(i => i.item === activeFormItem ? newItem : i);
       return [...prev, newItem];
     });
     setActiveFormItem(null);
   };
 
   const openEditForm = (item: SelectedItem) => {
-    setEditFormMemory(item.memory);
-    setEditFormQuantity(item.quantity);
-    setEditFormLocation(item.location);
+    setEditFormOccurrences(item.occurrences.length > 0 ? item.occurrences : [{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
+    if (item.item.startsWith('2600')) {
+      setEditCustomItemFields({
+        code: item.customCode || item.item,
+        title: item.customTitle || '',
+        description: item.customDescription || item.description,
+        unit: item.customUnit || item.unit,
+        price: item.customPrice !== undefined ? item.customPrice : item.price
+      });
+    }
     setActiveRightEditItem(item.item);
   };
 
   const saveEditForm = (itemCode: string) => {
-    updateItems(prev => prev.map(i => i.item === itemCode ? { ...i, memory: editFormMemory, quantity: editFormQuantity, location: editFormLocation } : i));
+    const isCustom = itemCode.startsWith('2600');
+    updateItems(prev => prev.map(i => {
+      if (i.item === itemCode) {
+        return {
+          ...i,
+          occurrences: editFormOccurrences,
+          ...(isCustom && {
+            customCode: editCustomItemFields.code,
+            customTitle: editCustomItemFields.title,
+            customDescription: editCustomItemFields.description,
+            customUnit: editCustomItemFields.unit,
+            customPrice: Number(editCustomItemFields.price)
+          })
+        };
+      }
+      return i;
+    }));
     setActiveRightEditItem(null);
   };
 
@@ -311,22 +481,81 @@ export function Editor() {
       worksheet.getCell('D3').value = workbook.iss ? parseFloat(workbook.iss) / 100 : 0.05;
       worksheet.getCell('F3').value = workbook.servicos;
 
-      worksheet.getCell('A2034').value = `Nome do técnico responsável pela elaboração da planilha: ${workbook.engenheiro ? workbook.engenheiro.toUpperCase() : ''}`;
-      worksheet.getCell('E2034').value = `CREA-MG: ${workbook.crea ? workbook.crea : ''}`;
+      worksheet.getCell('A2034').value = `Técnico responsável pela elaboração da planilha: ${workbook.engenheiro ? workbook.engenheiro.toUpperCase() : ''}`;
+      worksheet.getCell('E2034').value = `CREA: ${workbook.crea ? workbook.crea : ''}`;
+      
+      const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+      const d = workbook.data_elaboracao ? new Date(`${workbook.data_elaboracao}T00:00:00`) : new Date();
+      
+      const monthStr = monthNames[d.getMonth()];
+      const yearStr = String(d.getFullYear()).slice(-2);
+      
+      const cell = worksheet.getCell('I2033');
+      cell.value = `REV ${String(workbook.rev || '1').padStart(2, '0')}\n${monthStr}/${yearStr}`;
+      cell.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
+      
       if (workbook.data_elaboracao) {
-        const d = new Date(workbook.data_elaboracao);
-        worksheet.getCell('I2034').value = `Data da elaboração: ${d.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}`;
+        worksheet.getCell('I2034').value = d.toLocaleDateString('pt-BR');
       } else {
-        worksheet.getCell('I2034').value = `Data da elaboração: `;
+        worksheet.getCell('I2034').value = '';
       }
 
       selectedItems.forEach(item => {
-        const firstRowIdx = item.rows[0];
-        const row = worksheet.getRow(firstRowIdx);
-        if (item.quantity) row.getCell(4).value = parseFloat(item.quantity);
-        if (item.memory) row.getCell(7).value = item.memory;
-        if (item.location) row.getCell(8).value = item.location;
-        row.commit();
+        const totalQty = getItemTotalQuantity(item);
+        const validRows: number[] = [];
+
+        if (item.item.startsWith('2600') && item.rows.length > 0) {
+          const mainRow = worksheet.getRow(item.rows[0]);
+          if (item.customCode) mainRow.getCell(1).value = item.customCode;
+          
+          let richText = [];
+          if (item.customTitle) {
+            richText.push({ font: { bold: true }, text: item.customTitle + (item.customDescription ? '\r\n' : '') });
+          }
+          if (item.customDescription) {
+            richText.push({ font: { bold: false }, text: item.customDescription });
+          }
+          if (richText.length > 0) {
+            mainRow.getCell(2).value = { richText };
+          } else if (item.customDescription) {
+            mainRow.getCell(2).value = item.customDescription;
+          }
+
+          if (item.customUnit) mainRow.getCell(3).value = item.customUnit;
+          if (item.customPrice !== undefined) mainRow.getCell(5).value = item.customPrice;
+          mainRow.commit();
+        }
+
+        item.occurrences?.forEach((occ, idx) => {
+          if (idx < item.rows.length) {
+            const row = worksheet.getRow(item.rows[idx]);
+            const occQtd = Number(evaluateMath(occ.quantity)) || 0;
+            if (occ.memory) row.getCell(7).value = occ.memory;
+            if (occQtd > 0) {
+              const formulaStr = getMathFormula(occ.memory);
+              if (formulaStr) {
+                row.getCell(8).value = { formula: formulaStr, result: occQtd };
+              } else {
+                row.getCell(8).value = occQtd;
+              }
+              validRows.push(item.rows[idx]);
+            }
+            if (occ.location) row.getCell(9).value = occ.location;
+            row.commit();
+          }
+        });
+
+        if (totalQty > 0) {
+          if (validRows.length > 1) {
+            const firstRow = validRows[0];
+            const lastRow = validRows[validRows.length - 1];
+            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `SUM(H${firstRow}:H${lastRow})`, result: totalQty };
+          } else if (validRows.length === 1) {
+            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `SUM(H${validRows[0]})`, result: totalQty };
+          } else {
+            worksheet.getRow(item.rows[0]).getCell(4).value = totalQty;
+          }
+        }
       });
 
       const selectedItemCodes = new Set(selectedItems.map(i => i.item));
@@ -393,51 +622,9 @@ export function Editor() {
       const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
-      const exportHistoryKey = `export_history_${workbook.id}`;
-      const exportHistoryJson = localStorage.getItem(exportHistoryKey);
-      let exportHistory: string[] = exportHistoryJson ? JSON.parse(exportHistoryJson) : [];
-      
-      const currentJson = JSON.stringify(selectedItems);
-      if (exportHistory.length === 0 || exportHistory[exportHistory.length - 1] !== currentJson) {
-         exportHistory.push(currentJson);
-         localStorage.setItem(exportHistoryKey, JSON.stringify(exportHistory));
-      }
-
-      let major = 1;
-      let minor = 0;
-      let prevCodes = new Set<string>();
-      let prevJson = "";
-
-      for (const vJson of exportHistory) {
-        const items = JSON.parse(vJson);
-        const codes = new Set<string>(items.map((i: any) => i.item));
-        
-        let codesChanged = false;
-        if (codes.size !== prevCodes.size) {
-          codesChanged = true;
-        } else {
-          for (const code of codes) {
-            if (!prevCodes.has(code)) codesChanged = true;
-          }
-        }
-        
-        if (codesChanged && prevCodes.size > 0) {
-          major++;
-          minor = 0;
-        } else if (!codesChanged && prevCodes.size > 0) {
-          if (vJson !== prevJson) {
-            minor++;
-          }
-        }
-        
-        prevCodes = codes;
-        prevJson = vJson;
-      }
-
-      const versionString = minor === 0 ? `V${major}` : `V${major}.${minor}`;
-      const escolaName = workbook.escola.replace(/\s+/g, '');
-      const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-      const fileName = `${escolaName}_${dataFormatada}_${versionString}.xlsx`;
+      const escolaName = (workbook.escola || '').trim().toUpperCase();
+      const servicosName = (workbook.servicos || '').trim().toUpperCase();
+      const fileName = `PLANILHA DE SERVIÇOS - ${escolaName} - ${servicosName}.xlsx`;
 
       saveAs(blob, fileName);
 
@@ -469,8 +656,7 @@ export function Editor() {
   };
 
   const totalBudget = selectedItems.reduce((acc, item) => {
-    const q = parseFloat(item.quantity) || 0;
-    return acc + (q * item.price);
+    return acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price));
   }, 0);
 
   const renderTree = (nodes: TreeNode[], term: string): ReactNode => {
@@ -499,8 +685,14 @@ export function Editor() {
           </details>
         );
       } else {
-        const isAdded = selectedItems.some(i => i.item === node.item);
-        const isFormActive = activeFormItem === node.item;
+        const isCustomNode = node.item === '260001';
+        const isAdded = isCustomNode 
+          ? false
+          : selectedItems.some(i => i.item === node.item);
+        
+        const isFormActive = isCustomNode
+          ? activeFormItem?.startsWith('2600')
+          : activeFormItem === node.item;
 
         return (
           <div key={node.item} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isAdded ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-emerald-200'}`}>
@@ -518,48 +710,86 @@ export function Editor() {
               </div>
             </div>
 
-            {isFormActive && !isAdded && (
+            {isFormActive && (
               <div className="p-3 bg-emerald-50/50 border-t border-emerald-100 flex flex-col gap-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
-                      <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                      placeholder="Ex: 2*5 + 10"
-                      value={formMemory}
-                      onChange={e => handleMathChange(e.target.value, setFormMemory, setFormQuantity)}
-                    />
+                {activeFormItem?.startsWith('2600') && (
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white rounded border border-emerald-200">
+                    <div className="sm:col-span-1">
+                      <label className="text-xs font-bold text-slate-600 block mb-1">Código</label>
+                      <input type="text" value={customItemFields.code} onChange={e => setCustomItemFields({...customItemFields, code: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="text-xs font-bold text-slate-600 block mb-1">Título</label>
+                      <input type="text" value={customItemFields.title} onChange={e => setCustomItemFields({...customItemFields, title: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Ex: Piso Cerâmico" />
+                    </div>
+                    <div className="sm:col-span-4">
+                      <label className="text-xs font-bold text-slate-600 block mb-1">Descrição</label>
+                      <input type="text" value={customItemFields.description} onChange={e => setCustomItemFields({...customItemFields, description: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Detalhes opcionais..." />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-bold text-slate-600 block mb-1">Unidade</label>
+                      <input type="text" value={customItemFields.unit} onChange={e => setCustomItemFields({...customItemFields, unit: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-bold text-slate-600 block mb-1">Preço</label>
+                      <input type="number" step="0.01" value={customItemFields.price} onChange={e => setCustomItemFields({...customItemFields, price: Number(e.target.value)})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({node.unit})</label>
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                      placeholder="Qtd final"
-                      value={formQuantity}
-                      onChange={e => setFormQuantity(e.target.value)}
-                    />
+                )}
+                {formOccurrences.map((occ, idx) => (
+                  <div key={occ.id} className="relative bg-white p-3 rounded border border-slate-200">
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      {formOccurrences.length > 1 && (
+                        <button onClick={() => removeOccurrence(setFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14}/></button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      <div>
+                        <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
+                          <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                          placeholder="Ex: 2*5 + 10"
+                          value={occ.memory}
+                          onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({node.unit})</label>
+                        <input
+                          type="number"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                          placeholder="Qtd final"
+                          value={occ.quantity}
+                          onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'quantity', e.target.value)}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção {idx + 1}</label>
+                        <input
+                          type="text"
+                          list="locations-list"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                          placeholder="Ex: Bloco A, Sala 3"
+                          value={occ.location}
+                          onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'location', e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção</label>
-                    <input
-                      type="text"
-                      list="locations-list"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                      placeholder="Ex: Bloco A, Sala 3"
-                      value={formLocation}
-                      onChange={e => setFormLocation(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-1">
-                  <button onClick={() => setActiveFormItem(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-md">Cancelar</button>
-                  <button onClick={() => saveForm(node)} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
-                    <Plus size={16}/> Adicionar ao Orçamento
+                ))}
+                <div className="flex justify-between items-center mt-1">
+                  <button onClick={() => addOccurrence(setFormOccurrences)} className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                    <Plus size={16}/> Adicionar Local
                   </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setActiveFormItem(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-md">Cancelar</button>
+                    <button onClick={() => saveForm()} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
+                      <CheckCircle size={16}/> {isAdded ? 'Salvar Alterações' : 'Adicionar ao Orçamento'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -584,16 +814,22 @@ export function Editor() {
   const uniqueLocations = useMemo(() => {
     const locs = new Set<string>();
     selectedItems.forEach(i => {
-      if (i.location && i.location.trim() !== '') {
-        locs.add(i.location.trim());
-      }
+      i.occurrences.forEach(o => {
+        if (o.location && o.location.trim() !== '') {
+          locs.add(o.location.trim());
+        }
+      });
     });
     return Array.from(locs).sort();
   }, [selectedItems]);
 
   if (!workbook) return null;
 
-  const bdiRate = 0.2443; // BDI Obra padrão: 24.43%
+  let bdiRate = 0.2443;
+  if (workbook.iss === '2') bdiRate = 0.2247;
+  else if (workbook.iss === '3') bdiRate = 0.2312;
+  else if (workbook.iss === '4') bdiRate = 0.2377;
+  else if (workbook.iss === '5') bdiRate = 0.2443;
   const bdiAmount = totalBudget * bdiRate;
   const grandTotal = totalBudget + bdiAmount;
 
@@ -654,7 +890,7 @@ export function Editor() {
             <FileSpreadsheet size={28} className="text-emerald-300" />
             <h1 className="text-xl font-bold tracking-wide">Editor de Orçamento</h1>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="hidden md:flex gap-3 items-center">
             <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
               <button
                 onClick={handlePrint}
@@ -689,7 +925,7 @@ export function Editor() {
         </div>
       </header>
 
-      <main className="container mx-auto h-full flex flex-col gap-4 p-4 print:block print:p-0 flex-1">
+      <main className="container mx-auto h-full flex flex-col gap-4 p-4 pb-20 md:pb-4 print:block print:p-0 flex-1">
         
         {/* Dados da Obra Info (FULL WIDTH) */}
         <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 shadow-sm flex flex-col gap-2 relative group print:hidden">
@@ -702,32 +938,34 @@ export function Editor() {
               <Edit2 size={16} />
             </button>
           </div>
-          <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 pr-10 w-full">
-            <div>
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 pr-4 w-full">
+            <div className="overflow-hidden flex-1 min-w-[100px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">Escola</span>
-              <span className="text-sm font-medium text-slate-800">{workbook.escola}</span>
+              <span className="text-sm font-medium text-slate-800 truncate block" title={workbook.escola}>{workbook.escola}</span>
             </div>
-            {workbook.cod_escola && (
-              <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-600 block">Código</span>
-                <span className="text-sm font-medium text-slate-800">{workbook.cod_escola}</span>
-              </div>
-            )}
-            <div>
+            <div className="overflow-hidden flex-1 min-w-[60px]">
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">Código</span>
+              <span className="text-sm font-medium text-slate-800 truncate block">{workbook.cod_escola || '-'}</span>
+            </div>
+            <div className="overflow-hidden flex-1 min-w-[80px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">Município</span>
-              <span className="text-sm font-medium text-slate-800">{workbook.municipio || '-'}</span>
+              <span className="text-sm font-medium text-slate-800 truncate block">{workbook.municipio || '-'}</span>
             </div>
-            <div>
+            <div className="overflow-hidden flex-1 min-w-[100px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">SRE</span>
-              <span className="text-sm font-medium text-slate-800">{workbook.sre || '-'}</span>
+              <span className="text-sm font-medium text-slate-800 truncate block">{workbook.sre || '-'}</span>
             </div>
-            <div>
+            <div className="overflow-hidden flex-1 min-w-[120px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">Serviços</span>
-              <span className="text-sm font-medium text-slate-800">{workbook.servicos || '-'}</span>
+              <span className="text-sm font-medium text-slate-800 truncate block" title={workbook.servicos}>{workbook.servicos || '-'}</span>
             </div>
-            <div>
+            <div className="overflow-hidden flex-none w-12">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">ISS</span>
-              <span className="text-sm font-medium text-slate-800">{workbook.iss}%</span>
+              <span className="text-sm font-medium text-slate-800 truncate block">{workbook.iss}%</span>
+            </div>
+            <div className="overflow-hidden flex-none w-10 text-right md:text-left">
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">REV</span>
+              <span className="text-sm font-medium text-slate-800 truncate block">{workbook.rev || '1'}</span>
             </div>
           </div>
         </div>
@@ -770,7 +1008,9 @@ export function Editor() {
             {/* Cabeçalho Impressão */}
             <div className="hidden print:block mb-6 border-b-2 border-emerald-800 pb-4">
               <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-black text-emerald-900">Relatório de Orçamento</h1>
+                <h1 className="text-2xl font-black text-emerald-900">
+                  Relatório de Orçamento{workbook.servicos ? ` - ${workbook.servicos}` : ''}
+                </h1>
                 <p className="text-lg font-bold text-slate-700">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm text-slate-700">
@@ -778,6 +1018,8 @@ export function Editor() {
                 <p><strong>Município:</strong> {workbook.municipio}</p>
                 <p><strong>Código:</strong> {workbook.cod_escola}</p>
                 <p><strong>SRE:</strong> {workbook.sre}</p>
+                {workbook.engenheiro && <p><strong>Engenheiro:</strong> {workbook.engenheiro}</p>}
+                {workbook.crea && <p><strong>CREA:</strong> {workbook.crea}</p>}
               </div>
             </div>
 
@@ -810,9 +1052,14 @@ export function Editor() {
                 <p>Nenhum serviço adicionado ainda.<br/>Selecione um item no catálogo ao lado.</p>
               </div>
             ) : (
-              Object.entries(groupedSelected).map(([catName, items]) => (
+              Object.entries(groupedSelected).map(([catName, items]) => {
+                const groupTotal = items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+                return (
                 <div key={catName}>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 border-b pb-1">{catName}</h3>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 border-b pb-1 flex justify-between items-center">
+                    <span>{catName}</span>
+                    <span className="text-emerald-600/70 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(groupTotal)}</span>
+                  </h3>
                   <div className="space-y-2">
                     {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
@@ -822,31 +1069,53 @@ export function Editor() {
                           <div className="flex-1 min-w-0">
                             <div className="print:hidden">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{item.item}</span>
-                                <span className="text-xs font-bold text-emerald-700">{item.quantity} {item.unit}</span>
+                                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{item.customCode || item.item}</span>
+                                <span className="text-[10px] font-medium text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}
+                                </span>
+                                <span className="text-xs font-bold text-emerald-700">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
                               </div>
                               <div className="flex justify-between items-start gap-2">
-                                <p className="text-sm text-slate-800 font-medium line-clamp-3 leading-snug" title={item.description}>{item.description}</p>
+                                <div className="flex flex-col">
+                                  <p className="text-sm text-slate-800 font-medium line-clamp-3 leading-snug" title={item.customTitle || item.customDescription || item.description}>{item.customTitle || item.customDescription || item.description}</p>
+                                  {item.customTitle && item.customDescription && (
+                                    <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{item.customDescription}</p>
+                                  )}
+                                </div>
                                 <span className="text-xs font-bold text-slate-600 whitespace-nowrap bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mt-0.5">
-                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(evaluateMath(item.quantity) || 0) * item.price)}
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-500 truncate mt-1">Local: {item.location || '-'}</p>
+                              <p className="text-xs text-slate-500 truncate mt-1">Local(is): {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
                             </div>
                             
                             {/* Layout Específico para Impressão */}
                             <div className="hidden print:block">
-                              <div className="flex justify-between items-start mb-1">
+                              <div className="flex justify-between items-start mb-1 border-b pb-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-mono font-bold text-slate-600">{item.item}</span>
-                                  <h3 className="text-sm font-bold text-slate-900">{item.description}</h3>
+                                  <span className="text-xs font-mono font-bold text-slate-600">{item.customCode || item.item}</span>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-slate-800 line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
+                                    {item.customTitle && item.customDescription && (
+                                      <span className="text-xs font-normal text-slate-500 line-clamp-1">{item.customDescription}</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="grid grid-cols-4 gap-2 text-xs text-slate-700 mt-2">
-                                <p><strong>Local:</strong> {item.location || '-'}</p>
-                                <p><strong>Qtd:</strong> {item.quantity} {item.unit}</p>
-                                <p><strong>Unitário:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}</p>
-                                <p className="text-right"><strong>Total:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(evaluateMath(item.quantity) || 0) * item.price)}</p>
+                              <div className="text-xs text-slate-700 mt-2 space-y-1">
+                                {item.occurrences?.map((occ) => (
+                                  <div key={occ.id} className="grid grid-cols-5 gap-2 border-b border-dashed border-slate-200 pb-1">
+                                    <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
+                                    <p className="truncate" title={occ.memory}><strong>Memória:</strong> {occ.memory || '-'}</p>
+                                    <p><strong>Qtd:</strong> {occ.quantity} {item.unit}</p>
+                                    <p><strong>Subtotal:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
+                                  </div>
+                                ))}
+                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800">
+                                  <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
+                                  <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
+                                  <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -865,46 +1134,84 @@ export function Editor() {
                         {/* RIGHT INLINE FORM */}
                         {isEditing && (
                           <div className="p-3 bg-emerald-50/50 border-t border-emerald-100 flex flex-col gap-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div>
-                                <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
-                                  <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
-                                </label>
-                                <input
-                                  type="text"
-                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                  placeholder="Ex: 2*5 + 10"
-                                  value={editFormMemory}
-                                  onChange={e => handleMathChange(e.target.value, setEditFormMemory, setEditFormQuantity)}
-                                />
+                            {item.item.startsWith('2600') && (
+                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white rounded border border-emerald-200">
+                                <div className="sm:col-span-1">
+                                  <label className="text-xs font-bold text-slate-600 block mb-1">Código</label>
+                                  <input type="text" value={editCustomItemFields.code} onChange={e => setEditCustomItemFields({...editCustomItemFields, code: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                                </div>
+                                <div className="sm:col-span-3">
+                                  <label className="text-xs font-bold text-slate-600 block mb-1">Título</label>
+                                  <input type="text" value={editCustomItemFields.title} onChange={e => setEditCustomItemFields({...editCustomItemFields, title: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Ex: Piso Cerâmico" />
+                                </div>
+                                <div className="sm:col-span-4">
+                                  <label className="text-xs font-bold text-slate-600 block mb-1">Descrição</label>
+                                  <input type="text" value={editCustomItemFields.description} onChange={e => setEditCustomItemFields({...editCustomItemFields, description: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Detalhes opcionais..." />
+                                </div>
+                                <div className="sm:col-span-2">
+                                  <label className="text-xs font-bold text-slate-600 block mb-1">Unidade</label>
+                                  <input type="text" value={editCustomItemFields.unit} onChange={e => setEditCustomItemFields({...editCustomItemFields, unit: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                                </div>
+                                <div className="sm:col-span-2">
+                                  <label className="text-xs font-bold text-slate-600 block mb-1">Preço</label>
+                                  <input type="number" step="0.01" value={editCustomItemFields.price} onChange={e => setEditCustomItemFields({...editCustomItemFields, price: Number(e.target.value)})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+                                </div>
                               </div>
-                              <div>
-                                <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({item.unit})</label>
-                                <input
-                                  type="number"
-                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                                  placeholder="Qtd final"
-                                  value={editFormQuantity}
-                                  onChange={e => setEditFormQuantity(e.target.value)}
-                                />
+                            )}
+                            {editFormOccurrences.map((occ, idx) => (
+                              <div key={occ.id} className="relative bg-white p-3 rounded border border-slate-200">
+                                <div className="absolute top-2 right-2 flex gap-1">
+                                  {editFormOccurrences.length > 1 && (
+                                    <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14}/></button>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                                  <div>
+                                    <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
+                                      <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      placeholder="Ex: 2*5 + 10"
+                                      value={occ.memory}
+                                      onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({item.unit})</label>
+                                    <input
+                                      type="number"
+                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                                      placeholder="Qtd final"
+                                      value={occ.quantity}
+                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção {idx + 1}</label>
+                                    <input
+                                      type="text"
+                                      list="locations-list"
+                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      placeholder="Ex: Bloco A, Sala 3"
+                                      value={occ.location}
+                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
+                                    />
+                                  </div>
+                                </div>
                               </div>
-                              <div className="md:col-span-2">
-                                <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção</label>
-                                <input
-                                  type="text"
-                                  list="locations-list"
-                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                  placeholder="Ex: Bloco A, Sala 3"
-                                  value={editFormLocation}
-                                  onChange={e => setEditFormLocation(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                            <div className="flex justify-end gap-2 mt-1">
-                              <button onClick={() => setActiveRightEditItem(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-md">Cancelar</button>
-                              <button onClick={() => saveEditForm(item.item)} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
-                                <CheckCircle size={16}/> Salvar Alterações
+                            ))}
+                            <div className="flex justify-between items-center mt-1">
+                              <button onClick={() => addOccurrence(setEditFormOccurrences)} className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                                <Plus size={16}/> Adicionar Local
                               </button>
+                              <div className="flex gap-2">
+                                <button onClick={() => setActiveRightEditItem(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-md">Cancelar</button>
+                                <button onClick={() => saveEditForm(item.item)} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
+                                  <CheckCircle size={16}/> Salvar Alterações
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -912,13 +1219,44 @@ export function Editor() {
                     )})}
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
         </div>
         </div>
       </main>
+
+      {/* MOBILE DOCK */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-emerald-800 p-2 flex justify-between items-center gap-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)] print:hidden pb-safe">
+        <button
+          onClick={handlePrint}
+          disabled={selectedItems.length === 0}
+          className="flex-1 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white h-12 rounded-lg transition-all active:scale-95 shadow-sm"
+          title="Imprimir ou Salvar PDF"
+        >
+          <Printer size={22} />
+        </button>
+        <button
+          onClick={handleExportExcel}
+          disabled={selectedItems.length === 0 || isExporting}
+          className="flex-1 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white h-12 rounded-lg transition-all active:scale-95 shadow-sm"
+          title="Exportar XLSX"
+        >
+          {isExporting ? <Loader2 className="animate-spin" size={22} /> : <Download size={22} />}
+        </button>
+        <button 
+          onClick={saveToCloud}
+          disabled={isCloudSaveDisabled}
+          className={`flex-1 flex items-center justify-center h-12 rounded-lg shadow-sm transition-colors ${isCloudSaveDisabled ? 'bg-emerald-900/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+        >
+          <Save size={22} />
+        </button>
+        <button onClick={handleClose} className="flex-1 flex items-center justify-center h-12 bg-emerald-900/50 hover:bg-red-600 text-emerald-100 hover:text-white rounded-lg transition-colors border border-emerald-700 hover:border-red-600" title="Fechar Editor">
+          <X size={24} />
+        </button>
+      </div>
 
       {/* HEADER EDIT MODAL */}
       {isHeaderEditModalOpen && (
@@ -943,19 +1281,32 @@ export function Editor() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Escola Estadual</label>
-                  <input type="text" value={headerForm.escola || ''} onChange={e => setHeaderForm({...headerForm, escola: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <SchoolSearch 
+                    value={headerForm.escola || ''} 
+                    onChange={val => setHeaderForm({...headerForm, escola: val})} 
+                    userSre={userSre}
+                    onSelect={(escola) => {
+                      setHeaderForm({
+                        ...headerForm,
+                        escola: escola.nome,
+                        cod_escola: escola.codigo,
+                        municipio: escola.municipio,
+                        iss: getIssForMunicipio(escola.municipio)
+                      });
+                    }} 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cód. Escola</label>
-                  <input type="text" value={headerForm.cod_escola || ''} onChange={e => setHeaderForm({...headerForm, cod_escola: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input type="text" value={headerForm.cod_escola || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Município</label>
-                  <input type="text" value={headerForm.municipio || ''} onChange={e => setHeaderForm({...headerForm, municipio: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input type="text" value={headerForm.municipio || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">S.R.E.</label>
-                  <input type="text" value={headerForm.sre || ''} onChange={e => setHeaderForm({...headerForm, sre: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input type="text" value={headerForm.sre || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Serviços da Planilha</label>
@@ -968,18 +1319,24 @@ export function Editor() {
                 
                 <div className="col-span-full border-t border-slate-100 mt-2 pt-4">
                   <h3 className="text-sm font-semibold text-slate-700 mb-3">Informações Opcionais Adicionais</h3>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
-                  <input type="text" value={headerForm.engenheiro || ''} onChange={e => setHeaderForm({...headerForm, engenheiro: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
-                  <input type="text" value={headerForm.crea || ''} onChange={e => setHeaderForm({...headerForm, crea: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
-                  <input type="date" value={headerForm.data_elaboracao || ''} onChange={e => setHeaderForm({...headerForm, data_elaboracao: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className="md:col-span-5">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
+                      <input type="text" value={headerForm.engenheiro || ''} onChange={e => setHeaderForm({...headerForm, engenheiro: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
+                      <input type="text" value={headerForm.crea || ''} onChange={e => setHeaderForm({...headerForm, crea: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
+                    </div>
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
+                      <input type="date" value={headerForm.data_elaboracao || ''} onChange={e => setHeaderForm({...headerForm, data_elaboracao: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">REV</label>
+                      <input type="number" min="0" value={headerForm.rev || '1'} onChange={e => setHeaderForm({...headerForm, rev: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    </div>
+                  </div>
                 </div>
               </div>
               
