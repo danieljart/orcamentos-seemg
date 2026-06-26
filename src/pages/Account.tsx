@@ -9,6 +9,7 @@ export function Account() {
   
   const [nome, setNome] = useState('');
   const [crea, setCrea] = useState('');
+  const [sre, setSre] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   
@@ -24,6 +25,7 @@ export function Account() {
     if (u) {
       setNome(u.nome || '');
       setCrea(u.crea || '');
+      setSre(u.sre || '');
       setEmail(u.email || '');
     } else {
       navigate('/login');
@@ -37,7 +39,7 @@ export function Account() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updates: Partial<User> = { nome, crea, email };
+      const updates: Partial<User> = { nome, crea, sre, email };
       // Em um banco real, a senha seria tratada separadamente, aqui nós ignoramos a atualização de senha no db mock por simplicidade, ou faríamos mock também se houvesse suporte
       await db.auth.updateUser(updates);
       showToast("Dados atualizados com sucesso!", "success");
@@ -109,6 +111,17 @@ export function Account() {
                   onChange={(e) => setCrea(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
                   placeholder="Seu número de registro no CREA"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">SRE (Superintendência Regional de Ensino)</label>
+                <input
+                  type="text"
+                  value={sre}
+                  onChange={(e) => setSre(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  placeholder="Sua SRE padrão"
                 />
               </div>
             </div>

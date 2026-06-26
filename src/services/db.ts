@@ -1,11 +1,11 @@
-// Mock Database Service using LocalStorage
-// This will be replaced by Supabase later
+import { supabase } from './supabase';
 
 export interface User {
   id: string;
   email: string;
   nome: string;
   crea: string;
+  sre?: string;
 }
 
 export interface Workbook {
@@ -37,132 +37,162 @@ export interface WorkbookVersion {
   id: string;
   workbook_id: string;
   created_at: string;
-  items_json: string; // Serialized items at that time
+  items_json: string;
 }
 
-// In-memory mock or localStorage based for prototyping
 export const db = {
   auth: {
     getUser: async (): Promise<User | null> => {
-      const u = localStorage.getItem('user');
-      return u ? JSON.parse(u) : null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (error) return null;
+      return data as User;
     },
-    signIn: async (email: string, nome: string, crea: string): Promise<User> => {
-      let existingUser: User | null = null;
-      try {
-        const u = localStorage.getItem('seemg_auth_user');
-        if (u) existingUser = JSON.parse(u);
-      } catch(e) {
-        console.error(e);
-      }
+    signUp: async (email: string, password: string, nome: string, crea: string): Promise<User | null> => {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { nome, crea },
+          emailRedirectTo: 'https://orcamentos-seemg.netlify.app'
+        }
+      });
+      if (authError) throw authError;
+      
+      if (!authData.user) return null;
+      
+      // Attempt to return the user from public.users if the trigger already ran, otherwise construct a temporary one
+      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single();
+      return data || { id: authData.user.id, email, nome, crea };
+    },
+    signIn: async (email: string, password: string): Promise<User> => {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (authError) throw authError;
 
-      const user: User = { 
-        id: existingUser?.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)), 
-        email, 
-        nome: nome || existingUser?.nome || '', 
-        crea: crea || existingUser?.crea || ''
-      };
-      localStorage.setItem('user', JSON.stringify(user));
-      return user;
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+        
+      if (error) throw error;
+      return data as User;
     },
     updateUser: async (data: Partial<User>): Promise<User> => {
-      const u = localStorage.getItem('user');
-      if (!u) throw new Error("Usuário não logado");
-      const user: User = JSON.parse(u);
-      const updatedUser = { ...user, ...data };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      return updatedUser;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Usuário não logado");
+      
+      const { data: updated, error } = await supabase
+        .from('users')
+        .update(data)
+        .eq('id', session.user.id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return updated as User;
     },
     signOut: async () => {
-      localStorage.removeItem('user');
+      await supabase.auth.signOut();
     }
   },
   workbooks: {
     list: async (): Promise<Workbook[]> => {
-      const wbs = localStorage.getItem('workbooks');
-      return wbs ? JSON.parse(wbs) : [];
+      const { data, error } = await supabase
+        .from('workbooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as Workbook[];
     },
     get: async (id: string): Promise<Workbook | null> => {
-      const wbs: Workbook[] = JSON.parse(localStorage.getItem('workbooks') || '[]');
-      return wbs.find(w => w.id === id) || null;
+      const { data, error } = await supabase
+        .from('workbooks')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      return data as Workbook | null;
     },
     create: async (data: Omit<Workbook, 'id' | 'created_at' | 'updated_at'>): Promise<Workbook> => {
-      const wbs: Workbook[] = JSON.parse(localStorage.getItem('workbooks') || '[]');
-      const newWb: Workbook = {
-        ...data,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      wbs.push(newWb);
-      localStorage.setItem('workbooks', JSON.stringify(wbs));
-      return newWb;
+      const { data: newWb, error } = await supabase
+        .from('workbooks')
+        .insert([data])
+        .select()
+        .single();
+      if (error) throw error;
+      return newWb as Workbook;
     },
     update: async (id: string, data: Partial<Workbook>): Promise<Workbook | null> => {
-      const wbs: Workbook[] = JSON.parse(localStorage.getItem('workbooks') || '[]');
-      const index = wbs.findIndex(w => w.id === id);
-      if (index === -1) return null;
-      wbs[index] = { ...wbs[index], ...data, updated_at: new Date().toISOString() };
-      localStorage.setItem('workbooks', JSON.stringify(wbs));
-      return wbs[index];
+      const { data: updatedWb, error } = await supabase
+        .from('workbooks')
+        .update({ ...data, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return updatedWb as Workbook;
     },
     delete: async (id: string): Promise<void> => {
-      let wbs: Workbook[] = JSON.parse(localStorage.getItem('workbooks') || '[]');
-      wbs = wbs.filter(w => w.id !== id);
-      localStorage.setItem('workbooks', JSON.stringify(wbs));
-      
-      // Cascade delete items
-      const allItemsString = localStorage.getItem('workbook_items');
-      if (allItemsString) {
-        let allItems: WorkbookItem[] = JSON.parse(allItemsString);
-        allItems = allItems.filter(i => i.workbook_id !== id);
-        localStorage.setItem('workbook_items', JSON.stringify(allItems));
-      }
-
-      // Cascade delete versions
-      const allVersionsString = localStorage.getItem('workbook_versions');
-      if (allVersionsString) {
-        let allVersions: WorkbookVersion[] = JSON.parse(allVersionsString);
-        allVersions = allVersions.filter(v => v.workbook_id !== id);
-        localStorage.setItem('workbook_versions', JSON.stringify(allVersions));
-      }
+      const { error } = await supabase
+        .from('workbooks')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     }
   },
   items: {
     list: async (workbook_id: string): Promise<WorkbookItem[]> => {
-      const allItems: WorkbookItem[] = JSON.parse(localStorage.getItem('workbook_items') || '[]');
-      return allItems.filter(i => i.workbook_id === workbook_id);
+      const { data, error } = await supabase
+        .from('workbook_items')
+        .select('*')
+        .eq('workbook_id', workbook_id);
+      if (error) throw error;
+      return (data || []) as WorkbookItem[];
     },
     saveAll: async (workbook_id: string, itemsData: Omit<WorkbookItem, 'id' | 'workbook_id'>[]): Promise<void> => {
-      let allItems: WorkbookItem[] = JSON.parse(localStorage.getItem('workbook_items') || '[]');
-      allItems = allItems.filter(i => i.workbook_id !== workbook_id);
+      await supabase.from('workbook_items').delete().eq('workbook_id', workbook_id);
       
-      const newItems = itemsData.map(data => ({
-        ...data,
-        id: crypto.randomUUID(),
-        workbook_id
-      }));
-
-      allItems.push(...newItems);
-      localStorage.setItem('workbook_items', JSON.stringify(allItems));
+      if (itemsData.length > 0) {
+        const newItems = itemsData.map(item => ({ ...item, workbook_id }));
+        const { error } = await supabase.from('workbook_items').insert(newItems);
+        if (error) throw error;
+      }
     }
   },
   versions: {
     list: async (workbook_id: string): Promise<WorkbookVersion[]> => {
-      const allVersions: WorkbookVersion[] = JSON.parse(localStorage.getItem('workbook_versions') || '[]');
-      return allVersions.filter(v => v.workbook_id === workbook_id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const { data, error } = await supabase
+        .from('workbook_versions')
+        .select('*')
+        .eq('workbook_id', workbook_id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as WorkbookVersion[];
     },
     create: async (workbook_id: string, items: any[]): Promise<WorkbookVersion> => {
-      const allVersions: WorkbookVersion[] = JSON.parse(localStorage.getItem('workbook_versions') || '[]');
-      const newVersion: WorkbookVersion = {
-        id: crypto.randomUUID(),
+      const newVersion = {
         workbook_id,
-        created_at: new Date().toISOString(),
-        items_json: JSON.stringify(items)
+        items_json: items // JSONB no Supabase
       };
-      allVersions.push(newVersion);
-      localStorage.setItem('workbook_versions', JSON.stringify(allVersions));
-      return newVersion;
+      
+      const { data, error } = await supabase
+        .from('workbook_versions')
+        .insert([newVersion])
+        .select()
+        .single();
+      if (error) throw error;
+      return data as WorkbookVersion;
     }
   }
 };

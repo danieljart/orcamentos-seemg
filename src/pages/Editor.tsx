@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -449,6 +449,10 @@ export function Editor() {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const saveToCloud = async () => {
     if (!workbook) return;
     setIsSaving(true);
@@ -643,13 +647,34 @@ export function Editor() {
         </div>
       )}
 
-      <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10">
+      {/* HEADER PRINCIPAL */}
+      <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10 print:hidden">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <FileSpreadsheet size={28} className="text-emerald-300" />
             <h1 className="text-xl font-bold tracking-wide">Editor de Orçamento</h1>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-3 items-center">
+            <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
+              <button
+                onClick={handlePrint}
+                disabled={selectedItems.length === 0}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95"
+                title="Imprimir ou Salvar PDF"
+              >
+                <Printer size={18} />
+                <span className="hidden sm:inline">PDF</span>
+              </button>
+              <button
+                onClick={handleExportExcel}
+                disabled={selectedItems.length === 0 || isExporting}
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95"
+              >
+                <Download size={18} />
+                <span className="hidden sm:inline">{isExporting ? "Gerando..." : "XLSX"}</span>
+              </button>
+            </div>
+            
             <button 
               onClick={saveToCloud}
               disabled={isCloudSaveDisabled}
@@ -664,55 +689,67 @@ export function Editor() {
         </div>
       </header>
 
-      <main className="container mx-auto flex-1 p-4 grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
+      <main className="container mx-auto h-full flex flex-col gap-4 p-4 print:block print:p-0 flex-1">
         
-        {/* Lado Esquerdo: Busca e Catálogo */}
-        <section className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col h-[calc(100vh-100px)] lg:col-span-3">
-          
-          <div className="p-4 border-b border-slate-200 bg-slate-50/80 rounded-t-xl space-y-4">
-            
-            {/* Dados da Obra Info */}
-            <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 shadow-sm flex flex-col gap-2 relative group">
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  onClick={() => setIsHeaderEditModalOpen(true)}
-                  className="bg-white text-emerald-700 p-1.5 rounded-md shadow-sm border border-emerald-200 hover:bg-emerald-100"
-                  title="Editar Dados da Obra"
-                >
-                  <Edit2 size={16} />
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-x-6 gap-y-2 pr-10">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">Escola</span>
-                  <span className="text-sm font-medium text-slate-800">{workbook.escola} {workbook.cod_escola ? `(${workbook.cod_escola})` : ''}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">Município / SRE</span>
-                  <span className="text-sm font-medium text-slate-800">{workbook.municipio || '-'} - {workbook.sre || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">Serviços</span>
-                  <span className="text-sm font-medium text-slate-800">{workbook.servicos || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">ISS</span>
-                  <span className="text-sm font-medium text-slate-800">{workbook.iss}%</span>
-                </div>
-              </div>
+        {/* Dados da Obra Info (FULL WIDTH) */}
+        <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 shadow-sm flex flex-col gap-2 relative group print:hidden">
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={() => setIsHeaderEditModalOpen(true)}
+              className="bg-white text-emerald-700 p-1.5 rounded-md shadow-sm border border-emerald-200 hover:bg-emerald-100"
+              title="Editar Dados da Obra"
+            >
+              <Edit2 size={16} />
+            </button>
+          </div>
+          <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 pr-10 w-full">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">Escola</span>
+              <span className="text-sm font-medium text-slate-800">{workbook.escola}</span>
             </div>
-
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 bg-white shadow-sm"
-                placeholder="Buscar por nome ou código do serviço no catálogo..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
+            {workbook.cod_escola && (
+              <div>
+                <span className="text-[10px] uppercase font-bold text-emerald-600 block">Código</span>
+                <span className="text-sm font-medium text-slate-800">{workbook.cod_escola}</span>
+              </div>
+            )}
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">Município</span>
+              <span className="text-sm font-medium text-slate-800">{workbook.municipio || '-'}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">SRE</span>
+              <span className="text-sm font-medium text-slate-800">{workbook.sre || '-'}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">Serviços</span>
+              <span className="text-sm font-medium text-slate-800">{workbook.servicos || '-'}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block">ISS</span>
+              <span className="text-sm font-medium text-slate-800">{workbook.iss}%</span>
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+          {/* Lado Esquerdo: Busca e Catálogo */}
+          <div className="flex flex-col h-full lg:w-1/3 print:hidden gap-3">
+            <h2 className="text-lg font-bold text-emerald-900 px-1">Pesquisa de Itens</h2>
+            <section className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col flex-1 min-h-0">
+            
+            <div className="p-4 border-b border-slate-200 bg-slate-50/80 rounded-t-xl space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 bg-white shadow-sm"
+                  placeholder="Buscar por nome ou código do serviço no catálogo..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-slate-50/30">
             {catalog.length === 0 ? (
@@ -721,46 +758,52 @@ export function Editor() {
                renderTree(tree, searchTerm)
             )}
           </div>
-        </section>
+            </section>
+          </div>
 
-        {/* Lado Direito: Itens Selecionados */}
-        <section className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col h-[calc(100vh-100px)] lg:col-span-2">
-          <div className="p-4 border-b border-slate-100 bg-emerald-50/50 rounded-t-xl flex flex-col gap-4">
+          {/* Lado Direito: Itens Selecionados */}
+          <div className="flex flex-col h-full lg:w-2/3 print:border-none print:shadow-none print:h-auto print:block print:w-full gap-3">
+            <h2 className="text-lg font-bold text-emerald-900 px-1 print:hidden">Orçamento ({selectedItems.length})</h2>
+            <section className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col flex-1 print:border-none print:shadow-none min-h-0">
+          <div className="p-4 border-b border-slate-100 bg-emerald-50/50 rounded-t-xl flex flex-col gap-4 print:bg-white print:border-none print:p-0 print:mb-6">
             
-            {/* Linha 1: Título e Botão */}
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-emerald-900">Resumo ({selectedItems.length})</h2>
-              <button
-                onClick={handleExportExcel}
-                disabled={selectedItems.length === 0 || isExporting}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all active:scale-95"
-              >
-                <Download size={18} />
-                {isExporting ? "Gerando..." : "Gerar XLSX"}
-              </button>
+            {/* Cabeçalho Impressão */}
+            <div className="hidden print:block mb-6 border-b-2 border-emerald-800 pb-4">
+              <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-black text-emerald-900">Relatório de Orçamento</h1>
+                <p className="text-lg font-bold text-slate-700">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-slate-700">
+                <p><strong>Escola:</strong> {workbook.escola}</p>
+                <p><strong>Município:</strong> {workbook.municipio}</p>
+                <p><strong>Código:</strong> {workbook.cod_escola}</p>
+                <p><strong>SRE:</strong> {workbook.sre}</p>
+              </div>
             </div>
 
+
+
             {/* Linha 2: Totais */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white border border-slate-200 rounded-lg p-2 text-center shadow-sm">
-                <span className="block text-[10px] uppercase font-bold text-slate-500 mb-0.5">Custo Direto</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 print:grid-cols-3 print:gap-4 print:mb-8">
+              <div className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500">Custo Direto</span>
                 <span className="text-sm font-bold text-slate-800">{totalBudget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
-              <div className="bg-white border border-slate-200 rounded-lg p-2 text-center shadow-sm">
-                <span className="block text-[10px] uppercase font-bold text-slate-500 mb-0.5">BDI (24.43%)</span>
+              <div className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500">BDI (24.43%)</span>
                 <span className="text-sm font-bold text-slate-800">{bdiAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
-              <div className="bg-emerald-100 border border-emerald-200 rounded-lg p-2 text-center shadow-sm">
-                <span className="block text-[10px] uppercase font-bold text-emerald-700 mb-0.5">Total Geral</span>
+              <div className="bg-emerald-100 border border-emerald-200 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-emerald-700">Total Geral</span>
                 <span className="text-sm font-black text-emerald-900">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
             </div>
 
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 print:overflow-visible print:p-0">
             {selectedItems.length === 0 ? (
-              <div className="text-center p-12 text-slate-400 flex flex-col items-center gap-4 mt-10">
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
                 <div className="bg-slate-100 p-4 rounded-full">
                   <FileSpreadsheet size={48} className="text-slate-300" />
                 </div>
@@ -777,20 +820,38 @@ export function Editor() {
                       <div key={item.item} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isEditing ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-emerald-200'}`}>
                         <div className="p-3 hover:shadow-md transition-shadow group flex items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{item.item}</span>
-                              <span className="text-xs font-bold text-emerald-700">{item.quantity} {item.unit}</span>
+                            <div className="print:hidden">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{item.item}</span>
+                                <span className="text-xs font-bold text-emerald-700">{item.quantity} {item.unit}</span>
+                              </div>
+                              <div className="flex justify-between items-start gap-2">
+                                <p className="text-sm text-slate-800 font-medium line-clamp-3 leading-snug" title={item.description}>{item.description}</p>
+                                <span className="text-xs font-bold text-slate-600 whitespace-nowrap bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mt-0.5">
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(evaluateMath(item.quantity) || 0) * item.price)}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500 truncate mt-1">Local: {item.location || '-'}</p>
                             </div>
-                            <div className="flex justify-between items-start gap-2">
-                              <p className="text-sm text-slate-800 font-medium line-clamp-3 leading-snug" title={item.description}>{item.description}</p>
-                              <span className="text-xs font-bold text-slate-600 whitespace-nowrap bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mt-0.5">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(evaluateMath(item.quantity) || 0) * item.price)}
-                              </span>
+                            
+                            {/* Layout Específico para Impressão */}
+                            <div className="hidden print:block">
+                              <div className="flex justify-between items-start mb-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-mono font-bold text-slate-600">{item.item}</span>
+                                  <h3 className="text-sm font-bold text-slate-900">{item.description}</h3>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-4 gap-2 text-xs text-slate-700 mt-2">
+                                <p><strong>Local:</strong> {item.location || '-'}</p>
+                                <p><strong>Qtd:</strong> {item.quantity} {item.unit}</p>
+                                <p><strong>Unitário:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}</p>
+                                <p className="text-right"><strong>Total:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(evaluateMath(item.quantity) || 0) * item.price)}</p>
+                              </div>
                             </div>
-                            <p className="text-xs text-slate-500 truncate mt-1">Local: {item.location || '-'}</p>
                           </div>
                           {!isEditing && (
-                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
                               <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-emerald-600 rounded">
                                 <Edit2 size={14}/>
                               </button>
@@ -855,6 +916,8 @@ export function Editor() {
             )}
           </div>
         </section>
+        </div>
+        </div>
       </main>
 
       {/* HEADER EDIT MODAL */}

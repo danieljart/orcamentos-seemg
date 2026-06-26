@@ -22,9 +22,19 @@ export function Auth() {
       if (isRegistering && (!nome || !crea)) {
         throw new Error('Preencha os campos obrigatórios para cadastro.');
       }
-      const user = await db.auth.signIn(email, isRegistering ? nome : '', isRegistering ? crea : '');
-      if (user) {
-        window.location.href = '/dashboard';
+      
+      let user;
+      if (isRegistering) {
+        user = await db.auth.signUp(email, password, nome, crea);
+        if (user) {
+          setError('Cadastro realizado! Verifique seu e-mail para confirmar a conta (caso exigido) ou clique em Entrar.');
+          return;
+        }
+      } else {
+        user = await db.auth.signIn(email, password);
+        if (user) {
+          window.location.href = '/dashboard';
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Erro de autenticação');

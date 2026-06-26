@@ -1,11 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
 import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
+import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
+
+const evaluateMath = (expr: string): string => {
+  try {
+    let sanitized = expr.replace(/,/g, '.').replace(/x/g, '*');
+    if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
+      return '';
+    }
+    const result = new Function(`return ${sanitized}`)();
+    if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+      return Number(result.toFixed(2)).toString();
+    }
+    return '';
+  } catch {
+    return '';
+  }
+};
 
 export function Dashboard() {
   const [workbooks, setWorkbooks] = useState<Workbook[]>([]);
@@ -18,12 +35,18 @@ export function Dashboard() {
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
   
+  const [cityData, setCityData] = useState<any[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, date: Date }[]>([]);
+  const [periodFilter, setPeriodFilter] = useState('30d');
+
+  const [totalBalance, setTotalBalance] = useState(0);
+
   const navigate = useNavigate();
 
   // Header form states
   const [formEscola, setFormEscola] = useState('');
   const [formCodEscola, setFormCodEscola] = useState('');
-  const [formSRE, setFormSRE] = useState('METROPOLITANA B');
+  const [formSRE, setFormSRE] = useState('');
   const [formMunicipio, setFormMunicipio] = useState('');
   const [formISS, setFormISS] = useState('5');
   const [formServicos, setFormServicos] = useState('');
@@ -42,6 +65,47 @@ export function Dashboard() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (!analyticsData.length) return;
+
+    let filtered = analyticsData;
+    const now = new Date();
+    if (periodFilter === '30d') {
+      const past = new Date(); past.setDate(now.getDate() - 30);
+      filtered = analyticsData.filter(d => d.date >= past);
+    } else if (periodFilter === '3m') {
+      const past = new Date(); past.setMonth(now.getMonth() - 3);
+      filtered = analyticsData.filter(d => d.date >= past);
+    } else if (periodFilter === '6m') {
+      const past = new Date(); past.setMonth(now.getMonth() - 6);
+      filtered = analyticsData.filter(d => d.date >= past);
+    } else if (periodFilter === '1y') {
+      const past = new Date(); past.setFullYear(now.getFullYear() - 1);
+      filtered = analyticsData.filter(d => d.date >= past);
+    }
+
+    let grandTotal = 0;
+    const cityTotals: Record<string, number> = {};
+
+    filtered.forEach(d => {
+      grandTotal += d.total;
+      cityTotals[d.city] = (cityTotals[d.city] || 0) + d.total;
+    });
+
+    setTotalBalance(grandTotal);
+
+    const processedCities = Object.entries(cityTotals)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: grandTotal > 0 ? (value / grandTotal) * 100 : 0,
+        color: ''
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+    setCityData(processedCities);
+  }, [analyticsData, periodFilter]);
+
   const loadData = async () => {
     const list = await db.workbooks.list();
     setWorkbooks(list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
@@ -50,6 +114,71 @@ export function Dashboard() {
     if (user) {
       if (user.nome) setFormEngenheiro(user.nome);
       if (user.crea) setFormCrea(user.crea);
+      if (user.sre) setFormSRE(user.sre);
+    }
+
+    try {
+      const res = await fetch('/catalogo.json');
+      const catalog = await res.json();
+      const catalogMap = new Map();
+      catalog.forEach((item: any) => catalogMap.set(item.item, item.price));
+
+      let grandTotal = 0;
+      const cityTotals: Record<string, number> = {};
+      const newAnalyticsData: { id: string, total: number, city: string, date: Date }[] = [];
+
+      for (const wb of list) {
+        let items: any[] = [];
+        const versions = await db.versions.list(wb.id);
+        if (versions.length > 0) {
+          items = JSON.parse(versions[0].items_json); 
+        } else {
+          items = await db.items.list(wb.id);
+        }
+
+        let wbTotal = 0;
+        for (const i of items) {
+          const code = i.item_code || i.item;
+          const price = catalogMap.get(code) || 0;
+          const qtyStr = i.quantity || '0';
+          const qty = Number(evaluateMath(qtyStr)) || 0;
+          wbTotal += qty * price;
+        }
+
+        const issValue = parseFloat(wb.iss || '5');
+        const bdiPercent = ((1.2 * 1.012 * 1.0059 * 1.0594) / (1 - (0.0065 + 0.03 + (issValue / 100))) - 1) * 100;
+        const totalComBdi = wbTotal * (1 + (bdiPercent / 100));
+
+        grandTotal += totalComBdi;
+        const city = wb.municipio || 'Sem Município';
+        cityTotals[city] = (cityTotals[city] || 0) + totalComBdi;
+
+        newAnalyticsData.push({
+          id: wb.id,
+          total: totalComBdi,
+          city: city,
+          date: new Date(wb.created_at)
+        });
+      }
+
+      setAnalyticsData(newAnalyticsData);
+      setTotalBalance(grandTotal);
+
+      const processedCities = Object.entries(cityTotals)
+        .map(([name, value]) => ({
+          name,
+          value,
+          percentage: grandTotal > 0 ? (value / grandTotal) * 100 : 0,
+          color: ''
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+      setCityData(processedCities);
+
+
+
+    } catch (e) {
+      console.error("Erro ao processar analytics:", e);
     }
   };
 
@@ -179,6 +308,47 @@ export function Dashboard() {
     }
   };
 
+  const handleClone = async (wb: Workbook, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm(`Deseja criar uma cópia do orçamento "${wb.escola}"?`)) {
+      try {
+        // Criar o novo workbook
+        const newWb = await db.workbooks.create({
+          user_id: wb.user_id,
+          escola: wb.escola + " - Cópia",
+          municipio: wb.municipio,
+          sre: wb.sre,
+          cod_escola: wb.cod_escola,
+          iss: wb.iss,
+          servicos: wb.servicos
+        });
+
+        // Copiar os itens da última versão do workbook original
+        const originalVersions = await db.versions.list(wb.id);
+        if (originalVersions.length > 0) {
+          const latestVersion = originalVersions[0]; // array sorted by created_at DESC
+          const itemsToCopy = JSON.parse(latestVersion.items_json);
+          
+          if (itemsToCopy && itemsToCopy.length > 0) {
+            // A própria create cria uma versão V1
+            await db.versions.create(newWb.id, itemsToCopy);
+            
+            // Mas precisamos garantir que os itens também são salvos no draft atual (se a app carregar isso)
+            // No caso do nosso app, a `Editor.tsx` carrega o workbook, e se não tem state local, puxa as versões.
+            // Apenas criar a version já deve bastar para o Editor carregar.
+            // Para ser robusto, não tem draft, o draft está na versão.
+          }
+        }
+        
+        showToast("Orçamento clonado com sucesso!", "success");
+        loadData();
+      } catch (error) {
+        console.error(error);
+        showToast("Erro ao clonar o orçamento.", "error");
+      }
+    }
+  };
+
   const filteredWorkbooks = workbooks.filter(w => 
     w.escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
     w.municipio.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -211,20 +381,30 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto flex-1 p-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <main className="container mx-auto flex-1 p-3 md:py-6">
+        {/* ANALYTICS SECTION */}
+        <div className="mb-3">
+          <CityStatisticsCard 
+            totalBalance={totalBalance} 
+            cities={cityData} 
+            periodFilter={periodFilter}
+            setPeriodFilter={setPeriodFilter}
+          />
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
           <div className="relative w-full md:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input 
               type="text" 
               placeholder="Buscar por escola, município ou código..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+              className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-stretch gap-3 w-full md:w-auto">
             <button 
               onClick={() => setIsQuickEstimateOpen(true)}
               className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors shadow-sm font-medium"
@@ -244,7 +424,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredWorkbooks.map(wb => (
             <div 
               key={wb.id} 
@@ -262,18 +442,29 @@ export function Dashboard() {
               <h3 className="text-lg font-bold text-slate-800 line-clamp-2 mb-1 group-hover:text-emerald-700 transition-colors">
                 {wb.escola || 'Escola sem nome'}
               </h3>
-              <p className="text-sm text-slate-500 mb-4">{wb.municipio} - {wb.sre}</p>
+              <div className="flex justify-between items-center text-sm text-slate-500 mb-4">
+                <span className="truncate pr-2">{wb.municipio}</span>
+                <span className="shrink-0 text-xs bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-500">{wb.sre}</span>
+              </div>
               
               <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
                 <span className="text-xs text-slate-400 font-medium">Clique para abrir</span>
-                <button 
-                  onClick={(e) => handleDelete(wb.id, e)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Excluir Planilha"
-                >
-                  <Trash2 size={16} />
-                  <span className="text-xs font-bold">Excluir</span>
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={(e) => handleClone(wb, e)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    title="Clonar Planilha"
+                  >
+                    <Copy size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => handleDelete(wb.id, e)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Excluir Planilha"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
