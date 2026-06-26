@@ -135,15 +135,53 @@ export function Auth() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Órgão Central">Órgão Central</SelectItem>
+                        <SelectItem value="SRE Almenara">SRE Almenara</SelectItem>
+                        <SelectItem value="SRE Araçuaí">SRE Araçuaí</SelectItem>
+                        <SelectItem value="SRE Barbacena">SRE Barbacena</SelectItem>
+                        <SelectItem value="SRE Campo Belo">SRE Campo Belo</SelectItem>
+                        <SelectItem value="SRE Carangola">SRE Carangola</SelectItem>
+                        <SelectItem value="SRE Caratinga">SRE Caratinga</SelectItem>
+                        <SelectItem value="SRE Caxambu">SRE Caxambu</SelectItem>
+                        <SelectItem value="SRE Conselheiro Lafaiete">SRE Conselheiro Lafaiete</SelectItem>
+                        <SelectItem value="SRE Coronel Fabriciano">SRE Coronel Fabriciano</SelectItem>
+                        <SelectItem value="SRE Curvelo">SRE Curvelo</SelectItem>
+                        <SelectItem value="SRE Diamantina">SRE Diamantina</SelectItem>
+                        <SelectItem value="SRE Divinópolis">SRE Divinópolis</SelectItem>
+                        <SelectItem value="SRE Governador Valadares">SRE Governador Valadares</SelectItem>
+                        <SelectItem value="SRE Guanhães">SRE Guanhães</SelectItem>
+                        <SelectItem value="SRE Itajubá">SRE Itajubá</SelectItem>
+                        <SelectItem value="SRE Ituiutaba">SRE Ituiutaba</SelectItem>
+                        <SelectItem value="SRE Janaúba">SRE Janaúba</SelectItem>
+                        <SelectItem value="SRE Januária">SRE Januária</SelectItem>
+                        <SelectItem value="SRE Juiz De Fora">SRE Juiz De Fora</SelectItem>
+                        <SelectItem value="SRE Leopoldina">SRE Leopoldina</SelectItem>
+                        <SelectItem value="SRE Manhuaçu">SRE Manhuaçu</SelectItem>
                         <SelectItem value="SRE Metropolitana A">SRE Metropolitana A</SelectItem>
                         <SelectItem value="SRE Metropolitana B">SRE Metropolitana B</SelectItem>
                         <SelectItem value="SRE Metropolitana C">SRE Metropolitana C</SelectItem>
-                        <SelectItem value="SRE Caxambu">SRE Caxambu</SelectItem>
-                        <SelectItem value="SRE Carangola">SRE Carangola</SelectItem>
-                        <SelectItem value="SRE Varginha">SRE Varginha</SelectItem>
-                        <SelectItem value="SRE Uberlândia">SRE Uberlândia</SelectItem>
+                        <SelectItem value="SRE Monte Carmelo">SRE Monte Carmelo</SelectItem>
                         <SelectItem value="SRE Montes Claros">SRE Montes Claros</SelectItem>
-                        <SelectItem value="SRE Governador Valadares">SRE Governador Valadares</SelectItem>
+                        <SelectItem value="SRE Muriaé">SRE Muriaé</SelectItem>
+                        <SelectItem value="SRE Nova Era">SRE Nova Era</SelectItem>
+                        <SelectItem value="SRE Ouro Preto">SRE Ouro Preto</SelectItem>
+                        <SelectItem value="SRE Paracatu">SRE Paracatu</SelectItem>
+                        <SelectItem value="SRE Pará De Minas">SRE Pará De Minas</SelectItem>
+                        <SelectItem value="SRE Passos">SRE Passos</SelectItem>
+                        <SelectItem value="SRE Patos De Minas">SRE Patos De Minas</SelectItem>
+                        <SelectItem value="SRE Patrocínio">SRE Patrocínio</SelectItem>
+                        <SelectItem value="SRE Pirapora">SRE Pirapora</SelectItem>
+                        <SelectItem value="SRE Ponte Nova">SRE Ponte Nova</SelectItem>
+                        <SelectItem value="SRE Pouso Alegre">SRE Pouso Alegre</SelectItem>
+                        <SelectItem value="SRE Poços De Caldas">SRE Poços De Caldas</SelectItem>
+                        <SelectItem value="SRE Sete Lagoas">SRE Sete Lagoas</SelectItem>
+                        <SelectItem value="SRE São João Del Rei">SRE São João Del Rei</SelectItem>
+                        <SelectItem value="SRE São Sebastião Do Paraíso">SRE São Sebastião Do Paraíso</SelectItem>
+                        <SelectItem value="SRE Teófilo Otoni">SRE Teófilo Otoni</SelectItem>
+                        <SelectItem value="SRE Uberaba">SRE Uberaba</SelectItem>
+                        <SelectItem value="SRE Uberlândia">SRE Uberlândia</SelectItem>
+                        <SelectItem value="SRE Ubá">SRE Ubá</SelectItem>
+                        <SelectItem value="SRE Unaí">SRE Unaí</SelectItem>
+                        <SelectItem value="SRE Varginha">SRE Varginha</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
