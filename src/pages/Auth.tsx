@@ -240,11 +240,6 @@ export function Auth() {
               </button>
             )}
             
-            <p className="text-xs text-center text-slate-500 mt-4">
-              {isRegistering 
-                ? 'Para testar, preencha todos os campos e use qualquer senha.' 
-                : 'Para testar, use qualquer e-mail e senha cadastrados. (Mock DB)'}
-            </p>
           </form>
         </div>
       </div>
