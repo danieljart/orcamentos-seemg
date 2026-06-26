@@ -97,6 +97,25 @@ export const db = {
       });
       if (error) throw error;
     },
+    signInWithPasskey: async (): Promise<User> => {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPasskey();
+      if (authError) throw authError;
+
+      if (!authData?.user) throw new Error("Usuário não encontrado");
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+        
+      if (error) throw error;
+      return data as User;
+    },
+    registerPasskey: async (): Promise<void> => {
+      const { error } = await supabase.auth.registerPasskey();
+      if (error) throw error;
+    },
     updateUser: async (data: Partial<User>): Promise<User> => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Usuário não logado");

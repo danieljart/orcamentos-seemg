@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User as UserIcon, Save, HardHat } from 'lucide-react';
+import { ArrowLeft, User as UserIcon, Save, HardHat, Lock, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
 import type { User } from '../services/db';
 
@@ -166,6 +166,31 @@ export function Account() {
                   placeholder="Deixe em branco para não alterar"
                 />
               </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <Fingerprint size={20} className="text-emerald-600" />
+                Acesso por Biometria (Passkey)
+              </h3>
+              <p className="text-sm text-slate-500">
+                Você pode registrar seu dispositivo atual (celular, tablet ou notebook) para entrar usando sua impressão digital ou reconhecimento facial, sem precisar de senha!
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await db.auth.registerPasskey();
+                    showToast("Dispositivo registrado com sucesso!", "success");
+                  } catch (err: any) {
+                    showToast(err.message || "Erro ao registrar Passkey", "error");
+                  }
+                }}
+                className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 active:scale-[0.98]"
+              >
+                <Fingerprint size={20} />
+                Registrar este dispositivo
+              </button>
             </div>
 
             <div className="pt-6">

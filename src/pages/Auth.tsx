@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
-import { FileSpreadsheet, Lock, Mail, User as UserIcon, Award } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { FileSpreadsheet, Lock, Mail, User as UserIcon, Award, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
 
 export function Auth() {
@@ -217,6 +217,27 @@ export function Auth() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
                   Google
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      setLoading(true);
+                      const u = await db.auth.signInWithPasskey();
+                      if (u) {
+                        window.location.href = '/dashboard';
+                      }
+                    } catch (err: any) {
+                      setError(err.message || 'Erro ao entrar com Passkey');
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-4 border border-transparent rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Fingerprint size={20} />
+                  Entrar com Passkey (Digital/Face ID)
                 </button>
               </>
             )}
