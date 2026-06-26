@@ -18,6 +18,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024
+      },
       includeAssets: ['icon-192.png', 'icon-512.png', 'template.xlsx'],
       manifest: {
         name: 'Orçamentos SEEMG',
