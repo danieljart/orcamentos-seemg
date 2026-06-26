@@ -800,7 +800,7 @@ export function Editor() {
     try {
       const lastSavedParsed = JSON.parse(lastSavedItemsJson);
       if (serializeForCompare(lastSavedParsed) === serializeForCompare(selectedItems)) {
-        showToast("O rascunho atual já está salvo na nuvem.", "info");
+        showToast("O rascunho atual já está salvo na nuvem.", "success");
         return;
       }
     } catch (e) {

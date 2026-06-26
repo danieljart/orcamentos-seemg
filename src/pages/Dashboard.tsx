@@ -44,6 +44,7 @@ export function Dashboard() {
   
   const [cityData, setCityData] = useState<any[]>([]);
   const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
+  const [catalogDescMap, setCatalogDescMap] = useState<Map<string, string>>(new Map());
 
   const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, date: Date }[]>([]);
   const [userName, setUserName] = useState('');
