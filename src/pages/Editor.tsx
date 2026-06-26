@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2 } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -126,7 +126,13 @@ export function Editor() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  const [history, setHistory] = useState<SelectedItem[][]>([]);
+  interface HistoryState {
+    items: SelectedItem[];
+    description: string;
+    timestamp: Date;
+  }
+
+  const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [lastSavedItemsJson, setLastSavedItemsJson] = useState<string>('');
 
@@ -151,6 +157,12 @@ export function Editor() {
   // Toast Notification state
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importCandidateItems, setImportCandidateItems] = useState<SelectedItem[]>([]);
+  const [importSearchTerm, setImportSearchTerm] = useState('');
+  const [selectedImportItems, setSelectedImportItems] = useState<Set<string>>(new Set());
+
   const [userSre, setUserSre] = useState('');
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -158,13 +170,13 @@ export function Editor() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const updateItems = (newItems: SelectedItem[] | ((prev: SelectedItem[]) => SelectedItem[])) => {
+  const updateItems = (newItems: SelectedItem[] | ((prev: SelectedItem[]) => SelectedItem[]), description: string = 'Alteração no orçamento') => {
     setSelectedItems(prev => {
       let next = typeof newItems === 'function' ? newItems(prev) : newItems;
       next = [...next].sort((a, b) => a.item.localeCompare(b.item));
       setHistory(h => {
         const newHistory = h.slice(0, historyIndex + 1);
-        newHistory.push(next);
+        newHistory.push({ items: next, description, timestamp: new Date() });
         setHistoryIndex(newHistory.length - 1);
         return newHistory;
       });
@@ -174,12 +186,22 @@ export function Editor() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         if (historyIndex > 0) {
           setHistoryIndex(prev => {
             const nextIdx = prev - 1;
-            setSelectedItems(history[nextIdx]);
+            setSelectedItems(history[nextIdx].items);
+            return nextIdx;
+          });
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => {
+            const nextIdx = prev + 1;
+            setSelectedItems(history[nextIdx].items);
             return nextIdx;
           });
         }
@@ -317,7 +339,7 @@ export function Editor() {
           
           restoredItems.sort((a, b) => a.item.localeCompare(b.item));
           setSelectedItems(restoredItems);
-          setHistory([restoredItems]);
+          setHistory([{ items: restoredItems, description: 'Estado Inicial', timestamp: new Date() }]);
           setHistoryIndex(0);
         })
         .catch(console.error);
@@ -406,6 +428,7 @@ export function Editor() {
         customPrice: Number(customItemFields.price)
       })
     };
+    const isEditing = !isNewCustom && selectedItems.some(i => i.item === activeFormItem);
     updateItems(prev => {
       if (isNewCustom) {
         // Always append new custom item
@@ -414,7 +437,7 @@ export function Editor() {
       const exists = prev.find(i => i.item === activeFormItem);
       if (exists) return prev.map(i => i.item === activeFormItem ? newItem : i);
       return [...prev, newItem];
-    });
+    }, isEditing ? `Item ${sourceItem.item} editado` : `Item ${sourceItem.item} adicionado ao orçamento`);
     setActiveFormItem(null);
   };
 
@@ -449,12 +472,133 @@ export function Editor() {
         };
       }
       return i;
-    }));
+    }), `Ocorrências/valores de ${itemCode} alterados`);
     setActiveRightEditItem(null);
   };
 
   const handleRemoveItem = (itemCode: string) => {
-    updateItems(prev => prev.filter(i => i.item !== itemCode));
+    updateItems(prev => prev.filter(i => i.item !== itemCode), `Item ${itemCode} removido`);
+  };
+
+  const handleImportExcelCandidate = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(arrayBuffer);
+      const ws = wb.getWorksheet("Plan1");
+
+      if (!ws) {
+        showToast("Aba 'Plan1' não encontrada no arquivo.", "error");
+        return;
+      }
+
+      const itemMap = new Map<string, SelectedItem>();
+
+      ws.eachRow((row) => {
+        const itemCodeCell = row.getCell(1).value;
+        if (itemCodeCell) {
+          const itemCode = itemCodeCell.toString().trim();
+          let qty = row.getCell(4).value;
+          if (qty && typeof qty === 'object' && 'result' in qty) {
+             qty = (qty as any).result;
+          }
+          if (qty !== null && qty !== undefined && qty !== '') {
+            const memory = row.getCell(7).value?.toString() || '';
+            const location = row.getCell(8).value?.toString() || '';
+            
+            const isCustom = itemCode.startsWith('2600');
+            const lookupCode = isCustom ? '260001' : itemCode;
+            const catItem = catalog.find(c => c.item === lookupCode);
+            
+            if (catItem) {
+               let customData = null;
+               if (isCustom) {
+                 const customTitle = row.getCell(2).value;
+                 let titleStr = '';
+                 if (customTitle && typeof customTitle === 'object' && 'richText' in customTitle) {
+                   titleStr = (customTitle as any).richText.map((rt: any) => rt.text).join('');
+                 } else if (customTitle) {
+                   titleStr = customTitle.toString();
+                 }
+                 const customUnit = row.getCell(3).value?.toString() || '';
+                 const customPrice = parseFloat(row.getCell(5).value?.toString() || '0');
+                 customData = { code: itemCode, title: titleStr, unit: customUnit, price: customPrice };
+               }
+               
+               const occ = {
+                 id: Math.random().toString(36).substring(2, 11),
+                 quantity: qty.toString(),
+                 memory,
+                 location
+               };
+
+               if (itemMap.has(itemCode)) {
+                 itemMap.get(itemCode)!.occurrences.push(occ);
+               } else {
+                 itemMap.set(itemCode, {
+                   ...catItem,
+                   item: itemCode,
+                   occurrences: [occ],
+                   ...(isCustom && customData && {
+                     customCode: customData.code,
+                     customTitle: customData.title,
+                     customDescription: customData.title,
+                     customUnit: customData.unit,
+                     customPrice: customData.price
+                   })
+                 });
+               }
+            }
+          }
+        }
+      });
+      
+      const parsedItems = Array.from(itemMap.values());
+      if (parsedItems.length === 0) {
+        showToast("Nenhum item válido encontrado para importação.", "error");
+        return;
+      }
+      
+      setImportCandidateItems(parsedItems);
+      setSelectedImportItems(new Set(parsedItems.map(i => i.item)));
+      setImportSearchTerm('');
+      setIsImportModalOpen(true);
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao ler o arquivo XLSX.", "error");
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  const handleConfirmImport = () => {
+    const itemsToMerge = importCandidateItems.filter(i => selectedImportItems.has(i.item));
+    if (itemsToMerge.length === 0) {
+      setIsImportModalOpen(false);
+      return;
+    }
+    
+    updateItems(prev => {
+      const next = [...prev];
+      itemsToMerge.forEach(importItem => {
+        const existingIdx = next.findIndex(i => i.item === importItem.item);
+        if (existingIdx >= 0) {
+          next[existingIdx] = {
+            ...next[existingIdx],
+            occurrences: [...next[existingIdx].occurrences, ...importItem.occurrences]
+          };
+        } else {
+          next.push(importItem);
+        }
+      });
+      return next;
+    }, `${itemsToMerge.length} itens importados via XLSX`);
+    
+    setIsImportModalOpen(false);
+    showToast(`${itemsToMerge.length} itens importados com sucesso.`, 'success');
   };
 
   // ---- EXPORT LOGIC ----
@@ -642,6 +786,27 @@ export function Editor() {
 
   const saveToCloud = async () => {
     if (!workbook) return;
+
+    const serializeForCompare = (items: any[]) => JSON.stringify(items.map(i => ({
+      item: i.item_code || i.item, // handle both formats
+      occurrences: i.occurrences,
+      customCode: i.customCode,
+      customTitle: i.customTitle,
+      customDescription: i.customDescription,
+      customUnit: i.customUnit,
+      customPrice: i.customPrice
+    })));
+
+    try {
+      const lastSavedParsed = JSON.parse(lastSavedItemsJson);
+      if (serializeForCompare(lastSavedParsed) === serializeForCompare(selectedItems)) {
+        showToast("O rascunho atual já está salvo na nuvem.", "info");
+        return;
+      }
+    } catch (e) {
+      // If parsing fails, just proceed to save
+    }
+
     setIsSaving(true);
     try {
       await db.versions.create(workbook.id, selectedItems);
@@ -898,7 +1063,21 @@ export function Editor() {
             <h1 className="text-xl font-bold tracking-wide">Editor de Orçamento</h1>
           </div>
           <div className="hidden md:flex gap-3 items-center">
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border border-emerald-700 hover:border-emerald-500"
+              title="Histórico de Alterações (Ctrl+Z / Ctrl+Y)"
+            >
+              <History size={18} />
+              <span className="hidden sm:inline">Histórico</span>
+            </button>
+
             <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
+              <label className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 border border-slate-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer">
+                <FileSpreadsheet size={18} />
+                <span className="hidden sm:inline">Importar</span>
+                <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcelCandidate} />
+              </label>
               <button
                 onClick={handlePrint}
                 disabled={selectedItems.length === 0}
@@ -969,6 +1148,16 @@ export function Editor() {
             <div className="overflow-hidden flex-none w-12">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">ISS</span>
               <span className="text-sm font-medium text-slate-800 truncate block">{workbook.iss}%</span>
+            </div>
+            <div className="overflow-hidden flex-none min-w-[90px]">
+              <span className="text-[10px] uppercase font-bold text-emerald-600 block mb-0.5">Status</span>
+              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full inline-block truncate ${
+                workbook.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700' :
+                workbook.status === 'Em revisão' ? 'bg-amber-100 text-amber-700' :
+                'bg-sky-100 text-sky-700'
+              }`}>
+                {workbook.status || 'Em andamento'}
+              </span>
             </div>
             <div className="overflow-hidden flex-none w-10 text-right md:text-left">
               <span className="text-[10px] uppercase font-bold text-emerald-600 block">REV</span>
@@ -1093,7 +1282,24 @@ export function Editor() {
                                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-500 truncate mt-1">Local(is): {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
+                              {(item.occurrences && item.occurrences.length > 1) ? (
+                                <div className="mt-3 text-[11px] border-t border-dashed border-emerald-200 pt-2 flex flex-col gap-1 w-full">
+                                  {item.occurrences.map((occ) => {
+                                    const price = item.customPrice !== undefined ? item.customPrice : item.price;
+                                    const subtotal = (Number(evaluateMath(occ.quantity)) || 0) * price;
+                                    return (
+                                      <div key={occ.id} className="flex flex-wrap justify-between items-center text-slate-600 bg-emerald-50/30 p-1.5 rounded gap-2">
+                                        <span className="flex-1 min-w-[120px] truncate" title={occ.location}><b>Local:</b> {occ.location || '-'}</span>
+                                        <span className="flex-1 min-w-[100px] truncate" title={occ.memory}><b>Memória:</b> {occ.memory || '-'}</span>
+                                        <span className="w-[80px]"><b>Qtd:</b> {occ.quantity} {item.customUnit || item.unit}</span>
+                                        <span className="w-[120px] text-right font-medium text-emerald-700"><b>Subtotal:</b> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotal)}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-500 truncate mt-1">Local(is): {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
+                              )}
                             </div>
                             
                             {/* Layout Específico para Impressão */}
@@ -1165,50 +1371,54 @@ export function Editor() {
                                 </div>
                               </div>
                             )}
-                            {editFormOccurrences.map((occ, idx) => (
-                              <div key={occ.id} className="relative bg-white p-3 rounded border border-slate-200">
-                                <div className="absolute top-2 right-2 flex gap-1">
-                                  {editFormOccurrences.length > 1 && (
-                                    <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14}/></button>
-                                  )}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                              {editFormOccurrences.map((occ, idx) => (
+                                <div key={occ.id} className="relative bg-white p-3 rounded border border-slate-200">
+                                  <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                    {editFormOccurrences.length > 1 && (
+                                      <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1 bg-white rounded"><Trash2 size={14}/></button>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col gap-3">
+                                    <div className="grid grid-cols-2 gap-3 pr-6">
+                                      <div>
+                                        <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
+                                          <Calculator size={12} className="text-emerald-600"/> Memória {idx + 1}
+                                        </label>
+                                        <input
+                                          type="text"
+                                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                          placeholder="Ex: 2*5 + 10"
+                                          value={occ.memory}
+                                          onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({item.customUnit || item.unit})</label>
+                                        <input
+                                          type="number"
+                                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                                          placeholder="Qtd final"
+                                          value={occ.quantity}
+                                          onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção {idx + 1}</label>
+                                      <input
+                                        type="text"
+                                        list="locations-list"
+                                        className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                        placeholder="Ex: Bloco A, Sala 3"
+                                        value={occ.location}
+                                        onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                                  <div>
-                                    <label className="flex items-center gap-1 text-xs font-medium text-slate-600 mb-1">
-                                      <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                      placeholder="Ex: 2*5 + 10"
-                                      value={occ.memory}
-                                      onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Qtd. ({item.unit})</label>
-                                    <input
-                                      type="number"
-                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                                      placeholder="Qtd final"
-                                      value={occ.quantity}
-                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
-                                    />
-                                  </div>
-                                  <div className="md:col-span-2">
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Local de Intervenção {idx + 1}</label>
-                                    <input
-                                      type="text"
-                                      list="locations-list"
-                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                      placeholder="Ex: Bloco A, Sala 3"
-                                      value={occ.location}
-                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                             <div className="flex justify-between items-center mt-1">
                               <button onClick={() => addOccurrence(setEditFormOccurrences)} className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
                                 <Plus size={16}/> Adicionar Local
@@ -1267,8 +1477,8 @@ export function Editor() {
 
       {/* HEADER EDIT MODAL */}
       {isHeaderEditModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Edit2 className="text-emerald-600" /> Editar Dados da Obra
@@ -1285,8 +1495,8 @@ export function Editor() {
               setIsHeaderEditModalOpen(false);
               showToast("Dados atualizados com sucesso!", "success");
             }} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Escola Estadual</label>
                   <SchoolSearch 
                     value={headerForm.escola || ''} 
@@ -1307,7 +1517,7 @@ export function Editor() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cód. Escola</label>
                   <input type="text" value={headerForm.cod_escola || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Município</label>
                   <input type="text" value={headerForm.municipio || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
@@ -1315,7 +1525,7 @@ export function Editor() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">S.R.E.</label>
                   <input type="text" value={headerForm.sre || ''} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
                 </div>
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Serviços da Planilha</label>
                   <input type="text" value={headerForm.servicos || ''} onChange={e => setHeaderForm({...headerForm, servicos: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                 </div>
@@ -1326,22 +1536,30 @@ export function Editor() {
                 
                 <div className="col-span-full border-t border-slate-100 mt-2 pt-4">
                   <h3 className="text-sm font-semibold text-slate-700 mb-3">Informações Opcionais Adicionais</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+                    <div className="lg:col-span-4">
                       <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
                       <input type="text" value={headerForm.engenheiro || ''} onChange={e => setHeaderForm({...headerForm, engenheiro: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                       <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
                       <input type="text" value={headerForm.crea || ''} onChange={e => setHeaderForm({...headerForm, crea: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
                     </div>
-                    <div className="md:col-span-3">
+                    <div className="lg:col-span-3">
                       <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
                       <input type="date" value={headerForm.data_elaboracao || ''} onChange={e => setHeaderForm({...headerForm, data_elaboracao: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-1">
                       <label className="block text-sm font-medium text-slate-700 mb-1">REV</label>
                       <input type="number" min="0" value={headerForm.rev || '1'} onChange={e => setHeaderForm({...headerForm, rev: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    </div>
+                    <div className="lg:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                      <select value={headerForm.status || 'Em andamento'} onChange={e => setHeaderForm({...headerForm, status: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                        <option value="Em andamento">Em andamento</option>
+                        <option value="Em revisão">Em revisão</option>
+                        <option value="Finalizado">Finalizado</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -1360,7 +1578,137 @@ export function Editor() {
         </div>
       )}
 
-      {/* TOAST NOTIFICATION */}
+      {/* HISTÓRICO MODAL */}
+      {isHistoryModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <History className="text-emerald-600" size={20} /> Histórico de Alterações
+              </h2>
+              <button onClick={() => setIsHistoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-200">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1 flex flex-col gap-2">
+              {history.map((h, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setHistoryIndex(idx);
+                    setSelectedItems(history[idx].items);
+                  }}
+                  className={`w-full text-left p-3 rounded-xl border flex flex-col gap-1 transition-all ${idx === historyIndex ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className={`font-semibold text-sm ${idx === historyIndex ? 'text-emerald-800' : 'text-slate-700'}`}>
+                      {h.description}
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      {h.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  </div>
+                  {idx === historyIndex && (
+                    <span className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Estado Atual</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IMPORT XLSX MODAL */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <FileSpreadsheet className="text-emerald-600" size={20} /> Importar Itens da Planilha
+              </h2>
+              <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-200">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 border-b border-slate-100 bg-white">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 bg-white shadow-sm"
+                  placeholder="Buscar item para importar..."
+                  value={importSearchTerm}
+                  onChange={e => setImportSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1 bg-slate-50/50">
+              <div className="space-y-2">
+                {importCandidateItems
+                  .filter(i => {
+                    if (!importSearchTerm) return true;
+                    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                    const term = normalize(importSearchTerm);
+                    return normalize(i.customTitle || i.customDescription || i.description).includes(term) || i.item.includes(term);
+                  })
+                  .map(item => (
+                    <div key={item.item} className="bg-white border border-slate-200 p-3 rounded-xl flex gap-3 items-start hover:border-emerald-300 transition-colors cursor-pointer" onClick={() => {
+                      const newSet = new Set(selectedImportItems);
+                      if (newSet.has(item.item)) newSet.delete(item.item);
+                      else newSet.add(item.item);
+                      setSelectedImportItems(newSet);
+                    }}>
+                      <div className="pt-1">
+                        <input type="checkbox" checked={selectedImportItems.has(item.item)} onChange={() => {}} className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{item.customCode || item.item}</span>
+                          <span className="text-xs font-bold text-emerald-700">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
+                        </div>
+                        <p className="text-sm font-medium text-slate-800 line-clamp-2">{item.customTitle || item.customDescription || item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-white flex justify-between items-center">
+              <button 
+                onClick={() => {
+                  const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                  const term = normalize(importSearchTerm);
+                  const filtered = importCandidateItems.filter(i => {
+                    if (!importSearchTerm) return true;
+                    return normalize(i.customTitle || i.customDescription || i.description).includes(term) || i.item.includes(term);
+                  });
+                  
+                  const allFilteredSelected = filtered.every(i => selectedImportItems.has(i.item));
+                  
+                  const newSet = new Set(selectedImportItems);
+                  if (allFilteredSelected) {
+                    filtered.forEach(i => newSet.delete(i.item));
+                  } else {
+                    filtered.forEach(i => newSet.add(i.item));
+                  }
+                  setSelectedImportItems(newSet);
+                }}
+                className="text-sm font-medium text-slate-600 hover:text-emerald-700"
+              >
+                Selecionar/Desmarcar Visíveis
+              </button>
+              <div className="flex gap-3">
+                <button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                <button onClick={handleConfirmImport} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">
+                  Importar ({selectedImportItems.size}) Itens
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 pointer-events-none">
           <div className={`px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>

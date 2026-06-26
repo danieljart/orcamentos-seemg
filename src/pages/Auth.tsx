@@ -23,8 +23,7 @@ export function Auth() {
         throw new Error('Preencha todos os campos obrigatórios para cadastro.');
       }
       
-      const cleanEmail = email.split('@')[0].trim();
-      const finalEmail = `${cleanEmail}@educacao.mg.gov.br`;
+      const finalEmail = (email.includes('@') && !isRegistering) ? email.trim() : `${email.split('@')[0].trim()}@educacao.mg.gov.br`;
       
       let user;
       if (isRegistering) {
@@ -53,7 +52,6 @@ export function Auth() {
         <div className="bg-emerald-800 p-8 flex flex-col items-center justify-center text-white">
           <FileSpreadsheet size={48} className="text-emerald-300 mb-4" />
           <h1 className="text-2xl font-bold tracking-wide">Portal de Orçamentos SEE-MG</h1>
-          <p className="text-emerald-200/80 text-sm mt-2">Sistema de Gerenciamento na Nuvem</p>
         </div>
         
         <div className="p-8">
@@ -161,14 +159,19 @@ export function Auth() {
                 <input
                   type="text"
                   required
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-l-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
+                  className={`w-full pl-10 pr-3 py-2 border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow ${(!email.includes('@') || isRegistering) ? 'rounded-l-lg' : 'rounded-lg'}`}
                   placeholder="nome.sobrenome"
                   value={email}
-                  onChange={e => setEmail(e.target.value.replace(/@.*$/, ''))}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setEmail(isRegistering ? val.replace(/@.*$/, '') : val);
+                  }}
                 />
-                <span className="flex items-center px-3 bg-slate-100 border border-l-0 border-slate-300 text-slate-600 text-sm rounded-r-lg font-medium whitespace-nowrap">
-                  @educacao.mg.gov.br
-                </span>
+                {(!email.includes('@') || isRegistering) && (
+                  <span className="flex items-center px-3 bg-slate-100 border border-l-0 border-slate-300 text-slate-600 text-sm rounded-r-lg font-medium whitespace-nowrap">
+                    @educacao.mg.gov.br
+                  </span>
+                )}
               </div>
             </div>
 

@@ -24,6 +24,7 @@ create table public.workbooks (
   crea text,
   data_elaboracao text,
   rev text,
+  status text default 'Em andamento',
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );

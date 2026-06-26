@@ -21,6 +21,7 @@ export interface Workbook {
   crea?: string;
   data_elaboracao?: string;
   rev?: string;
+  status?: string;
   created_at: string;
   updated_at: string;
 }

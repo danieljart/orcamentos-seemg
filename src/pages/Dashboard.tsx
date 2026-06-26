@@ -10,6 +10,7 @@ import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio } from '../lib/iss';
 import { AccountSidebar } from '../components/AccountSidebar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const evaluateMath = (expr: any): string => {
   if (!expr && expr !== 0) return '';
@@ -27,7 +28,10 @@ const evaluateMath = (expr: any): string => {
 
 export function Dashboard() {
   const [workbooks, setWorkbooks] = useState<Workbook[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sreFilter, setSreFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVersionsModalOpen, setIsVersionsModalOpen] = useState(false);
   const [isQuickEstimateOpen, setIsQuickEstimateOpen] = useState(false);
@@ -36,8 +40,10 @@ export function Dashboard() {
   const [isAccountSidebarOpen, setIsAccountSidebarOpen] = useState(false);
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
+  const [currentDraftItems, setCurrentDraftItems] = useState<any[]>([]);
   
   const [cityData, setCityData] = useState<any[]>([]);
+  const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
 
   const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, date: Date }[]>([]);
   const [userName, setUserName] = useState('');
@@ -160,8 +166,14 @@ export function Dashboard() {
     try {
       const res = await fetch('/catalogo.json');
       const catalog = await res.json();
-      const catalogMap = new Map();
-      catalog.forEach((item: any) => catalogMap.set(item.item, item.price));
+      const newCatalogMap = new Map();
+      const newCatalogDescMap = new Map();
+      catalog.forEach((item: any) => {
+        newCatalogMap.set(item.item, item.price);
+        newCatalogDescMap.set(item.item, item.description);
+      });
+      setCatalogMap(newCatalogMap);
+      setCatalogDescMap(newCatalogDescMap);
 
       let grandTotal = 0;
       const cityTotals: Record<string, number> = {};
@@ -202,7 +214,7 @@ export function Dashboard() {
              customPrice = i.customPrice;
           }
 
-          const price = customPrice !== undefined ? customPrice : (catalogMap.get(code) || 0);
+          const price = customPrice !== undefined ? customPrice : (newCatalogMap.get(code) || 0);
           
           let qty = 0;
           if (parsedOccurrences && Array.isArray(parsedOccurrences)) {
@@ -252,6 +264,8 @@ export function Dashboard() {
 
     } catch (e) {
       console.error("Erro ao processar analytics:", e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -264,7 +278,134 @@ export function Dashboard() {
     setSelectedWorkbook(wb);
     const versions = await db.versions.list(wb.id);
     setWorkbookVersions(versions);
+    const items = await db.items.list(wb.id);
+    setCurrentDraftItems(items);
     setIsVersionsModalOpen(true);
+  };
+  
+  const calculateItemsTotal = (items: any[], iss: string) => {
+    let wbTotal = 0;
+    for (const i of items) {
+      const code = i.item_code || i.item;
+      let parsedOccurrences = i.occurrences;
+      let customPrice: number | undefined = undefined;
+
+      if (!parsedOccurrences && i.memory && typeof i.memory === 'string') {
+        if (i.memory.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(i.memory);
+            if (parsed.occurrences) parsedOccurrences = parsed.occurrences;
+            if (parsed.custom && parsed.custom.price !== undefined) customPrice = parsed.custom.price;
+          } catch (e) {}
+        } else if (i.memory.startsWith('[')) {
+          try {
+            parsedOccurrences = JSON.parse(i.memory);
+          } catch (e) {}
+        }
+      }
+
+      if (i.customPrice !== undefined) customPrice = i.customPrice;
+
+      const price = customPrice !== undefined ? customPrice : (catalogMap.get(code) || 0);
+      
+      let qty = 0;
+      if (parsedOccurrences && Array.isArray(parsedOccurrences)) {
+        qty = parsedOccurrences.reduce((sum: number, occ: any) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+      } else {
+        qty = Number(evaluateMath(i.quantity || '0')) || 0;
+      }
+
+      wbTotal += qty * price;
+    }
+
+    let bRate = 0.2443;
+    if (iss === '2') bRate = 0.2246;
+    else if (iss === '2.5') bRate = 0.2279;
+    else if (iss === '3') bRate = 0.2312;
+    else if (iss === '4') bRate = 0.2377;
+    else if (iss === '5') bRate = 0.2443;
+    
+    return wbTotal * (1 + bRate);
+  };
+
+  const getVersionDiff = (vItemsJson: string) => {
+    try {
+      const vItems = typeof vItemsJson === 'string' ? JSON.parse(vItemsJson) : vItemsJson;
+      const vMap = new Map<string, any>(vItems.map((i: any) => [i.item_code || i.item, i]));
+      const currMap = new Map<string, any>(currentDraftItems.map(i => [i.item_code || i.item, i]));
+      
+      let added = 0;
+      let removed = 0;
+      let changed = 0;
+      
+      const changesDetails: { type: 'added' | 'removed' | 'changed', title: string, oldVal: number, newVal: number }[] = [];
+
+      const getItemTotal = (item: any) => {
+        let qty = 0;
+        let parsedOccurrences = item.occurrences;
+        let customPrice: number | undefined = undefined;
+        
+        if (item.customPrice !== undefined) customPrice = item.customPrice;
+        
+        if (!parsedOccurrences && item.memory && typeof item.memory === 'string') {
+          if (item.memory.startsWith('{')) {
+            try {
+              const parsed = JSON.parse(item.memory);
+              if (parsed.occurrences) parsedOccurrences = parsed.occurrences;
+              if (parsed.custom && parsed.custom.price !== undefined) customPrice = parsed.custom.price;
+            } catch (e) {}
+          } else if (item.memory.startsWith('[')) {
+            try {
+              parsedOccurrences = JSON.parse(item.memory);
+            } catch (e) {}
+          }
+        }
+
+        if (parsedOccurrences && typeof parsedOccurrences !== 'string') {
+          qty = parsedOccurrences.reduce((sum: number, occ: any) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+        } else if (typeof parsedOccurrences === 'string') {
+          try {
+            qty = JSON.parse(parsedOccurrences).reduce((sum: number, occ: any) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+          } catch (e) {
+             qty = Number(evaluateMath(item.quantity || '0')) || 0;
+          }
+        } else {
+          qty = Number(evaluateMath(item.quantity || '0')) || 0;
+        }
+        
+        const code = item.item_code || item.item;
+        const price = customPrice !== undefined ? customPrice : (catalogMap.get(code) || 0);
+        
+        return qty * price;
+      };
+
+      currMap.forEach((curr, code) => {
+        if (!vMap.has(code)) {
+          added++;
+          changesDetails.push({ type: 'added', title: curr.customTitle || curr.description || curr.item || catalogDescMap.get(code) || code, oldVal: 0, newVal: getItemTotal(curr) });
+        } else {
+          const v = vMap.get(code);
+          if (JSON.stringify(curr.occurrences) !== JSON.stringify(v.occurrences)) {
+            changed++;
+            changesDetails.push({ type: 'changed', title: curr.customTitle || curr.description || curr.item || catalogDescMap.get(code) || code, oldVal: getItemTotal(v), newVal: getItemTotal(curr) });
+          }
+        }
+      });
+
+      vMap.forEach((v, code) => {
+        if (!currMap.has(code)) {
+          removed++;
+          changesDetails.push({ type: 'removed', title: v.customTitle || v.description || v.item || catalogDescMap.get(code) || code, oldVal: getItemTotal(v), newVal: 0 });
+        }
+      });
+
+      const vTotal = calculateItemsTotal(vItems, selectedWorkbook?.iss || '5');
+      const currTotal = calculateItemsTotal(currentDraftItems, selectedWorkbook?.iss || '5');
+
+      return { added, removed, changed, changesDetails, vTotal, currTotal };
+    } catch (e) {
+      return { added: 0, removed: 0, changed: 0, changesDetails: [], vTotal: 0, currTotal: 0 };
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -423,11 +564,16 @@ export function Dashboard() {
     }
   };
 
-  const filteredWorkbooks = workbooks.filter(w => 
-    w.escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.municipio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.cod_escola.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const availableSREs = Array.from(new Set(workbooks.map(w => w.sre).filter(Boolean))).sort();
+
+  const filteredWorkbooks = workbooks.filter(w => {
+    const matchSearch = w.escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        w.municipio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        w.cod_escola.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchStatus = statusFilter && statusFilter !== 'all' ? (w.status || 'Em andamento').toLowerCase() === statusFilter.toLowerCase() : true;
+    const matchSRE = sreFilter && sreFilter !== 'all' ? w.sre === sreFilter : true;
+    return matchSearch && matchStatus && matchSRE;
+  });
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
@@ -520,15 +666,41 @@ export function Dashboard() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
-          <div className="relative w-full md:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Buscar por escola, município ou código..." 
-              className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+          <div className="flex flex-col md:flex-row flex-1 gap-3 w-full md:mr-4">
+            <div className="relative w-full flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Buscar por escola, município ou código..." 
+                className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <Select value={statusFilter || 'all'} onValueChange={val => setStatusFilter(val === 'all' ? '' : val)}>
+              <SelectTrigger className="w-[180px] !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                <SelectValue placeholder="Status (Todos)" />
+              </SelectTrigger>
+              <SelectContent position="popper" sideOffset={4}>
+                <SelectItem value="all">Status (Todos)</SelectItem>
+                <SelectItem value="Em andamento">Em andamento</SelectItem>
+                <SelectItem value="Em revisão">Em revisão</SelectItem>
+                <SelectItem value="Finalizado">Finalizado</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
+              <SelectTrigger className="w-[180px] !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                <SelectValue placeholder="SRE (Todas)" />
+              </SelectTrigger>
+              <SelectContent position="popper" sideOffset={4}>
+                <SelectItem value="all">SRE (Todas)</SelectItem>
+                {availableSREs.map(sre => (
+                  <SelectItem key={sre} value={sre}>{sre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="flex flex-wrap items-stretch gap-3 w-full md:w-auto">
@@ -552,51 +724,86 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredWorkbooks.map(wb => {
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col gap-3 animate-pulse">
+                <div className="flex justify-between items-start">
+                  <div className="h-5 bg-slate-200 rounded w-16"></div>
+                  <div className="h-5 bg-slate-200 rounded w-20"></div>
+                </div>
+                <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+                <div className="h-8 bg-emerald-100 rounded w-1/3"></div>
+                <div className="flex justify-between items-center mt-2">
+                  <div className="h-4 bg-slate-200 rounded w-24"></div>
+                  <div className="h-4 bg-slate-200 rounded w-12"></div>
+                </div>
+              </div>
+            ))
+          ) : filteredWorkbooks.map(wb => {
             const wbAnalytics = analyticsData.find(a => a.id === wb.id);
             const totalValue = wbAnalytics ? wbAnalytics.total : 0;
             return (
             <div 
               key={wb.id} 
               onClick={() => handleOpenVersions(wb)}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
             >
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start">
                 <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">
                   {wb.cod_escola || 'S/ COD'}
                 </span>
-                <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
-                  {new Date(wb.created_at).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-800 line-clamp-2 mb-1 group-hover:text-emerald-700 transition-colors">
-                {wb.escola || 'Escola sem nome'}
-              </h3>
-              <div className="text-lg font-bold text-emerald-600 mb-2">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
-              </div>
-              <div className="flex justify-between items-center text-sm text-slate-500 mb-4">
-                <span className="truncate pr-2">{wb.municipio}</span>
-                <span className="shrink-0 text-xs bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-500">{wb.sre}</span>
+                <div className="flex gap-2 items-center">
+                  <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
+                    wb.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700' :
+                    wb.status === 'Em revisão' ? 'bg-amber-100 text-amber-700' :
+                    'bg-sky-100 text-sky-700'
+                  }`}>
+                    {wb.status || 'Em andamento'}
+                  </span>
+                  <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded hidden sm:inline-block">
+                    {new Date(wb.created_at).toLocaleDateString('pt-BR')}
+                  </span>
+                  
+                  <div className="flex gap-0.5 ml-1">
+                    <button 
+                      onClick={(e) => handleClone(wb, e)}
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                      title="Clonar Planilha"
+                    >
+                      <Copy size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => handleDelete(wb.id, e)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Excluir Planilha"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
               
-              <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
-                <span className="text-xs text-slate-400 font-medium">Clique para abrir</span>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={(e) => handleClone(wb, e)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                    title="Clonar Planilha"
-                  >
-                    <Copy size={16} />
-                  </button>
-                  <button 
-                    onClick={(e) => handleDelete(wb.id, e)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Excluir Planilha"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+              <h3 className="text-lg font-bold text-slate-800 line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                {wb.escola || 'Escola sem nome'}
+              </h3>
+              
+              <div className="flex items-center justify-between mt-auto w-full gap-1">
+                <div className="text-base sm:text-lg font-bold text-emerald-600 flex-1 truncate text-left">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+                </div>
+                
+                <div className="w-px h-4 sm:h-5 bg-slate-200 hidden sm:block"></div>
+                
+                <div className="text-xs sm:text-[13px] font-medium uppercase text-slate-500 truncate flex-1 text-center">
+                  {wb.municipio}
+                </div>
+                
+                <div className="w-px h-4 sm:h-5 bg-slate-200 hidden sm:block"></div>
+                
+                <div className="flex-1 flex justify-end shrink-0 min-w-0">
+                  <span className="text-[10px] sm:text-xs bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-500 truncate max-w-full">
+                    {wb.sre}
+                  </span>
                 </div>
               </div>
             </div>
@@ -745,21 +952,74 @@ export function Dashboard() {
                 <div className="mt-6">
                   <h3 className="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Histórico na Nuvem</h3>
                   <div className="space-y-3">
-                    {workbookVersions.map(v => (
-                      <div 
-                        key={v.id}
-                        onClick={() => navigate(`/editor/${selectedWorkbook.id}?version=${v.id}`)}
-                        className="bg-white border border-slate-200 p-4 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex justify-between items-center group"
-                      >
-                        <div>
-                          <h4 className="font-medium text-slate-700">Versão Salva</h4>
-                          <p className="text-xs text-slate-500 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
+                    {workbookVersions.map(v => {
+                      const diff = getVersionDiff(v.items_json);
+                      const hasChanges = diff.added > 0 || diff.removed > 0 || diff.changed > 0 || Math.abs(diff.vTotal - diff.currTotal) > 0.01;
+                      
+                      const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+                      
+                      return (
+                        <div 
+                          key={v.id}
+                          onClick={() => navigate(`/editor/${selectedWorkbook.id}?version=${v.id}`)}
+                          className="bg-white border border-slate-200 p-4 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3 group"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium text-slate-700">Versão Salva</h4>
+                            <p className="text-xs text-slate-500 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
+                            
+                            {hasChanges ? (
+                              <div className="flex flex-col gap-1.5 mt-3 border-t border-slate-100 pt-3">
+                                {diff.changesDetails.map((c, i) => (
+                                  <div key={i} className="text-[11px] flex flex-col p-1.5 bg-slate-50 rounded border border-slate-100">
+                                    <span className="font-medium text-slate-700 truncate" title={c.title}>
+                                      {c.type === 'added' && <span className="text-emerald-600 font-bold mr-1">[NOVO]</span>}
+                                      {c.type === 'removed' && <span className="text-red-500 font-bold mr-1">[REMOVIDO]</span>}
+                                      {c.type === 'changed' && <span className="text-amber-600 font-bold mr-1">[ALTERADO]</span>}
+                                      {c.title}
+                                    </span>
+                                    <div className="mt-0.5">
+                                      {c.type === 'changed' && (
+                                        <span className="text-[10px] text-slate-500">
+                                          {Math.abs(c.oldVal - c.newVal) > 0.01 ? (
+                                            <>De <span className="line-through">{formatter.format(c.oldVal)}</span> para <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
+                                          ) : (
+                                            <>Detalhes alterados sem impacto no subtotal: <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
+                                          )}
+                                        </span>
+                                      )}
+                                      {c.type === 'added' && (
+                                        <span className="text-[10px] text-emerald-600 font-medium">
+                                          {formatter.format(c.newVal)}
+                                        </span>
+                                      )}
+                                      {c.type === 'removed' && (
+                                        <span className="text-[10px] text-red-500 font-medium">
+                                          {formatter.format(c.oldVal)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="mt-2 text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold inline-block">Igual ao Rascunho Atual</div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="text-sm font-bold text-slate-800">{formatter.format(diff.vTotal)}</div>
+                            {hasChanges && (
+                              <div className="text-[10px] font-medium text-slate-500 line-through decoration-slate-400 opacity-70">
+                                Rascunho: {formatter.format(diff.currTotal)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-slate-300 group-hover:text-emerald-600 transition-colors hidden md:block">
+                            <LogOut className="rotate-180" size={18} />
+                          </div>
                         </div>
-                        <div className="text-slate-300 group-hover:text-emerald-600 transition-colors">
-                          <LogOut className="rotate-180" size={18} />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
