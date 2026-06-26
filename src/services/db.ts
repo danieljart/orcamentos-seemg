@@ -88,6 +88,15 @@ export const db = {
       if (error) throw error;
       return data as User;
     },
+    signInWithGoogle: async (): Promise<void> => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://orcamentos-seemg.netlify.app'
+        }
+      });
+      if (error) throw error;
+    },
     updateUser: async (data: Partial<User>): Promise<User> => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Usuário não logado");
