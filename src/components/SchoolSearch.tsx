@@ -26,8 +26,8 @@ export function SchoolSearch({ userSre, value, onChange, onSelect, placeholder =
   useEffect(() => {
     let filtered = escolasData as Escola[];
     
-    // Default filter to user SRE if provided
-    if (userSre) {
+    // Default filter to user SRE if provided and not Órgão Central
+    if (userSre && userSre !== 'Órgão Central') {
       filtered = filtered.filter(e => e.sre.toLowerCase() === userSre.toLowerCase());
     }
 

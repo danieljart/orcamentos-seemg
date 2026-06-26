@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FileSpreadsheet, Lock, Mail, User as UserIcon, Award, Fingerprint } from 'lucide-react';
 import { db } from '../services/db';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function Auth() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -125,26 +126,26 @@ export function Auth() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">SRE</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                       <Award size={16} className="text-slate-400" />
                     </div>
-                    <select
-                      required={isRegistering}
-                      className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow bg-white appearance-none"
-                      value={sre}
-                      onChange={e => setSre(e.target.value)}
-                    >
-                      <option value="" disabled>Selecione a SRE</option>
-                      <option value="SRE Metropolitana A">SRE Metropolitana A</option>
-                      <option value="SRE Metropolitana B">SRE Metropolitana B</option>
-                      <option value="SRE Metropolitana C">SRE Metropolitana C</option>
-                      <option value="SRE Caxambu">SRE Caxambu</option>
-                      <option value="SRE Carangola">SRE Carangola</option>
-                      <option value="SRE Varginha">SRE Varginha</option>
-                      <option value="SRE Uberlândia">SRE Uberlândia</option>
-                      <option value="SRE Montes Claros">SRE Montes Claros</option>
-                      <option value="SRE Governador Valadares">SRE Governador Valadares</option>
-                    </select>
+                    <Select value={sre} onValueChange={setSre} required={isRegistering}>
+                      <SelectTrigger className="w-full pl-10 pr-3 h-[42px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                        <SelectValue placeholder="Selecione a SRE" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Órgão Central">Órgão Central</SelectItem>
+                        <SelectItem value="SRE Metropolitana A">SRE Metropolitana A</SelectItem>
+                        <SelectItem value="SRE Metropolitana B">SRE Metropolitana B</SelectItem>
+                        <SelectItem value="SRE Metropolitana C">SRE Metropolitana C</SelectItem>
+                        <SelectItem value="SRE Caxambu">SRE Caxambu</SelectItem>
+                        <SelectItem value="SRE Carangola">SRE Carangola</SelectItem>
+                        <SelectItem value="SRE Varginha">SRE Varginha</SelectItem>
+                        <SelectItem value="SRE Uberlândia">SRE Uberlândia</SelectItem>
+                        <SelectItem value="SRE Montes Claros">SRE Montes Claros</SelectItem>
+                        <SelectItem value="SRE Governador Valadares">SRE Governador Valadares</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </>

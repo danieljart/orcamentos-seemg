@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
@@ -41,7 +41,8 @@ export function Dashboard() {
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
   const [currentDraftItems, setCurrentDraftItems] = useState<any[]>([]);
-  
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
+  const [editingVersionName, setEditingVersionName] = useState<string>('');
   const [cityData, setCityData] = useState<any[]>([]);
   const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
   const [catalogDescMap, setCatalogDescMap] = useState<Map<string, string>>(new Map());
@@ -387,8 +388,12 @@ export function Dashboard() {
         } else {
           const v = vMap.get(code);
           if (JSON.stringify(curr.occurrences) !== JSON.stringify(v.occurrences)) {
-            changed++;
-            changesDetails.push({ type: 'changed', title: curr.customTitle || curr.description || curr.item || catalogDescMap.get(code) || code, oldVal: getItemTotal(v), newVal: getItemTotal(curr) });
+            const oldVal = getItemTotal(v);
+            const newVal = getItemTotal(curr);
+            if (Math.abs(oldVal - newVal) > 0.01) {
+              changed++;
+              changesDetails.push({ type: 'changed', title: curr.customTitle || curr.description || curr.item || catalogDescMap.get(code) || code, oldVal, newVal });
+            }
           }
         }
       });
@@ -573,6 +578,37 @@ export function Dashboard() {
     }
   };
 
+  const handleEditVersion = (e: React.MouseEvent, v: WorkbookVersion) => {
+    e.stopPropagation();
+    setEditingVersionId(v.id);
+    setEditingVersionName(v.name || 'Versão Salva');
+  };
+
+  const handleSaveVersionName = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await db.versions.update(id, { name: editingVersionName });
+      setWorkbookVersions(prev => prev.map(v => v.id === id ? { ...v, name: editingVersionName } : v));
+      setEditingVersionId(null);
+      showToast("Nome da versão atualizado!", "success");
+    } catch (err) {
+      showToast("Erro ao renomear versão", "error");
+    }
+  };
+
+  const handleDeleteVersion = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm("Tem certeza que deseja excluir esta versão permanentemente?")) {
+      try {
+        await db.versions.delete(id);
+        setWorkbookVersions(prev => prev.filter(v => v.id !== id));
+        showToast("Versão excluída", "success");
+      } catch (err) {
+        showToast("Erro ao excluir versão", "error");
+      }
+    }
+  };
+
   const availableSREs = Array.from(new Set(workbooks.map(w => w.sre).filter(Boolean))).sort();
 
   const filteredWorkbooks = workbooks.filter(w => {
@@ -676,60 +712,62 @@ export function Dashboard() {
           />
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
-          <div className="flex flex-col md:flex-row flex-1 gap-3 w-full md:mr-4">
-            <div className="relative w-full flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-              <input 
-                type="text" 
-                placeholder="Buscar por escola, município ou código..." 
-                className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <Select value={statusFilter || 'all'} onValueChange={val => setStatusFilter(val === 'all' ? '' : val)}>
-              <SelectTrigger className="w-[180px] !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
-                <SelectValue placeholder="Status (Todos)" />
-              </SelectTrigger>
-              <SelectContent position="popper" sideOffset={4}>
-                <SelectItem value="all">Status (Todos)</SelectItem>
-                <SelectItem value="Em andamento">Em andamento</SelectItem>
-                <SelectItem value="Em revisão">Em revisão</SelectItem>
-                <SelectItem value="Finalizado">Finalizado</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
-              <SelectTrigger className="w-[180px] !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
-                <SelectValue placeholder="SRE (Todas)" />
-              </SelectTrigger>
-              <SelectContent position="popper" sideOffset={4}>
-                <SelectItem value="all">SRE (Todas)</SelectItem>
-                {availableSREs.map(sre => (
-                  <SelectItem key={sre} value={sre}>{sre}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="flex flex-col md:flex-row gap-3 mb-3 w-full items-start">
+          <div className="w-full md:w-[calc(50%-0.375rem)] lg:w-[calc(33.333333%-0.5rem)] shrink-0 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input 
+              type="text" 
+              placeholder="Buscar por escola, município ou código..." 
+              className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all h-[42px]"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
           
-          <div className="flex flex-wrap items-stretch gap-3 w-full md:w-auto">
+          <div className="flex-1 w-full flex flex-wrap xl:flex-nowrap gap-3">
+             <div className="flex-1 min-w-[140px]">
+               <Select value={statusFilter || 'all'} onValueChange={val => setStatusFilter(val === 'all' ? '' : val)}>
+                 <SelectTrigger className="w-full !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                   <SelectValue placeholder="Status (Todos)" />
+                 </SelectTrigger>
+                 <SelectContent position="popper" sideOffset={4}>
+                   <SelectItem value="all">Status (Todos)</SelectItem>
+                   <SelectItem value="Em andamento">Em andamento</SelectItem>
+                   <SelectItem value="Em revisão">Em revisão</SelectItem>
+                   <SelectItem value="Finalizado">Finalizado</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+
+             <div className="flex-1 min-w-[140px]">
+               <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
+                 <SelectTrigger className="w-full !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                   <SelectValue placeholder="SRE (Todas)" />
+                 </SelectTrigger>
+                 <SelectContent position="popper" sideOffset={4}>
+                   <SelectItem value="all">SRE (Todas)</SelectItem>
+                   {availableSREs.map(sre => (
+                     <SelectItem key={sre} value={sre}>{sre}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+
             <button 
               onClick={() => setIsQuickEstimateOpen(true)}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors shadow-sm font-medium"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 h-[42px] rounded-lg hover:bg-indigo-100 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
             >
-              <Zap size={18} /> Orçamento Rápido
+              <Zap size={16} /> Rápido
             </button>
-            <label className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm font-medium cursor-pointer">
-              <Upload size={18} /> Importar XLSX
+            <label className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 px-2 h-[42px] rounded-lg hover:bg-slate-50 transition-colors shadow-sm font-medium cursor-pointer whitespace-nowrap text-sm">
+              <Upload size={16} /> Importar
               <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
             </label>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm font-medium"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-emerald-600 text-white px-2 h-[42px] rounded-lg hover:bg-emerald-700 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
             >
-              <Plus size={18} /> Novo Orçamento
+              <Plus size={16} /> Novo
             </button>
           </div>
         </div>
@@ -860,6 +898,7 @@ export function Dashboard() {
                       setFormCodEscola(escola.codigo);
                       setFormMunicipio(escola.municipio);
                       setFormISS(getIssForMunicipio(escola.municipio));
+                      setFormSRE(escola.sre);
                     }} 
                   />
                 </div>
@@ -973,14 +1012,37 @@ export function Dashboard() {
                         <div 
                           key={v.id}
                           onClick={() => navigate(`/editor/${selectedWorkbook.id}?version=${v.id}`)}
-                          className="bg-white border border-slate-200 p-4 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3 group"
+                          className="bg-white border border-slate-200 p-3 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-2 group"
                         >
                           <div className="flex-1 w-full">
-                            <h4 className="font-medium text-slate-700">Versão Salva</h4>
+                            <div className="flex items-center gap-2">
+                              {editingVersionId === v.id ? (
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <input 
+                                    type="text" 
+                                    value={editingVersionName} 
+                                    onChange={e => setEditingVersionName(e.target.value)} 
+                                    className="border border-slate-300 rounded px-2 py-1 text-sm font-medium text-slate-700 w-48 focus:ring-2 focus:ring-emerald-500 outline-none"
+                                    autoFocus
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') handleSaveVersionName(e, v.id);
+                                    }}
+                                  />
+                                  <button onClick={(e) => handleSaveVersionName(e, v.id)} className="text-emerald-600 hover:text-emerald-700 p-1">
+                                    <Check size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <h4 className="font-medium text-slate-700">{v.name || 'Versão Salva'}</h4>
+                              )}
+                              {!hasChanges && (
+                                <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold inline-block">Igual ao Rascunho Atual</span>
+                              )}
+                            </div>
                             <p className="text-xs text-slate-500 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
                             
-                            {hasChanges ? (
-                              <div className="flex flex-col gap-1.5 mt-3 border-t border-slate-100 pt-3">
+                            {hasChanges && (
+                              <div className="flex flex-col gap-1.5 mt-2 border-t border-slate-100 pt-2">
                                 {diff.changesDetails.map((c, i) => (
                                   <div key={i} className="text-[11px] flex flex-col p-2 bg-slate-50 rounded border border-slate-100">
                                     <span className="font-medium text-slate-700 break-words whitespace-pre-wrap leading-relaxed" title={c.title}>
@@ -992,11 +1054,7 @@ export function Dashboard() {
                                     <div className="mt-1">
                                       {c.type === 'changed' && (
                                         <span className="text-[10px] text-slate-500">
-                                          {Math.abs(c.oldVal - c.newVal) > 0.01 ? (
-                                            <>De <span className="line-through">{formatter.format(c.oldVal)}</span> para <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
-                                          ) : (
-                                            <>Detalhes alterados sem impacto no subtotal: <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
-                                          )}
+                                          <>De <span className="line-through">{formatter.format(c.oldVal)}</span> para <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
                                         </span>
                                       )}
                                       {c.type === 'added' && (
@@ -1013,20 +1071,36 @@ export function Dashboard() {
                                   </div>
                                 ))}
                               </div>
-                            ) : (
-                              <div className="mt-2 text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold inline-block">Igual ao Rascunho Atual</div>
                             )}
                           </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <div className="text-sm font-bold text-slate-800">{formatter.format(diff.vTotal)}</div>
-                            {hasChanges && (
-                              <div className="text-[10px] font-medium text-slate-500 line-through decoration-slate-400 opacity-70">
-                                Rascunho: {formatter.format(diff.currTotal)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-slate-300 group-hover:text-emerald-600 transition-colors hidden md:block">
-                            <LogOut className="rotate-180" size={18} />
+                          <div className="flex flex-col md:items-end justify-center gap-2">
+                             <div className="flex items-center justify-end gap-2 w-full">
+                               <button 
+                                 onClick={(e) => handleEditVersion(e, v)}
+                                 className="text-slate-400 hover:text-indigo-600 transition-colors p-1"
+                                 title="Renomear versão"
+                               >
+                                 <Edit2 size={16} />
+                               </button>
+                               <button 
+                                 onClick={(e) => handleDeleteVersion(e, v.id)}
+                                 className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                                 title="Excluir versão"
+                               >
+                                 <Trash2 size={16} />
+                               </button>
+                               <div className="text-slate-300 group-hover:text-emerald-600 transition-colors hidden md:block ml-1">
+                                 <LogOut className="rotate-180" size={18} />
+                               </div>
+                             </div>
+                             <div className="flex flex-col items-end gap-1">
+                               <div className="text-sm font-bold text-slate-800">{formatter.format(diff.vTotal)}</div>
+                               {hasChanges && (
+                                 <div className="text-[10px] font-medium text-slate-500 line-through decoration-slate-400 opacity-70">
+                                   Rascunho: {formatter.format(diff.currTotal)}
+                                 </div>
+                               )}
+                             </div>
                           </div>
                         </div>
                       );

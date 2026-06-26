@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User as UserIcon, Save, HardHat, Fingerprint, X, LogOut } from 'lucide-react';
+import { User as UserIcon, Save, HardHat, Fingerprint, X, LogOut, CheckCircle2 } from 'lucide-react';
 import { db } from '../services/db';
 import type { User } from '../services/db';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface AccountSidebarProps {
   isOpen: boolean;
@@ -16,8 +17,16 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [hasPasskey, setHasPasskey] = useState(false);
+  const [isCurrentDeviceRegistered, setIsCurrentDeviceRegistered] = useState(false);
+  const [originalData, setOriginalData] = useState({ nome: '', crea: '', sre: '', email: '' });
   
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const hasChanges = nome !== originalData.nome || 
+                     crea !== originalData.crea || 
+                     sre !== originalData.sre || 
+                     email !== originalData.email || 
+                     senha !== '';
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -31,10 +40,17 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
       setCrea(u.crea || '');
       setSre(u.sre || '');
       setEmail(u.email || '');
+      setOriginalData({
+        nome: u.nome || '',
+        crea: u.crea || '',
+        sre: u.sre || '',
+        email: u.email || ''
+      });
       
       try {
         const passkeys = await db.auth.listPasskeys();
         setHasPasskey(passkeys.length > 0);
+        setIsCurrentDeviceRegistered(localStorage.getItem('passkey_registered') === 'true');
       } catch (err) {
         // ignore
       }
@@ -52,6 +68,12 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
     try {
       const updates: Partial<User> = { nome, crea, sre, email };
       await db.auth.updateUser(updates);
+      
+      if (senha) {
+        await db.auth.updatePassword(senha);
+      }
+      
+      setOriginalData({ nome, crea, sre, email });
       showToast("Dados atualizados com sucesso!", "success");
       setSenha('');
     } catch (error) {
@@ -140,12 +162,23 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">SRE</label>
-                <input
-                  type="text"
-                  value={sre}
-                  onChange={(e) => setSre(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 text-sm"
-                />
+                <Select value={sre} onValueChange={setSre}>
+                  <SelectTrigger className="w-full px-3 h-[42px] bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-700 text-sm">
+                    <SelectValue placeholder="Selecione a SRE" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Órgão Central">Órgão Central</SelectItem>
+                    <SelectItem value="SRE Metropolitana A">SRE Metropolitana A</SelectItem>
+                    <SelectItem value="SRE Metropolitana B">SRE Metropolitana B</SelectItem>
+                    <SelectItem value="SRE Metropolitana C">SRE Metropolitana C</SelectItem>
+                    <SelectItem value="SRE Caxambu">SRE Caxambu</SelectItem>
+                    <SelectItem value="SRE Carangola">SRE Carangola</SelectItem>
+                    <SelectItem value="SRE Varginha">SRE Varginha</SelectItem>
+                    <SelectItem value="SRE Uberlândia">SRE Uberlândia</SelectItem>
+                    <SelectItem value="SRE Montes Claros">SRE Montes Claros</SelectItem>
+                    <SelectItem value="SRE Governador Valadares">SRE Governador Valadares</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -177,40 +210,54 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
               </div>
             </div>
 
-            {!hasPasskey && (
-              <div className="space-y-4 pt-4">
-                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Fingerprint size={18} className="text-emerald-600" />
-                  Acesso por Biometria
-                </h3>
+            <div className="space-y-4 pt-4">
+              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <Fingerprint size={18} className="text-emerald-600" />
+                Acesso por Biometria
+              </h3>
+              {isCurrentDeviceRegistered ? (
+                <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 mt-2">
+                  <CheckCircle2 size={18} />
+                  <span className="text-sm font-semibold">Este dispositivo já está registrado.</span>
+                </div>
+              ) : (
+                <>
+                  {hasPasskey && (
+                    <p className="text-xs text-slate-500 mb-2">Você já possui dispositivos registrados. Caso queira acessar também por este dispositivo atual, registre-o abaixo.</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await db.auth.registerPasskey();
+                        showToast('Dispositivo registrado com sucesso!', 'success');
+                        setHasPasskey(true);
+                        localStorage.setItem('passkey_registered', 'true');
+                        setIsCurrentDeviceRegistered(true);
+                      } catch (err: any) {
+                        showToast(err.message || 'Erro ao registrar', 'error');
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm active:scale-[0.98]"
+                  >
+                    <Fingerprint size={16} />
+                    Registrar este dispositivo
+                  </button>
+                </>
+              )}
+            </div>
+
+            {hasChanges && (
+              <div className="pt-6">
                 <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await db.auth.registerPasskey();
-                      showToast('Dispositivo registrado com sucesso!', 'success');
-                      setHasPasskey(true);
-                    } catch (err: any) {
-                      showToast(err.message || 'Erro ao registrar', 'error');
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm active:scale-[0.98]"
+                  type="submit"
+                  className="w-full flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
                 >
-                  <Fingerprint size={16} />
-                  Registrar este dispositivo
+                  <Save size={20} />
+                  Salvar Alterações
                 </button>
               </div>
             )}
-
-            <div className="pt-6">
-              <button
-                type="submit"
-                className="w-full flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-              >
-                <Save size={20} />
-                Salvar Alterações
-              </button>
-            </div>
 
           </form>
         </div>

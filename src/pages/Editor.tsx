@@ -1700,7 +1700,7 @@ export function Editor() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 bg-white shadow-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 bg-white shadow-sm h-[42px]"
                   placeholder="Buscar item para importar..."
                   value={importSearchTerm}
                   onChange={e => setImportSearchTerm(e.target.value)}
@@ -1708,7 +1708,7 @@ export function Editor() {
               </div>
               <div className="w-full md:w-64">
                 <Select value={importLocationFilter} onValueChange={setImportLocationFilter}>
-                  <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-emerald-500 rounded-lg shadow-sm">
+                  <SelectTrigger className="w-full bg-white border-slate-300 focus:ring-emerald-500 rounded-lg shadow-sm !h-[42px]">
                     <SelectValue placeholder="Local de Intervenção (Todos)" />
                   </SelectTrigger>
                   <SelectContent position="popper" sideOffset={4}>

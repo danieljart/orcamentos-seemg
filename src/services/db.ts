@@ -40,6 +40,7 @@ export interface WorkbookVersion {
   workbook_id: string;
   created_at: string;
   items_json: string;
+  name?: string;
 }
 
 export const db = {
@@ -137,6 +138,10 @@ export const db = {
       if (error) throw error;
       return updated as User;
     },
+    updatePassword: async (password: string): Promise<void> => {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    },
     signOut: async () => {
       await supabase.auth.signOut();
     }
@@ -228,6 +233,23 @@ export const db = {
         .single();
       if (error) throw error;
       return data as WorkbookVersion;
+    },
+    update: async (id: string, data: Partial<WorkbookVersion>): Promise<WorkbookVersion> => {
+      const { data: updatedVersion, error } = await supabase
+        .from('workbook_versions')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return updatedVersion as WorkbookVersion;
+    },
+    delete: async (id: string): Promise<void> => {
+      const { error } = await supabase
+        .from('workbook_versions')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     }
   }
 };
