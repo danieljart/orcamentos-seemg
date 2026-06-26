@@ -53,9 +53,38 @@ alter table public.workbook_items enable row level security;
 alter table public.workbook_versions enable row level security;
 
 -- POLICIES
--- Obs: Neste momento as políticas são permissivas para simplificar a transição,
--- devendo ser restringidas para (auth.uid() = user_id) após a integração do Supabase Auth.
-create policy "Enable all for authenticated users" on public.users for all using (true) with check (true);
-create policy "Enable all for authenticated users" on public.workbooks for all using (true) with check (true);
-create policy "Enable all for authenticated users" on public.workbook_items for all using (true) with check (true);
-create policy "Enable all for authenticated users" on public.workbook_versions for all using (true) with check (true);
+-- Users: each user can only read/update their own row
+create policy "Users can read own profile" on public.users for select using (auth.uid() = id);
+create policy "Users can update own profile" on public.users for update using (auth.uid() = id) with check (auth.uid() = id);
+create policy "Users can insert own profile" on public.users for insert with check (auth.uid() = id);
+
+-- Workbooks: each user can only access their own workbooks
+create policy "Users can read own workbooks" on public.workbooks for select using (auth.uid() = user_id);
+create policy "Users can insert own workbooks" on public.workbooks for insert with check (auth.uid() = user_id);
+create policy "Users can update own workbooks" on public.workbooks for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users can delete own workbooks" on public.workbooks for delete using (auth.uid() = user_id);
+
+-- Workbook Items: access tied to workbook ownership
+create policy "Users can read own workbook items" on public.workbook_items for select using (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+create policy "Users can insert own workbook items" on public.workbook_items for insert with check (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+create policy "Users can update own workbook items" on public.workbook_items for update using (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+create policy "Users can delete own workbook items" on public.workbook_items for delete using (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+
+-- Workbook Versions: access tied to workbook ownership
+create policy "Users can read own workbook versions" on public.workbook_versions for select using (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+create policy "Users can insert own workbook versions" on public.workbook_versions for insert with check (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);
+create policy "Users can delete own workbook versions" on public.workbook_versions for delete using (
+  exists (select 1 from public.workbooks where id = workbook_id and user_id = auth.uid())
+);

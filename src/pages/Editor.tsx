@@ -660,11 +660,12 @@ export function Editor() {
   }, 0);
 
   const renderTree = (nodes: TreeNode[], term: string): ReactNode => {
-    const lowerTerm = term.toLowerCase();
+    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const normalizedTerm = normalize(term);
     
     const filterNode = (node: TreeNode): boolean => {
       if (!term) return true;
-      if (!node.isCategory && node.description.toLowerCase().includes(lowerTerm)) return true;
+      if (!node.isCategory && normalize(node.description).includes(normalizedTerm)) return true;
       if (!node.isCategory && node.item.includes(term)) return true;
       if (node.children.some(filterNode)) return true;
       return false;
@@ -825,11 +826,17 @@ export function Editor() {
 
   if (!workbook) return null;
 
-  let bdiRate = 0.2443;
-  if (workbook.iss === '2') bdiRate = 0.2247;
-  else if (workbook.iss === '3') bdiRate = 0.2312;
-  else if (workbook.iss === '4') bdiRate = 0.2377;
-  else if (workbook.iss === '5') bdiRate = 0.2443;
+  const getBdiRate = (iss: string) => {
+    switch (iss) {
+      case '2': return 0.2246;
+      case '2.5': return 0.2279;
+      case '3': return 0.2312;
+      case '4': return 0.2377;
+      case '5': return 0.2443;
+      default: return 0.2443;
+    }
+  };
+  const bdiRate = getBdiRate(workbook.iss);
   const bdiAmount = totalBudget * bdiRate;
   const grandTotal = totalBudget + bdiAmount;
 
@@ -1032,7 +1039,7 @@ export function Editor() {
                 <span className="text-sm font-bold text-slate-800">{totalBudget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
               <div className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500">BDI (24.43%)</span>
+                <span className="text-[10px] uppercase font-bold text-slate-500">BDI ({(bdiRate * 100).toFixed(2)}%)</span>
                 <span className="text-sm font-bold text-slate-800">{bdiAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
               <div className="bg-emerald-100 border border-emerald-200 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">

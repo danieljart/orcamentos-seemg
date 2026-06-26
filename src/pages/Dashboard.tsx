@@ -213,7 +213,7 @@ export function Dashboard() {
 
           wbTotal += qty * price;
         }
-        console.log(`[Dashboard Debug] wbTotal:`, wbTotal, `items.length:`, items.length, `items:`, items.slice(0,2));
+
 
         let bdiRate = 0.2443;
         if (wb.iss === '2') bdiRate = 0.2246;
