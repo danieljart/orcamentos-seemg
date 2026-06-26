@@ -584,7 +584,7 @@ export function Dashboard() {
     setEditingVersionName(v.name || 'Versão Salva');
   };
 
-  const handleSaveVersionName = async (e: React.MouseEvent, id: string) => {
+  const handleSaveVersionName = async (e: React.SyntheticEvent, id: string) => {
     e.stopPropagation();
     try {
       await db.versions.update(id, { name: editingVersionName });
