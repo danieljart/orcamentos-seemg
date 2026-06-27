@@ -24,9 +24,9 @@ export function ServicesFunnelChart({ data }: { data: any[] }) {
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-white p-3 border border-slate-200 shadow-sm rounded-lg">
-                        <p className="font-medium text-slate-800 mb-1">{payload[0].payload.name}</p>
-                        <p className="text-sm text-slate-600">Frequência: <span className="font-bold">{payload[0].value} planilhas</span></p>
+                      <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
+                        <p className="font-medium text-slate-800 dark:text-slate-200 mb-1">{payload[0].payload.name}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">Frequência: <span className="font-bold">{payload[0].value} planilhas</span></p>
                       </div>
                     );
                   }
@@ -44,7 +44,7 @@ export function ServicesFunnelChart({ data }: { data: any[] }) {
             </FunnelChart>
           </ResponsiveContainer>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">
+          <div className="w-full h-full flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">
             Nenhum dado de serviço disponível.
           </div>
         )}

@@ -35,15 +35,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const filteredPayload = payload.filter((entry: any) => entry.dataKey !== 'salesArea');
 
     return (
-      <div className="rounded-lg border bg-popover p-3 shadow-sm shadow-black/5 min-w-[180px] bg-white">
-        <div className="text-xs font-medium text-slate-500 tracking-wide mb-2.5">{label}</div>
+      <div className="rounded-lg border bg-popover p-3 shadow-sm shadow-black/5 min-w-[180px] bg-white dark:bg-slate-800">
+        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 tracking-wide mb-2.5">{label}</div>
         <div className="space-y-2">
           {filteredPayload.map((entry: any, index: number) => {
             const config = (chartConfig as any)[entry.dataKey];
             return (
               <div key={index} className="flex items-center gap-2 text-xs">
                 <ChartLabel label={config?.label + ':'} color={entry.color} />
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
                   {entry.dataKey === 'sales' ? 
                     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(entry.value) :
                     entry.value}

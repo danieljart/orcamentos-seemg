@@ -8,9 +8,10 @@ import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
-import { getIssForMunicipio } from '../lib/iss';
+import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
 import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 const evaluateMath = (expr: any): string => {
   if (!expr && expr !== 0) return '';
@@ -444,6 +445,9 @@ export function Dashboard() {
       setPendingQuickItems(null);
     }
     
+    // Save the smart ISS memory
+    saveIssForMunicipio(formMunicipio, formISS);
+    
     navigate(`/editor/${newWb.id}`);
   };
 
@@ -491,6 +495,8 @@ export function Dashboard() {
         iss,
         servicos
       });
+      
+      saveIssForMunicipio(municipio, iss);
 
       const importedItems: any[] = [];
       ws.eachRow((row) => {
@@ -623,16 +629,16 @@ export function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col transition-colors">
       {/* PASSKEY PROMPT MODAL */}
       {showPasskeyPrompt && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in zoom-in-95">
-            <div className="w-16 h-16 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center shadow-inner mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-6 animate-in zoom-in-95 border border-slate-200 dark:border-slate-700">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-full flex items-center justify-center shadow-inner mx-auto mb-4">
               <Fingerprint size={32} />
             </div>
-            <h3 className="text-xl font-bold text-center text-slate-800 mb-2">Login mais rápido e seguro?</h3>
-            <p className="text-slate-500 text-center text-sm mb-6">
+            <h3 className="text-xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">Login mais rápido e seguro?</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-center text-sm mb-6">
               Notamos que você ainda não configurou o login por biometria (Passkey). Com ele você entra na plataforma usando apenas a sua digital ou Face ID, sem precisar digitar senhas.
             </p>
             <div className="flex flex-col gap-3">
@@ -656,7 +662,7 @@ export function Dashboard() {
                   localStorage.setItem('skip_passkey_prompt', 'true');
                   setShowPasskeyPrompt(false);
                 }}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 px-4 rounded-xl transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold py-3 px-4 rounded-xl transition-colors"
               >
                 Mais tarde
               </button>
@@ -676,12 +682,17 @@ export function Dashboard() {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <button 
-              onClick={() => setIsAccountSidebarOpen(true)}
-              className="flex items-center gap-2 text-emerald-200 hover:text-white transition-colors text-sm font-medium"
-            >
-              <UserIcon size={18} /> Minha Conta
-            </button>
+            <div className="flex gap-2">
+              <div className="bg-emerald-900/40 border border-emerald-700/50 rounded-xl">
+                <ThemeToggle />
+              </div>
+              <button 
+                onClick={() => setIsAccountSidebarOpen(true)}
+                className="flex items-center gap-2 text-emerald-200 hover:text-white transition-colors text-sm font-medium"
+              >
+                <UserIcon size={18} /> Minha Conta
+              </button>
+            </div>
             <div className="w-px h-4 bg-emerald-700/50"></div>
             <button 
               onClick={handleLogout}
@@ -718,7 +729,7 @@ export function Dashboard() {
             <input 
               type="text" 
               placeholder="Buscar por escola, município ou código..." 
-              className="w-full bg-white pl-10 pr-4 py-2 rounded-lg border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all h-[42px]"
+              className="w-full bg-white dark:bg-slate-800 pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all h-[42px]"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -727,7 +738,7 @@ export function Dashboard() {
           <div className="flex-1 w-full flex flex-wrap xl:flex-nowrap gap-3">
              <div className="flex-1 min-w-[140px]">
                <Select value={statusFilter || 'all'} onValueChange={val => setStatusFilter(val === 'all' ? '' : val)}>
-                 <SelectTrigger className="w-full !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                 <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
                    <SelectValue placeholder="Status (Todos)" />
                  </SelectTrigger>
                  <SelectContent position="popper" sideOffset={4}>
@@ -741,7 +752,7 @@ export function Dashboard() {
 
              <div className="flex-1 min-w-[140px]">
                <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
-                 <SelectTrigger className="w-full !bg-white border-slate-200 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700">
+                 <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
                    <SelectValue placeholder="SRE (Todas)" />
                  </SelectTrigger>
                  <SelectContent position="popper" sideOffset={4}>
@@ -755,11 +766,11 @@ export function Dashboard() {
 
             <button 
               onClick={() => setIsQuickEstimateOpen(true)}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 h-[42px] rounded-lg hover:bg-indigo-100 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2 h-[42px] rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
             >
               <Zap size={16} /> Rápido
             </button>
-            <label className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 px-2 h-[42px] rounded-lg hover:bg-slate-50 transition-colors shadow-sm font-medium cursor-pointer whitespace-nowrap text-sm">
+            <label className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-2 h-[42px] rounded-lg hover:bg-slate-50 dark:bg-slate-900/50 transition-colors shadow-sm font-medium cursor-pointer whitespace-nowrap text-sm">
               <Upload size={16} /> Importar
               <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
             </label>
@@ -775,16 +786,16 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col gap-3 animate-pulse">
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3 animate-pulse">
                 <div className="flex justify-between items-start">
-                  <div className="h-5 bg-slate-200 rounded w-16"></div>
-                  <div className="h-5 bg-slate-200 rounded w-20"></div>
+                  <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
+                  <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-20"></div>
                 </div>
-                <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
                 <div className="h-8 bg-emerald-100 rounded w-1/3"></div>
                 <div className="flex justify-between items-center mt-2">
-                  <div className="h-4 bg-slate-200 rounded w-24"></div>
-                  <div className="h-4 bg-slate-200 rounded w-12"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-12"></div>
                 </div>
               </div>
             ))
@@ -795,10 +806,10 @@ export function Dashboard() {
             <div 
               key={wb.id} 
               onClick={() => handleOpenVersions(wb)}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
             >
               <div className="flex justify-between items-start">
-                <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">
+                <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 px-2 py-1 rounded">
                   {wb.cod_escola || 'S/ COD'}
                 </span>
                 <div className="flex gap-2 items-center">
@@ -832,25 +843,25 @@ export function Dashboard() {
                 </div>
               </div>
               
-              <h3 className="text-lg font-bold text-slate-800 line-clamp-2 group-hover:text-emerald-700 transition-colors">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 line-clamp-2 group-hover:text-emerald-700 transition-colors">
                 {wb.escola || 'Escola sem nome'}
               </h3>
               
               <div className="flex items-center justify-between mt-auto w-full gap-1">
-                <div className="text-base sm:text-lg font-bold text-emerald-600 flex-1 truncate text-left">
+                <div className="text-base sm:text-lg font-bold text-emerald-700 dark:text-[#00ff88] dark:drop-shadow-[0_0_5px_rgba(0,255,136,0.3)] flex-1 truncate text-left">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
                 </div>
                 
-                <div className="w-px h-4 sm:h-5 bg-slate-200 hidden sm:block"></div>
+                <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                 
-                <div className="text-xs sm:text-[13px] font-medium uppercase text-slate-500 truncate flex-1 text-center">
+                <div className="text-xs sm:text-[13px] font-medium uppercase text-slate-500 dark:text-slate-400 truncate flex-1 text-center">
                   {wb.municipio}
                 </div>
                 
-                <div className="w-px h-4 sm:h-5 bg-slate-200 hidden sm:block"></div>
+                <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                 
                 <div className="flex-1 flex justify-end shrink-0 min-w-0">
-                  <span className="text-[10px] sm:text-xs bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-500 truncate max-w-full">
+                  <span className="text-[10px] sm:text-xs bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 truncate max-w-full">
                     {wb.sre}
                   </span>
                 </div>
@@ -859,7 +870,7 @@ export function Dashboard() {
             );
           })}
           {filteredWorkbooks.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500">
+            <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
               Nenhum orçamento encontrado.
             </div>
           )}
@@ -875,12 +886,12 @@ export function Dashboard() {
       {/* MODAL NOVO ORÇAMENTO */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Plus className="text-emerald-600" /> Criar Novo Orçamento
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:text-slate-400">
                 <LogOut size={20} className="rotate-45" />
               </button>
             </div>
@@ -888,7 +899,7 @@ export function Dashboard() {
             <form onSubmit={handleCreate} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Escola Estadual</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Escola Estadual</label>
                   <SchoolSearch 
                     value={formEscola} 
                     onChange={setFormEscola} 
@@ -903,51 +914,51 @@ export function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Cód. Escola</label>
-                  <input type="text" value={formCodEscola} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" placeholder="Ex: 12345" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cód. Escola</label>
+                  <input type="text" value={formCodEscola} readOnly className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none" placeholder="Ex: 12345" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Município</label>
-                  <input type="text" value={formMunicipio} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" placeholder="Ex: Belo Horizonte" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Município</label>
+                  <input type="text" value={formMunicipio} readOnly className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none" placeholder="Ex: Belo Horizonte" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">S.R.E.</label>
-                  <input type="text" value={formSRE} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-100 text-slate-500 cursor-not-allowed outline-none" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">S.R.E.</label>
+                  <input type="text" value={formSRE} readOnly className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Serviços da Planilha</label>
-                  <input type="text" value={formServicos} onChange={e => setFormServicos(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: Reforma do Telhado" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviços da Planilha</label>
+                  <input type="text" value={formServicos} onChange={e => setFormServicos(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: Reforma do Telhado" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Taxa ISS (%)</label>
-                  <input type="number" step="0.01" value={formISS} onChange={e => setFormISS(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa ISS (%)</label>
+                  <input type="number" step="0.01" value={formISS} onChange={e => setFormISS(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                 </div>
 
-                <div className="col-span-full border-t border-slate-100 mt-2 pt-4">
-                  <h3 className="text-sm font-semibold text-slate-700 mb-3">Informações Opcionais Adicionais</h3>
+                <div className="col-span-full border-t border-slate-100 dark:border-slate-700 mt-2 pt-4">
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Informações Opcionais Adicionais</h3>
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-5">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Engenheiro(a)</label>
-                      <input type="text" value={formEngenheiro} onChange={e => setFormEngenheiro(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Engenheiro(a)</label>
+                      <input type="text" value={formEngenheiro} onChange={e => setFormEngenheiro(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Nome" />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">CREA</label>
-                      <input type="text" value={formCrea} onChange={e => setFormCrea(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">CREA</label>
+                      <input type="text" value={formCrea} onChange={e => setFormCrea(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Número" />
                     </div>
                     <div className="md:col-span-3">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Data Elaboração</label>
-                      <input type="date" value={formDataElaboracao} onChange={e => setFormDataElaboracao(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data Elaboração</label>
+                      <input type="date" value={formDataElaboracao} onChange={e => setFormDataElaboracao(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">REV</label>
-                      <input type="number" min="0" value={formRev} onChange={e => setFormRev(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">REV</label>
+                      <input type="number" min="0" value={formRev} onChange={e => setFormRev(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="pt-6 flex justify-end gap-3 border-t border-slate-100 mt-6 sticky bottom-0 bg-white">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              <div className="pt-6 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 mt-6 sticky bottom-0 bg-white dark:bg-slate-800">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 rounded-lg transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" className="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm">
@@ -962,9 +973,9 @@ export function Dashboard() {
       {/* MODAL DE VERSÕES */}
       {isVersionsModalOpen && selectedWorkbook && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Clock className="text-emerald-600" /> Versões do Orçamento
               </h2>
               <div className="flex gap-2">
@@ -978,7 +989,7 @@ export function Dashboard() {
                   <Trash2 size={18} />
                   Excluir Planilha
                 </button>
-                <button onClick={() => setIsVersionsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                <button onClick={() => setIsVersionsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 rounded-lg transition-colors">
                   <LogOut size={20} className="rotate-45" />
                 </button>
               </div>
@@ -987,11 +998,11 @@ export function Dashboard() {
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
               <div 
                 onClick={() => navigate(`/editor/${selectedWorkbook.id}`)}
-                className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl cursor-pointer hover:bg-emerald-100 transition-colors flex justify-between items-center"
+                className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors flex justify-between items-center"
               >
                 <div>
-                  <h3 className="font-bold text-emerald-800">Rascunho Atual (Trabalhando)</h3>
-                  <p className="text-xs text-emerald-600 mt-1">Sua sessão atual com as últimas modificações.</p>
+                  <h3 className="font-bold text-emerald-800 dark:text-emerald-100">Rascunho Atual (Trabalhando)</h3>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-1">Sua sessão atual com as últimas modificações.</p>
                 </div>
                 <div className="bg-emerald-600 text-white p-2 rounded-full">
                   <Plus size={16} />
@@ -1000,7 +1011,7 @@ export function Dashboard() {
 
               {workbookVersions.length > 0 ? (
                 <div className="mt-6">
-                  <h3 className="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Histórico na Nuvem</h3>
+                  <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Histórico na Nuvem</h3>
                   <div className="space-y-3">
                     {workbookVersions.map(v => {
                       const diff = getVersionDiff(v.items_json);
@@ -1012,7 +1023,7 @@ export function Dashboard() {
                         <div 
                           key={v.id}
                           onClick={() => navigate(`/editor/${selectedWorkbook.id}?version=${v.id}`)}
-                          className="bg-white border border-slate-200 p-3 rounded-xl cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-2 group"
+                          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl cursor-pointer hover:border-slate-300 dark:border-slate-600 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-2 group"
                         >
                           <div className="flex-1 w-full">
                             <div className="flex items-center gap-2">
@@ -1022,7 +1033,7 @@ export function Dashboard() {
                                     type="text" 
                                     value={editingVersionName} 
                                     onChange={e => setEditingVersionName(e.target.value)} 
-                                    className="border border-slate-300 rounded px-2 py-1 text-sm font-medium text-slate-700 w-48 focus:ring-2 focus:ring-emerald-500 outline-none"
+                                    className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm font-medium text-slate-700 dark:text-slate-300 w-48 focus:ring-2 focus:ring-emerald-500 outline-none"
                                     autoFocus
                                     onKeyDown={e => {
                                       if (e.key === 'Enter') handleSaveVersionName(e, v.id);
@@ -1033,19 +1044,19 @@ export function Dashboard() {
                                   </button>
                                 </div>
                               ) : (
-                                <h4 className="font-medium text-slate-700">{v.name || 'Versão Salva'}</h4>
+                                <h4 className="font-medium text-slate-700 dark:text-slate-300">{v.name || 'Versão Salva'}</h4>
                               )}
                               {!hasChanges && (
-                                <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold inline-block">Igual ao Rascunho Atual</span>
+                                <span className="text-[10px] bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold inline-block">Igual ao Rascunho Atual</span>
                               )}
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{new Date(v.created_at).toLocaleString('pt-BR')}</p>
                             
                             {hasChanges && (
-                              <div className="flex flex-col gap-1.5 mt-2 border-t border-slate-100 pt-2">
+                              <div className="flex flex-col gap-1.5 mt-2 border-t border-slate-100 dark:border-slate-700 pt-2">
                                 {diff.changesDetails.map((c, i) => (
-                                  <div key={i} className="text-[11px] flex flex-col p-2 bg-slate-50 rounded border border-slate-100">
-                                    <span className="font-medium text-slate-700 break-words whitespace-pre-wrap leading-relaxed" title={c.title}>
+                                  <div key={i} className="text-[11px] flex flex-col p-2 bg-slate-50 dark:bg-slate-900/50 rounded border border-slate-100 dark:border-slate-700">
+                                    <span className="font-medium text-slate-700 dark:text-slate-300 break-words whitespace-pre-wrap leading-relaxed" title={c.title}>
                                       {c.type === 'added' && <span className="text-emerald-600 font-bold mr-1">[NOVO]</span>}
                                       {c.type === 'removed' && <span className="text-red-500 font-bold mr-1">[REMOVIDO]</span>}
                                       {c.type === 'changed' && <span className="text-amber-600 font-bold mr-1">[ALTERADO]</span>}
@@ -1053,8 +1064,8 @@ export function Dashboard() {
                                     </span>
                                     <div className="mt-1">
                                       {c.type === 'changed' && (
-                                        <span className="text-[10px] text-slate-500">
-                                          <>De <span className="line-through">{formatter.format(c.oldVal)}</span> para <span className="font-bold text-slate-700">{formatter.format(c.newVal)}</span></>
+                                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                          <>De <span className="line-through">{formatter.format(c.oldVal)}</span> para <span className="font-bold text-slate-700 dark:text-slate-300">{formatter.format(c.newVal)}</span></>
                                         </span>
                                       )}
                                       {c.type === 'added' && (
@@ -1094,9 +1105,9 @@ export function Dashboard() {
                                </div>
                              </div>
                              <div className="flex flex-col items-end gap-1">
-                               <div className="text-sm font-bold text-slate-800">{formatter.format(diff.vTotal)}</div>
+                               <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{formatter.format(diff.vTotal)}</div>
                                {hasChanges && (
-                                 <div className="text-[10px] font-medium text-slate-500 line-through decoration-slate-400 opacity-70">
+                                 <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 line-through decoration-slate-400 opacity-70">
                                    Rascunho: {formatter.format(diff.currTotal)}
                                  </div>
                                )}
@@ -1108,8 +1119,8 @@ export function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6 text-center py-6 bg-slate-50 rounded-xl border border-slate-100 border-dashed">
-                  <p className="text-slate-500 text-sm">Nenhuma versão salva na nuvem ainda.</p>
+                <div className="mt-6 text-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700 border-dashed">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">Nenhuma versão salva na nuvem ainda.</p>
                 </div>
               )}
             </div>

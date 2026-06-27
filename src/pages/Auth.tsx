@@ -48,8 +48,8 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-800/50 flex flex-col justify-center items-center p-4">
+      <div className="bg-white dark:bg-slate-800 max-w-md w-full rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
         <div className="bg-emerald-800 p-8 flex flex-col items-center justify-center text-white">
           <FileSpreadsheet size={48} className="text-emerald-300 mb-4" />
           <h1 className="text-2xl font-bold tracking-wide">Portal de Orçamentos SEE-MG</h1>
@@ -59,14 +59,14 @@ export function Auth() {
           <div className="flex justify-center gap-4 mb-6">
             <button 
               type="button"
-              className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${!isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${!isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
               onClick={() => { setIsRegistering(false); setError(''); setSuccessMessage(''); }}
             >
               Login
             </button>
             <button 
               type="button"
-              className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${isRegistering ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
               onClick={() => { setIsRegistering(true); setError(''); setSuccessMessage(''); }}
             >
               Criar Conta
@@ -89,7 +89,7 @@ export function Auth() {
             {isRegistering && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo (Engenheiro)</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome Completo (Engenheiro)</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <UserIcon size={16} className="text-slate-400" />
@@ -98,7 +98,7 @@ export function Auth() {
                       type="text"
                       required={isRegistering}
                       maxLength={100}
-                      className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
+                      className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
                       placeholder="Nome do Engenheiro(a)"
                       value={nome}
                       onChange={e => setNome(e.target.value)}
@@ -107,7 +107,7 @@ export function Auth() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Registro CREA</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Registro CREA</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Award size={16} className="text-slate-400" />
@@ -115,7 +115,7 @@ export function Auth() {
                     <input
                       type="text"
                       required={isRegistering}
-                      className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
+                      className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
                       placeholder="Número do CREA"
                       value={crea}
                       onChange={e => setCrea(e.target.value)}
@@ -124,13 +124,13 @@ export function Auth() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">SRE</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SRE</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                       <Award size={16} className="text-slate-400" />
                     </div>
                     <Select value={sre} onValueChange={setSre} required={isRegistering}>
-                      <SelectTrigger className="w-full pl-10 pr-3 h-[42px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                      <SelectTrigger className="w-full pl-10 pr-3 h-[42px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800">
                         <SelectValue placeholder="Selecione a SRE" />
                       </SelectTrigger>
                       <SelectContent>
@@ -190,7 +190,7 @@ export function Auth() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">E-mail Institucional</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail Institucional</label>
               <div className="relative flex items-stretch">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                   <Mail size={16} className="text-slate-400" />
@@ -198,7 +198,7 @@ export function Auth() {
                 <input
                   type="text"
                   required
-                  className={`w-full pl-10 pr-3 py-2 border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow ${(!email.includes('@') || isRegistering) ? 'rounded-l-lg' : 'rounded-lg'}`}
+                  className={`w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow ${(!email.includes('@') || isRegistering) ? 'rounded-l-lg' : 'rounded-lg'}`}
                   placeholder="nome.sobrenome"
                   value={email}
                   onChange={e => {
@@ -207,7 +207,7 @@ export function Auth() {
                   }}
                 />
                 {(!email.includes('@') || isRegistering) && (
-                  <span className="flex items-center px-3 bg-slate-100 border border-l-0 border-slate-300 text-slate-600 text-sm rounded-r-lg font-medium whitespace-nowrap">
+                  <span className="flex items-center px-3 bg-slate-100 dark:bg-slate-800/50 border border-l-0 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-sm rounded-r-lg font-medium whitespace-nowrap">
                     @educacao.mg.gov.br
                   </span>
                 )}
@@ -215,7 +215,7 @@ export function Auth() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Senha</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Senha</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock size={16} className="text-slate-400" />
@@ -223,7 +223,7 @@ export function Auth() {
                 <input
                   type="password"
                   required
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
+                  className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-shadow"
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -241,10 +241,10 @@ export function Auth() {
             
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-300"></div>
+                <div className="w-full border-t border-slate-300 dark:border-slate-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-slate-500">Ou continuar com</span>
+                <span className="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">Ou continuar com</span>
               </div>
             </div>
 
@@ -260,7 +260,7 @@ export function Auth() {
                 }
               }}
               disabled={loading}
-              className="w-full bg-white hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 border border-slate-300 rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 font-medium py-2 px-4 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

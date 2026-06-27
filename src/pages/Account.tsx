@@ -61,7 +61,7 @@ export function Account() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-800/50 flex flex-col items-center py-12 px-4">
       
       {/* TOAST */}
       {toast && (
@@ -73,20 +73,20 @@ export function Account() {
       <div className="w-full max-w-lg">
         <button 
           onClick={() => navigate('/dashboard')} 
-          className="flex items-center gap-2 text-slate-500 hover:text-emerald-700 font-medium transition-colors mb-6"
+          className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-emerald-700 font-medium transition-colors mb-6"
         >
           <ArrowLeft size={20} />
           Voltar ao Painel
         </button>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-          <div className="p-8 border-b border-slate-100 flex items-center gap-4 bg-emerald-50/50">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+          <div className="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center gap-4 bg-emerald-50/50">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center shadow-inner">
               <UserIcon size={32} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-800">Minha Conta</h2>
-              <p className="text-slate-500 font-medium">Gerencie suas informações de acesso</p>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Minha Conta</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">Gerencie suas informações de acesso</p>
             </div>
           </div>
 
@@ -105,72 +105,72 @@ export function Account() {
             )}
 
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
                 <HardHat size={20} className="text-emerald-600" />
                 Dados Profissionais
               </h3>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Nome Completo do Engenheiro</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nome Completo do Engenheiro</label>
                 <input
                   type="text"
                   required
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-300"
                   placeholder="Seu nome completo"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Registro no CREA</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Registro no CREA</label>
                 <input
                   type="text"
                   required
                   value={crea}
                   onChange={(e) => setCrea(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-300"
                   placeholder="Seu número de registro no CREA"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">SRE (Superintendência Regional de Ensino)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">SRE (Superintendência Regional de Ensino)</label>
                 <input
                   type="text"
                   value={sre}
                   onChange={(e) => setSre(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-300"
                   placeholder="Sua SRE padrão"
                 />
               </div>
             </div>
 
             <div className="space-y-4 pt-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
                 <UserIcon size={20} className="text-emerald-600" />
                 Dados de Acesso
               </h3>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">E-mail</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-300"
                   placeholder="Seu e-mail"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Nova Senha (opcional)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nova Senha (opcional)</label>
                 <input
                   type="password"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-300"
                   placeholder="Deixe em branco para não alterar"
                 />
               </div>
@@ -178,11 +178,11 @@ export function Account() {
 
             {!hasPasskey && (
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
                   <Fingerprint size={20} className="text-emerald-600" />
                   Acesso por Biometria (Passkey)
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Você pode registrar seu dispositivo atual (celular, tablet ou notebook) para entrar usando sua impressão digital ou reconhecimento facial, sem precisar de senha!
                 </p>
                 <button
