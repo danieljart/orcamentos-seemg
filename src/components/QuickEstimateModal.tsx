@@ -225,9 +225,14 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">{item.description}</p>
                     <div className="flex justify-between items-end mt-1">
                       <div className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-0.5">
-                        <button onClick={() => handleDecrement(item)} className="p-0.5 hover:bg-slate-100 dark:bg-slate-800/50 rounded text-slate-600 dark:text-slate-400"><Minus size={14}/></button>
-                        <span className="text-xs font-bold w-8 text-center">{item.quantity}</span>
-                        <button onClick={() => handleIncrement(item)} className="p-0.5 hover:bg-slate-100 dark:bg-slate-800/50 rounded text-slate-600 dark:text-slate-400"><Plus size={14}/></button>
+                          <button onClick={() => handleDecrement(item)} className="p-0.5 hover:bg-slate-100 dark:bg-slate-800/50 rounded text-slate-600 dark:text-slate-400"><Minus size={14}/></button>
+                          <input 
+                            type="text"
+                            value={item.quantity}
+                            onChange={(e) => updateCart(item, e.target.value)}
+                            className="text-xs font-bold w-8 text-center bg-transparent text-slate-700 dark:text-slate-300 focus:outline-none"
+                          />
+                          <button onClick={() => handleIncrement(item)} className="p-0.5 hover:bg-slate-100 dark:bg-slate-800/50 rounded text-slate-600 dark:text-slate-400"><Plus size={14}/></button>
                       </div>
                       <span className="text-sm font-bold text-emerald-700">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price * (parseFloat(item.quantity.replace(',','.')) || 0))}
