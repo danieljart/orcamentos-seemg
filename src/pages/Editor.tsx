@@ -167,6 +167,7 @@ export function Editor() {
   const [selectedImportItems, setSelectedImportItems] = useState<Set<string>>(new Set());
 
   const [userSre, setUserSre] = useState('');
+  const [userName, setUserName] = useState('');
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -241,6 +242,7 @@ export function Editor() {
       const u = await db.auth.getUser();
       if (u) {
         setUserSre(u.sre || '');
+        if (u.nome) setUserName(u.nome);
       }
     } catch (err) {
       console.error('Error fetching user profile:', err);
@@ -672,7 +674,7 @@ export function Editor() {
     try {
       setIsExporting(true);
 
-      const response = await fetch('/template.xlsx');
+      const response = await fetch('/template_copia.xlsx');
       const arrayBuffer = await response.arrayBuffer();
 
       const wb = new ExcelJS.Workbook();
@@ -771,12 +773,8 @@ export function Editor() {
       const activeCategories = new Set<string>();
 
       selectedItems.forEach(item => {
-        catalog.filter(c => c.isCategory).forEach(cat => {
-          const catPrefix = cat.item.replace(/0+$/, '');
-          if (item.item.startsWith(catPrefix)) {
-            activeCategories.add(cat.item);
-          }
-        });
+        const catPrefix = item.item.substring(0, 2) + "0000";
+        activeCategories.add(catPrefix);
       });
 
       catalog.forEach(catItem => {
@@ -788,6 +786,7 @@ export function Editor() {
           let lastRowIdx = 0;
           catItem.rows.forEach(r => {
             const row = worksheet.getRow(r);
+            if (row.getCell(3).text && row.getCell(3).text.includes('SUB-TOT')) return;
             row.hidden = true;
             if (!isCategory) {
               row.getCell(4).value = null;
@@ -807,26 +806,37 @@ export function Editor() {
                nextRow.commit();
             }
           }
-
-          if (isCategory && !isActiveCategory && lastRowIdx > 0) {
-            let r = lastRowIdx + 1;
-            while (r < 3000) {
-              const row = worksheet.getRow(r);
-              const col3 = row.getCell(3).text;
-              if (col3 && col3.includes('SUB-TOT')) {
-                 row.hidden = true;
-                 row.commit();
-                 break;
-              }
-              const col1 = row.getCell(1).text;
-              if (col1 && col1.endsWith('0000')) {
-                 break;
-              }
-              r++;
-            }
-          }
         }
       });
+
+      // Fix SUB-TOT visibility and formulas
+      let currentCategoryStart = 6;
+      for (let r = 6; r < 3000; r++) {
+         const row = worksheet.getRow(r);
+         const col1 = row.getCell(1).text;
+         if (col1 && col1.endsWith('0000')) {
+             currentCategoryStart = r;
+         }
+         
+         const col3 = row.getCell(3).text;
+         if (col3 && col3.includes('SUB-TOT')) {
+             const catCode = worksheet.getRow(currentCategoryStart).getCell(1).text;
+             if (activeCategories.has(catCode)) {
+                 row.hidden = false;
+                 const startRow = currentCategoryStart + 1;
+                 const endRow = r - 1;
+                 row.getCell(6).value = { formula: `SUM(F${startRow}:F${endRow})` };
+                 row.commit();
+             } else {
+                 row.hidden = true;
+                 row.commit();
+             }
+         }
+         
+         if (col1 === '080000' && col3 && col3.includes('SUB-TOT')) {
+             // stop checking after the last category if needed, but going to 3000 is fine
+         }
+      }
 
       const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -942,7 +952,7 @@ export function Editor() {
             </div>
 
             {isFormActive && (
-              <div className="p-3 bg-emerald-50/50 border-t border-emerald-100 flex flex-col gap-3">
+              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-900/20 border-t border-emerald-100 dark:border-emerald-800 flex flex-col gap-3">
                 {activeFormItem?.startsWith('2600') && (
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white dark:bg-slate-800 rounded border border-emerald-200">
                     <div className="sm:col-span-1">
@@ -1124,8 +1134,14 @@ export function Editor() {
       <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10 print:hidden">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <FileSpreadsheet size={28} className="text-emerald-300" />
-            <h1 className="text-xl font-bold tracking-wide">Editor de Orçamento</h1>
+            <FileSpreadsheet size={28} className="text-emerald-300 hidden sm:block" />
+            <div className="flex flex-col">
+              <div className="text-[10px] sm:text-xs text-emerald-100/70 flex flex-col gap-0.5 mt-1">
+                <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider hover:text-emerald-300 transition-colors">Desenvolvido por D de Design</a>
+                <a href="mailto:d.de.design1809@gmail.com" className="hover:text-emerald-300 transition-colors">d.de.design1809@gmail.com</a>
+              </div>
+              {userName && <span className="text-xs font-medium text-emerald-100 mt-1">Engº. {userName}</span>}
+            </div>
           </div>
           <div className="hidden md:flex gap-3 items-center">
             <button
@@ -1414,7 +1430,7 @@ export function Editor() {
 
                         {/* RIGHT INLINE FORM */}
                         {isEditing && (
-                          <div className="p-3 bg-emerald-50/50 border-t border-emerald-100 flex flex-col gap-3">
+                          <div className="p-3 bg-emerald-50/50 dark:bg-emerald-900/20 border-t border-emerald-100 dark:border-emerald-800 flex flex-col gap-3">
                             {item.item.startsWith('2600') && (
                               <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white dark:bg-slate-800 rounded border border-emerald-200">
                                 <div className="sm:col-span-1">

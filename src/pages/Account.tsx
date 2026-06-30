@@ -80,7 +80,7 @@ export function Account() {
         </button>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-          <div className="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center gap-4 bg-emerald-50/50">
+          <div className="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center gap-4 bg-emerald-50/50 dark:bg-emerald-900/20">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center shadow-inner">
               <UserIcon size={32} />
             </div>

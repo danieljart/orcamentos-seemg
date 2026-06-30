@@ -295,8 +295,13 @@ export function Auth() {
             )}
             
           </form>
+          </div>
+        </div>
+        
+        <div className="mt-8 text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
+          <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Desenvolvido por D de Design</a>
+          <a href="mailto:d.de.design1809@gmail.com" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">d.de.design1809@gmail.com</a>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

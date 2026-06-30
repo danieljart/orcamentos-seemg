@@ -873,16 +873,21 @@ export function Dashboard() {
             <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
               Nenhum orçamento encontrado.
             </div>
-          )}
-        </div>
-      </main>
-
-      <AccountSidebar 
+            )}
+          </div>
+        </main>
+        
+        <footer className="py-6 mt-auto text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
+          <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Desenvolvido por D de Design</a>
+          <a href="mailto:d.de.design1809@gmail.com" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">d.de.design1809@gmail.com</a>
+        </footer>
+  
+        <AccountSidebar 
         isOpen={isAccountSidebarOpen} 
         onClose={() => setIsAccountSidebarOpen(false)} 
         onLogout={handleLogout} 
-      />
-
+        />
+        
       {/* MODAL NOVO ORÇAMENTO */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">

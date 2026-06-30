@@ -103,7 +103,7 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
           </div>
         )}
 
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700 bg-emerald-50/50 shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/20 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center shadow-inner">
               <UserIcon size={20} />
