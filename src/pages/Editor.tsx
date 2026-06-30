@@ -843,11 +843,14 @@ export function Editor() {
              // stop checking after the last category if needed, but going to 3000 is fine
          }
       }
-      // Final pass to safely mark hidden rows with 'oculta' in column 1
+      // Adiciona cabeçalho na coluna J para que o filtro do Excel funcione nela
+      worksheet.getRow(5).getCell(10).value = 'STATUS';
+
+      // Final pass to safely mark hidden rows with 'oculta' in column 10 (J)
       for (let r = 6; r < 3000; r++) {
          const row = worksheet.getRow(r);
          if (row.hidden) {
-             row.getCell(1).value = 'oculta';
+             row.getCell(10).value = 'oculta';
              row.commit();
          }
       }
