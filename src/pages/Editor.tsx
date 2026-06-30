@@ -1136,11 +1136,8 @@ export function Editor() {
           <div className="flex items-center gap-3">
             <FileSpreadsheet size={28} className="text-emerald-300 hidden sm:block" />
             <div className="flex flex-col">
-              <div className="text-[10px] sm:text-xs text-emerald-100/70 flex flex-col gap-0.5 mt-1">
-                <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider hover:text-emerald-300 transition-colors">Desenvolvido por D de Design</a>
-                <a href="mailto:d.de.design1809@gmail.com" className="hover:text-emerald-300 transition-colors">d.de.design1809@gmail.com</a>
-              </div>
-              {userName && <span className="text-xs font-medium text-emerald-100 mt-1">Engº. {userName}</span>}
+              <h1 className="text-lg md:text-xl font-bold tracking-wide leading-tight">Portal de Orçamentos SEE-MG</h1>
+              {userName && <span className="text-xs font-medium text-emerald-100">Engº. {userName}</span>}
             </div>
           </div>
           <div className="hidden md:flex gap-3 items-center">

@@ -149,7 +149,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
                             const qty = cartItem ? cartItem.quantity : '';
                             
                             return (
-                              <div key={item.item} className={`flex justify-between items-center gap-4 p-3 rounded-xl border transition-all ${cartItem ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50/50 hover:border-slate-300 dark:border-slate-600'}`}>
+                              <div key={item.item} className={`flex justify-between items-center gap-4 p-3 rounded-xl border transition-all ${cartItem ? 'border-emerald-300 bg-emerald-50/20 dark:border-emerald-600/50 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-500'}`}>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="font-mono text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded">
@@ -171,7 +171,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
                                         type="text"
                                         value={qty}
                                         onChange={(e) => updateCart(item, e.target.value)}
-                                        className="w-12 text-center text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none"
+                                        className="w-12 text-center text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none bg-transparent"
                                       />
                                       <button onClick={() => handleIncrement(item)} className="p-1 hover:bg-slate-100 dark:bg-slate-800/50 rounded text-slate-600 dark:text-slate-400">
                                         <Plus size={16} />
@@ -180,7 +180,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
                                   ) : (
                                     <button 
                                       onClick={() => handleIncrement(item)}
-                                      className="px-4 py-1.5 text-sm font-bold text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                      className="px-4 py-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-md transition-colors"
                                     >
                                       Adicionar
                                     </button>
@@ -204,9 +204,9 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
 
           {/* LADO DIREITO: CARRINHO (ORÇAMENTO) */}
           <div className="w-96 bg-white dark:bg-slate-800 flex flex-col shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 bg-emerald-50">
-              <ShoppingCart size={20} className="text-emerald-600" />
-              <h3 className="font-bold text-emerald-900">Itens Selecionados</h3>
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20">
+              <ShoppingCart size={20} className="text-emerald-600 dark:text-emerald-500" />
+              <h3 className="font-bold text-emerald-900 dark:text-emerald-100">Itens Selecionados</h3>
               <span className="ml-auto bg-emerald-200 text-emerald-800 text-xs font-bold px-2 py-1 rounded-full">
                 {cartItems.length}
               </span>
