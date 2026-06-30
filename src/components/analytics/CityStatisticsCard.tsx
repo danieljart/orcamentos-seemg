@@ -60,7 +60,12 @@ export function CityStatisticsCard({
 
               <div className="flex flex-col items-start flex-1">
                 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate w-full" title={city.name}>{city.name}</span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{city.percentage.toFixed(1)}%</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-baseline gap-1.5 truncate w-full">
+                  {city.percentage.toFixed(1)}%
+                  <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 truncate">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(city.value)}
+                  </span>
+                </span>
               </div>
             </div>
           ))}

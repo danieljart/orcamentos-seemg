@@ -1,18 +1,32 @@
 const ExcelJS = require('exceljs');
+const path = require('path');
 
-async function test() {
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.readFile('../PLANILHA DE SERVIÇOS SEEMG REVISAO 01 2025.xlsx');
-  const ws = wb.getWorksheet('Plan1');
+async function run() {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(path.join(__dirname, 'public/template.xlsx'));
+  
+  const worksheet = workbook.worksheets[0];
+  
+  let targetRow = -1;
+  
+  for (let i = 1; i <= 500; i++) {
+    const row = worksheet.getRow(i);
+    const col3Text = row.getCell(3).text;
+    if (col3Text && col3Text.includes('SUB-TOT')) {
+      console.log(`Found SUB-TOT at row ${i}`);
+      console.log(`Formula in Col 7 (G):`, row.getCell(7).formula);
+      if (targetRow === -1) targetRow = i;
+    }
+  }
 
-  // formula before
-  console.log('Before F2029:', ws.getCell('F2029').formula);
-  console.log('Before F2028:', ws.getCell('F2028').formula);
-
-  // delete a row, e.g. row 10
-  ws.spliceRows(10, 1);
-
-  // The formula should have moved to F2028 now
-  console.log('After F2028:', ws.getCell('F2028').formula);
+  if (targetRow > 2) {
+    const spliceRow = targetRow - 1; // row right above it
+    console.log(`Splicing row ${spliceRow}`);
+    worksheet.spliceRows(spliceRow, 1);
+    const newTarget = targetRow - 1;
+    console.log(`After splice, SUB-TOT moved to row ${newTarget}`);
+    console.log(`Formula in Col 7 (G):`, worksheet.getRow(newTarget).getCell(7).formula);
+  }
 }
-test();
+
+run().catch(console.error);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check } from 'lucide-react';
 import { db } from '../services/db';
@@ -33,6 +33,7 @@ export function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sreFilter, setSreFilter] = useState('');
+  const [municipioFilter, setMunicipioFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVersionsModalOpen, setIsVersionsModalOpen] = useState(false);
   const [isQuickEstimateOpen, setIsQuickEstimateOpen] = useState(false);
@@ -44,15 +45,12 @@ export function Dashboard() {
   const [currentDraftItems, setCurrentDraftItems] = useState<any[]>([]);
   const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
   const [editingVersionName, setEditingVersionName] = useState<string>('');
-  const [cityData, setCityData] = useState<any[]>([]);
   const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
   const [catalogDescMap, setCatalogDescMap] = useState<Map<string, string>>(new Map());
 
-  const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, date: Date }[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, escola: string, date: Date }[]>([]);
   const [userName, setUserName] = useState('');
   const [periodFilter, setPeriodFilter] = useState('15d');
-
-  const [totalBalance, setTotalBalance] = useState(0);
 
   const navigate = useNavigate();
 
@@ -111,50 +109,6 @@ export function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    if (!analyticsData.length) return;
-
-    let filtered = analyticsData;
-    const now = new Date();
-    if (periodFilter === '15d') {
-      const past = new Date(); past.setDate(now.getDate() - 15);
-      filtered = analyticsData.filter(d => d.date >= past);
-    } else if (periodFilter === '30d') {
-      const past = new Date(); past.setDate(now.getDate() - 30);
-      filtered = analyticsData.filter(d => d.date >= past);
-    } else if (periodFilter === '3m') {
-      const past = new Date(); past.setMonth(now.getMonth() - 3);
-      filtered = analyticsData.filter(d => d.date >= past);
-    } else if (periodFilter === '6m') {
-      const past = new Date(); past.setMonth(now.getMonth() - 6);
-      filtered = analyticsData.filter(d => d.date >= past);
-    } else if (periodFilter === '1y') {
-      const past = new Date(); past.setFullYear(now.getFullYear() - 1);
-      filtered = analyticsData.filter(d => d.date >= past);
-    }
-
-    let grandTotal = 0;
-    const cityTotals: Record<string, number> = {};
-
-    filtered.forEach(d => {
-      grandTotal += d.total;
-      cityTotals[d.city] = (cityTotals[d.city] || 0) + d.total;
-    });
-
-    setTotalBalance(grandTotal);
-
-    const processedCities = Object.entries(cityTotals)
-      .map(([name, value]) => ({
-        name,
-        value,
-        percentage: grandTotal > 0 ? (value / grandTotal) * 100 : 0,
-        color: ''
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5);
-    setCityData(processedCities);
-  }, [analyticsData, periodFilter]);
-
   const loadData = async () => {
     const list = await db.workbooks.list();
     setWorkbooks(list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
@@ -180,7 +134,7 @@ export function Dashboard() {
 
       let grandTotal = 0;
       const cityTotals: Record<string, number> = {};
-      const newAnalyticsData: { id: string, total: number, city: string, date: Date }[] = [];
+      const newAnalyticsData: { id: string, total: number, city: string, escola: string, date: Date }[] = [];
 
       for (const wb of list) {
         let items: any[] = [];
@@ -245,25 +199,12 @@ export function Dashboard() {
           id: wb.id,
           total: totalComBdi,
           city: city,
+          escola: wb.escola || 'Escola sem nome',
           date: new Date(wb.created_at)
         });
       }
 
       setAnalyticsData(newAnalyticsData);
-      setTotalBalance(grandTotal);
-
-      const processedCities = Object.entries(cityTotals)
-        .map(([name, value]) => ({
-          name,
-          value,
-          percentage: grandTotal > 0 ? (value / grandTotal) * 100 : 0,
-          color: ''
-        }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
-      setCityData(processedCities);
-
-
 
     } catch (e) {
       console.error("Erro ao processar analytics:", e);
@@ -616,6 +557,9 @@ export function Dashboard() {
   };
 
   const availableSREs = Array.from(new Set(workbooks.map(w => w.sre).filter(Boolean))).sort();
+  const availableMunicipios = Array.from(new Set(workbooks.map(w => w.municipio).filter(Boolean))).sort();
+  
+  const hasMultipleSREs = userSre === 'Órgão Central' || userSre.includes(',') || availableSREs.length > 1;
 
   const filteredWorkbooks = workbooks.filter(w => {
     const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -625,8 +569,66 @@ export function Dashboard() {
                         normalize(w.cod_escola).includes(term);
     const matchStatus = statusFilter && statusFilter !== 'all' ? (w.status || 'Em andamento').toLowerCase() === statusFilter.toLowerCase() : true;
     const matchSRE = sreFilter && sreFilter !== 'all' ? w.sre === sreFilter : true;
-    return matchSearch && matchStatus && matchSRE;
+    const matchMunicipio = municipioFilter && municipioFilter !== 'all' ? w.municipio === municipioFilter : true;
+    return matchSearch && matchStatus && matchSRE && matchMunicipio;
   });
+
+  const { totalBalance, cityData } = useMemo(() => {
+    if (!analyticsData.length) return { totalBalance: 0, cityData: [] };
+
+    // Include only items that are in filteredWorkbooks
+    const filteredWorkbookIds = new Set(filteredWorkbooks.map(w => w.id));
+    let filtered = analyticsData.filter(d => filteredWorkbookIds.has(d.id));
+
+    const now = new Date();
+    if (periodFilter === '15d') {
+      const past = new Date(); past.setDate(now.getDate() - 15);
+      filtered = filtered.filter(d => d.date >= past);
+    } else if (periodFilter === '30d') {
+      const past = new Date(); past.setDate(now.getDate() - 30);
+      filtered = filtered.filter(d => d.date >= past);
+    } else if (periodFilter === '3m') {
+      const past = new Date(); past.setMonth(now.getMonth() - 3);
+      filtered = filtered.filter(d => d.date >= past);
+    } else if (periodFilter === '6m') {
+      const past = new Date(); past.setMonth(now.getMonth() - 6);
+      filtered = filtered.filter(d => d.date >= past);
+    } else if (periodFilter === '1y') {
+      const past = new Date(); past.setFullYear(now.getFullYear() - 1);
+      filtered = filtered.filter(d => d.date >= past);
+    }
+
+    let grandTotal = 0;
+    const cityTotals: Record<string, number> = {};
+
+    filtered.forEach(d => {
+      grandTotal += d.total;
+      cityTotals[d.city] = (cityTotals[d.city] || 0) + d.total;
+    });
+
+    const isSingleCity = Object.keys(cityTotals).length === 1;
+    const dataTotals: Record<string, number> = {};
+
+    if (isSingleCity) {
+      filtered.forEach(d => {
+        dataTotals[d.escola] = (dataTotals[d.escola] || 0) + d.total;
+      });
+    } else {
+      Object.assign(dataTotals, cityTotals);
+    }
+
+    const processedCities = Object.entries(dataTotals)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: grandTotal > 0 ? (value / grandTotal) * 100 : 0,
+        color: ''
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    return { totalBalance: grandTotal, cityData: processedCities };
+  }, [analyticsData, periodFilter, filteredWorkbooks]);
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col transition-colors">
@@ -750,19 +752,35 @@ export function Dashboard() {
                </Select>
              </div>
 
-             <div className="flex-1 min-w-[140px]">
-               <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
-                 <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                   <SelectValue placeholder="SRE (Todas)" />
-                 </SelectTrigger>
-                 <SelectContent position="popper" sideOffset={4}>
-                   <SelectItem value="all">SRE (Todas)</SelectItem>
-                   {availableSREs.map(sre => (
-                     <SelectItem key={sre} value={sre}>{sre}</SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
+             {hasMultipleSREs ? (
+               <div className="flex-1 min-w-[140px]">
+                 <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
+                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                     <SelectValue placeholder="SRE (Todas)" />
+                   </SelectTrigger>
+                   <SelectContent position="popper" sideOffset={4}>
+                     <SelectItem value="all">SRE (Todas)</SelectItem>
+                     {availableSREs.map(sre => (
+                       <SelectItem key={sre} value={sre}>{sre}</SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+             ) : (
+               <div className="flex-1 min-w-[140px]">
+                 <Select value={municipioFilter || 'all'} onValueChange={val => setMunicipioFilter(val === 'all' ? '' : val)}>
+                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                     <SelectValue placeholder="Município (Todos)" />
+                   </SelectTrigger>
+                   <SelectContent position="popper" sideOffset={4}>
+                     <SelectItem value="all">Município (Todos)</SelectItem>
+                     {availableMunicipios.map(mun => (
+                       <SelectItem key={mun} value={mun}>{mun}</SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+             )}
 
             <button 
               onClick={() => setIsQuickEstimateOpen(true)}
@@ -862,7 +880,7 @@ export function Dashboard() {
                 
                 <div className="flex-1 flex justify-end shrink-0 min-w-0">
                   <span className="text-[10px] sm:text-xs bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 truncate max-w-full">
-                    {wb.sre}
+                    {wb.sre?.replace(/^SRE\s+/i, '')}
                   </span>
                 </div>
               </div>
