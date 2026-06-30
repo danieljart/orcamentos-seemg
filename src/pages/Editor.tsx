@@ -1315,27 +1315,27 @@ export function Editor() {
 
             {/* Linha 2: Totais */}
             <div className={`grid gap-3 print:hidden ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Custo Direto</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              <div className="bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-sky-700 dark:text-sky-400">Custo Direto</span>
+                <span className="text-sm font-bold text-sky-900 dark:text-sky-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+              <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400">
                   BDI OBRA ({(bdiRate * 100).toFixed(2)}%)
                 </span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{bdiObraAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-sm font-bold text-amber-900 dark:text-amber-200">{bdiObraAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
               {totalProj > 0 && (
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                  <span className="text-[10px] uppercase font-bold text-indigo-500 dark:text-indigo-400">
+                <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400">
                     BDI PROJ (29.26%)
                   </span>
-                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
               )}
-              <div className="bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+              <div className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
                 <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-400">Total Geral</span>
-                <span className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-sm font-bold text-emerald-950 dark:text-emerald-200">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
             </div>
 
