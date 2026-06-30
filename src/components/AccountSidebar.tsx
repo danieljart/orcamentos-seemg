@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User as UserIcon, Save, HardHat, Fingerprint, X, LogOut, CheckCircle2, Lightbulb } from 'lucide-react';
+import { User as UserIcon, Save, HardHat, Fingerprint, X, LogOut, CheckCircle2 } from 'lucide-react';
 import { db } from '../services/db';
 import type { User } from '../services/db';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FeedbackModal } from './FeedbackModal';
 
 interface AccountSidebarProps {
   isOpen: boolean;
@@ -19,7 +18,6 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
   const [senha, setSenha] = useState('');
   const [hasPasskey, setHasPasskey] = useState(false);
   const [isCurrentDeviceRegistered, setIsCurrentDeviceRegistered] = useState(false);
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [originalData, setOriginalData] = useState({ nome: '', crea: '', sre: '', email: '' });
   
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -302,19 +300,8 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
           </form>
         </div>
 
-        {/* Footer with Logout and Feedback */}
+        {/* Footer with Logout */}
         <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 shrink-0 mb-safe">
-          <button 
-            onClick={() => {
-              onClose(); // Optional: close sidebar when opening feedback
-              setIsFeedbackOpen(true);
-            }}
-            className="w-full flex items-center justify-center gap-2 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl font-bold transition-colors shadow-sm mb-3"
-          >
-            <Lightbulb size={20} />
-            Enviar Feedback ou Sugestão
-          </button>
-          
           <button 
             onClick={onLogout}
             className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-white hover:bg-red-600 border border-red-200 px-4 py-3 rounded-xl font-bold transition-colors shadow-sm"
@@ -325,7 +312,6 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
         </div>
 
       </div>
-      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </>
   );
 }
