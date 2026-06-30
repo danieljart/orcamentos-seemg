@@ -745,7 +745,7 @@ export function Editor() {
             if (occQtd > 0) {
               const formulaStr = getMathFormula(occ.memory);
               if (formulaStr) {
-                row.getCell(8).value = { formula: formulaStr, result: occQtd };
+                row.getCell(8).value = { formula: `ROUND(${formulaStr}, 2)`, result: occQtd };
               } else {
                 row.getCell(8).value = occQtd;
               }
@@ -760,9 +760,9 @@ export function Editor() {
           if (validRows.length > 1) {
             const firstRow = validRows[0];
             const lastRow = validRows[validRows.length - 1];
-            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `SUM(H${firstRow}:H${lastRow})`, result: totalQty };
+            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `ROUND(SUM(H${firstRow}:H${lastRow}), 2)`, result: totalQty };
           } else if (validRows.length === 1) {
-            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `SUM(H${validRows[0]})`, result: totalQty };
+            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `ROUND(SUM(H${validRows[0]}), 2)`, result: totalQty };
           } else {
             worksheet.getRow(item.rows[0]).getCell(4).value = totalQty;
           }
@@ -825,7 +825,7 @@ export function Editor() {
                  row.hidden = false;
                  const startRow = currentCategoryStart + 1;
                  const endRow = r - 1;
-                 row.getCell(6).value = { formula: `SUM(F${startRow}:F${endRow})` };
+                 row.getCell(6).value = { formula: `ROUND(SUM(F${startRow}:F${endRow}), 2)` };
                  row.commit();
              } else {
                  row.hidden = true;
@@ -835,6 +835,14 @@ export function Editor() {
          
          if (col1 === '080000' && col3 && col3.includes('SUB-TOT')) {
              // stop checking after the last category if needed, but going to 3000 is fine
+         }
+      }
+      // Final pass to safely mark hidden rows with 'oculta' in column 1
+      for (let r = 6; r < 3000; r++) {
+         const row = worksheet.getRow(r);
+         if (row.hidden) {
+             row.getCell(1).value = 'oculta';
+             row.commit();
          }
       }
 
@@ -912,8 +920,8 @@ export function Editor() {
     
     const filterNode = (node: TreeNode): boolean => {
       if (!term) return true;
-      if (!node.isCategory && normalize(node.description).includes(normalizedTerm)) return true;
-      if (!node.isCategory && node.item.includes(term)) return true;
+      if (normalize(node.description).includes(normalizedTerm)) return true;
+      if (node.item.includes(term)) return true;
       if (node.children.some(filterNode)) return true;
       return false;
     };
@@ -923,7 +931,7 @@ export function Editor() {
         return (
           <details key={node.item} className="group mb-1" open={!!term}>
             <summary className="flex items-center gap-2 p-2 bg-slate-200 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700/80 rounded-md cursor-pointer list-none select-none border border-transparent dark:border-slate-700 transition-colors">
-              <ChevronRight size={16} className="text-slate-500 dark:text-slate-400 group-open:rotate-90 transition-transform" />
+              <ChevronRight size={16} className="text-slate-500 dark:text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
               <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-transparent dark:border-slate-700">{node.item}</span>
               <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide truncate">{node.description}</span>
             </summary>
