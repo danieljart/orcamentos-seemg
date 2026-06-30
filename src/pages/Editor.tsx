@@ -1314,20 +1314,28 @@ export function Editor() {
             </div>
 
             {/* Linha 2: Totais */}
-            <div className="grid grid-cols-3 gap-3 print:hidden">
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
+            <div className={`grid gap-3 print:hidden ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
                 <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Custo Direto</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
                 <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
-                  BDI {(bdiRate * 100).toFixed(2)}% {totalProj > 0 && `+ PROJ (29.26%)`}
+                  BDI OBRA ({(bdiRate * 100).toFixed(2)}%)
                 </span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{bdiAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{bdiObraAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
-              <div className="bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400">Total Geral</span>
-                <span className="text-sm font-black text-emerald-900 dark:text-emerald-100">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              {totalProj > 0 && (
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-indigo-500 dark:text-indigo-400">
+                    BDI PROJ (29.26%)
+                  </span>
+                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                </div>
+              )}
+              <div className="bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-400">Total Geral</span>
+                <span className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
             </div>
 
