@@ -107,7 +107,7 @@ export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) 
 
         <div className="flex flex-1 overflow-hidden">
           {/* LADO ESQUERDO: CATÁLOGO */}
-          <div className="flex-1 flex flex-col border-r border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50/50">
+          <div className="flex-1 flex flex-col border-r border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
