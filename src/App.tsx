@@ -3,6 +3,7 @@ import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { Editor } from './pages/Editor';
 import { Account } from './pages/Account';
+import { FloatingChat } from './components/FloatingChat';
 import { useEffect, useState } from 'react';
 import { db } from './services/db';
 import { supabase } from './services/supabase';
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/account" element={user ? <Account /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
       </Routes>
+      {user && <FloatingChat />}
     </Router>
   );
 }
