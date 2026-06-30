@@ -146,7 +146,8 @@ export function Dashboard() {
           items = await db.items.list(wb.id);
         }
 
-        let wbTotal = 0;
+        let wbTotalObra = 0;
+        let wbTotalProj = 0;
         for (const i of items) {
           const code = i.item_code || i.item;
           let parsedOccurrences = i.occurrences;
@@ -180,7 +181,12 @@ export function Dashboard() {
             qty = Number(evaluateMath(i.quantity || '0')) || 0;
           }
 
-          wbTotal += qty * price;
+          const cost = qty * price;
+          if (code.startsWith('24')) {
+            wbTotalProj += cost;
+          } else {
+            wbTotalObra += cost;
+          }
         }
 
 
@@ -190,7 +196,8 @@ export function Dashboard() {
         else if (wb.iss === '3') bdiRate = 0.2312;
         else if (wb.iss === '4') bdiRate = 0.2377;
         else if (wb.iss === '5') bdiRate = 0.2443;
-        const totalComBdi = wbTotal * (1 + bdiRate);
+        const bdiProjRate = 0.2926;
+        const totalComBdi = (wbTotalObra * (1 + bdiRate)) + (wbTotalProj * (1 + bdiProjRate));
         grandTotal += totalComBdi;
         const city = wb.municipio || 'Sem Município';
         cityTotals[city] = (cityTotals[city] || 0) + totalComBdi;

@@ -895,9 +895,16 @@ export function Editor() {
     }
   };
 
-  const totalBudget = selectedItems.reduce((acc, item) => {
-    return acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price));
-  }, 0);
+  const { totalObra, totalProj, totalBudget } = selectedItems.reduce((acc, item) => {
+    const cost = getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price);
+    acc.totalBudget += cost;
+    if (item.item.startsWith('24')) {
+      acc.totalProj += cost;
+    } else {
+      acc.totalObra += cost;
+    }
+    return acc;
+  }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
 
   const renderTree = (nodes: TreeNode[], term: string): ReactNode => {
     const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -1077,7 +1084,11 @@ export function Editor() {
     }
   };
   const bdiRate = getBdiRate(workbook.iss);
-  const bdiAmount = totalBudget * bdiRate;
+  const bdiProjRate = 0.2926;
+  const bdiObraAmount = totalObra * bdiRate;
+  const bdiProjAmount = totalProj * bdiProjRate;
+  
+  const bdiAmount = bdiObraAmount + bdiProjAmount;
   const grandTotal = totalBudget + bdiAmount;
 
   const isCloudSaveDisabled = isSaving || JSON.stringify(selectedItems) === lastSavedItemsJson;
@@ -1306,10 +1317,12 @@ export function Editor() {
             <div className="grid grid-cols-3 gap-3 print:hidden">
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
                 <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Custo Direto</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{totalBudget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">BDI ({(bdiRate * 100).toFixed(2)}%)</span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                  BDI {(bdiRate * 100).toFixed(2)}% {totalProj > 0 && `+ PROJ (29.26%)`}
+                </span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{bdiAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
               </div>
               <div className="bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2.5 flex items-center justify-between shadow-sm">
