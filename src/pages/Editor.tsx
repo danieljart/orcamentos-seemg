@@ -773,8 +773,14 @@ export function Editor() {
       const activeCategories = new Set<string>();
 
       selectedItems.forEach(item => {
-        const catPrefix = item.item.substring(0, 2) + "0000";
-        activeCategories.add(catPrefix);
+        catalog.forEach(cat => {
+          if (cat.isCategory) {
+            const prefix = cat.item.replace(/(00)+$/, '');
+            if (item.item.startsWith(prefix)) {
+              activeCategories.add(cat.item);
+            }
+          }
+        });
       });
 
       catalog.forEach(catItem => {
