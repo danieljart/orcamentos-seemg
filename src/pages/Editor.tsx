@@ -799,7 +799,11 @@ export function Editor() {
           if (idx < item.rows.length) {
             const row = worksheet.getRow(item.rows[idx]);
             const occQtd = Number(evaluateMath(occ.quantity)) || 0;
-            if (occ.memory) row.getCell(7).value = occ.memory;
+            if (occ.memory) {
+              // Normalize ",3" → "0,3" for display in the spreadsheet
+              const normalizedMemory = occ.memory.replace(/(^|[^0-9]),(\d)/g, '$10,$2');
+              row.getCell(7).value = normalizedMemory;
+            }
             if (occQtd > 0) {
               row.getCell(8).value = occQtd;
               validRows.push(item.rows[idx]);
