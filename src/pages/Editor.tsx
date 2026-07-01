@@ -838,7 +838,7 @@ export function Editor() {
           catItem.rows.forEach(r => {
             const row = worksheet.getRow(r);
             if (row.getCell(3).text && row.getCell(3).text.includes('SUB-TOT')) return;
-            row.getCell(10).value = 'oculta';
+            row.hidden = true;
             if (!isCategory) {
               row.getCell(4).value = null;
             }
@@ -853,7 +853,7 @@ export function Editor() {
             const col3 = nextRow.getCell(3).text;
             
             if (!col1 && !col2 && (!col3 || !col3.includes('SUB-TOT'))) {
-               nextRow.getCell(10).value = 'oculta';
+               nextRow.hidden = true;
                nextRow.commit();
             }
           }
@@ -873,16 +873,11 @@ export function Editor() {
          if (col3 && col3.includes('SUB-TOT')) {
              const catCode = worksheet.getRow(currentCategoryStart).getCell(1).text;
              if (!activeCategories.has(catCode)) {
-                 row.getCell(10).value = 'oculta';
+                 row.hidden = true;
                  row.commit();
              }
          }
-         
-         if (col1 === '080000' && col3 && col3.includes('SUB-TOT')) {
-             // stop checking after the last category if needed, but going to 3000 is fine
-         }
       }
-      // 'oculta' logic has been completely removed
 
       const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
