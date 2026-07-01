@@ -55,22 +55,7 @@ const evaluateMath = (expr: any): string => {
   }
 };
 
-const getMathFormula = (expr: any): string | null => {
-  if (!expr && expr !== 0) return null;
-  let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
-  if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
-    return null;
-  }
-  // Check if it has any math operators, if it's just a number, no need for formula
-  if (!/[+\-*/()]/.test(sanitized)) return null;
-  
-  try {
-    const result = new Function(`return ${sanitized}`)();
-    return Number.isFinite(result) ? sanitized : null;
-  } catch (e) {
-    return null;
-  }
-};
+// Removed unused getMathFormula
 
 export const getItemTotalQuantity = (item: SelectedItem): number => {
   if (!item.occurrences) return 0;

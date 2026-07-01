@@ -5,7 +5,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'child_process'
 
-const commitCount = execSync('git rev-list --count HEAD').toString().trim()
+let commitCount = '0'
+try {
+  commitCount = execSync('git rev-list --count HEAD').toString().trim()
+} catch (e) {
+  console.warn('Git history not available for commit count versioning.')
+}
 const appVersion = `v1.3.0.${commitCount}`
 
 export default defineConfig({
