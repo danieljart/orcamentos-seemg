@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -18,6 +18,7 @@ interface CatalogItem {
   price: number;
   isCategory: boolean;
   rows: number[];
+  extendedDescription?: string;
 }
 
 export interface SelectedItemOccurrence {
@@ -137,6 +138,10 @@ export function Editor() {
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [lastSavedItemsJson, setLastSavedItemsJson] = useState<string>('');
+  
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [copyMemoryMode, setCopyMemoryMode] = useState<string | null>(null);
+  const [selectedItemsForCopy, setSelectedItemsForCopy] = useState<Set<string>>(new Set());
 
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -468,6 +473,74 @@ export function Editor() {
       setFormOccurrences([{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
     }
     setActiveFormItem(targetItem.item);
+
+    setTimeout(() => {
+      const el = document.getElementById(`catalog-item-${targetItem.item}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
+  const toggleDescription = (itemCode: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setExpandedDescriptions(prev => {
+      if (prev.has(itemCode)) {
+        return new Set();
+      } else {
+        return new Set([itemCode]);
+      }
+    });
+  };
+
+  const handleStartCopy = (itemId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCopyMemoryMode(itemId);
+    setSelectedItemsForCopy(new Set());
+  };
+
+  const toggleItemForCopy = (itemId: string) => {
+    setSelectedItemsForCopy(prev => {
+      const next = new Set(prev);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
+    });
+  };
+
+  const applyCopyMemory = () => {
+    if (!copyMemoryMode || selectedItemsForCopy.size === 0) return;
+    
+    const sourceItem = selectedItems.find(i => i.item === copyMemoryMode);
+    if (!sourceItem || !sourceItem.occurrences || sourceItem.occurrences.length === 0) {
+       setCopyMemoryMode(null);
+       return;
+    }
+    const newItems = selectedItems.map(item => {
+      if (selectedItemsForCopy.has(item.item)) {
+         const copiedOccurrences = sourceItem.occurrences!.map(occ => ({
+             ...occ,
+             id: Date.now().toString() + Math.random().toString()
+         }));
+         return { ...item, occurrences: copiedOccurrences };
+      }
+      return item;
+    });
+    
+    
+    setSelectedItems(newItems);
+    setHistory(h => {
+      const newHistory = [...h.slice(0, historyIndex + 1), { items: newItems, description: 'Memória de cálculo copiada', timestamp: new Date() }];
+      setHistoryIndex(newHistory.length - 1);
+      return newHistory;
+    });
+    setCopyMemoryMode(null);
+  };
+
+  const cancelCopyMemory = () => {
+    setCopyMemoryMode(null);
+    setSelectedItemsForCopy(new Set());
   };
 
   const saveForm = () => {
@@ -743,12 +816,7 @@ export function Editor() {
             const occQtd = Number(evaluateMath(occ.quantity)) || 0;
             if (occ.memory) row.getCell(7).value = occ.memory;
             if (occQtd > 0) {
-              const formulaStr = getMathFormula(occ.memory);
-              if (formulaStr) {
-                row.getCell(8).value = { formula: `ROUND(${formulaStr}, 2)`, result: occQtd };
-              } else {
-                row.getCell(8).value = occQtd;
-              }
+              row.getCell(8).value = occQtd;
               validRows.push(item.rows[idx]);
             }
             if (occ.location) row.getCell(9).value = occ.location;
@@ -757,15 +825,7 @@ export function Editor() {
         });
 
         if (totalQty > 0) {
-          if (validRows.length > 1) {
-            const firstRow = validRows[0];
-            const lastRow = validRows[validRows.length - 1];
-            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `ROUND(SUM(H${firstRow}:H${lastRow}), 2)`, result: totalQty };
-          } else if (validRows.length === 1) {
-            worksheet.getRow(item.rows[0]).getCell(4).value = { formula: `ROUND(SUM(H${validRows[0]}), 2)`, result: totalQty };
-          } else {
             worksheet.getRow(item.rows[0]).getCell(4).value = totalQty;
-          }
         }
       });
 
@@ -793,7 +853,7 @@ export function Editor() {
           catItem.rows.forEach(r => {
             const row = worksheet.getRow(r);
             if (row.getCell(3).text && row.getCell(3).text.includes('SUB-TOT')) return;
-            row.hidden = true;
+            row.getCell(10).value = 'oculta';
             if (!isCategory) {
               row.getCell(4).value = null;
             }
@@ -808,7 +868,7 @@ export function Editor() {
             const col3 = nextRow.getCell(3).text;
             
             if (!col1 && !col2 && (!col3 || !col3.includes('SUB-TOT'))) {
-               nextRow.hidden = true;
+               nextRow.getCell(10).value = 'oculta';
                nextRow.commit();
             }
           }
@@ -827,14 +887,8 @@ export function Editor() {
          const col3 = row.getCell(3).text;
          if (col3 && col3.includes('SUB-TOT')) {
              const catCode = worksheet.getRow(currentCategoryStart).getCell(1).text;
-             if (activeCategories.has(catCode)) {
-                 row.hidden = false;
-                 const startRow = currentCategoryStart + 1;
-                 const endRow = r - 1;
-                 row.getCell(6).value = { formula: `ROUND(SUM(F${startRow}:F${endRow}), 2)` };
-                 row.commit();
-             } else {
-                 row.hidden = true;
+             if (!activeCategories.has(catCode)) {
+                 row.getCell(10).value = 'oculta';
                  row.commit();
              }
          }
@@ -843,17 +897,7 @@ export function Editor() {
              // stop checking after the last category if needed, but going to 3000 is fine
          }
       }
-      // Adiciona cabeçalho na coluna J para que o filtro do Excel funcione nela
-      worksheet.getRow(5).getCell(10).value = 'STATUS';
-
-      // Final pass to safely mark hidden rows with 'oculta' in column 10 (J)
-      for (let r = 6; r < 3000; r++) {
-         const row = worksheet.getRow(r);
-         if (row.hidden) {
-             row.getCell(10).value = 'oculta';
-             row.commit();
-         }
-      }
+      // 'oculta' logic has been completely removed
 
       const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -923,7 +967,7 @@ export function Editor() {
     return acc;
   }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
 
-  const renderTree = (nodes: TreeNode[], term: string): ReactNode => {
+  const renderTree = (nodes: TreeNode[], term: string, level: number = 0): ReactNode => {
     const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const normalizedTerm = normalize(term);
     
@@ -938,14 +982,26 @@ export function Editor() {
     return nodes.filter(filterNode).map(node => {
       if (node.isCategory) {
         return (
-          <details key={node.item} className="group mb-1" open={!!term}>
+          <details key={node.item} name={`catalog-categories-${level}`} className="group mb-1" open={!!term}>
             <summary className="flex items-center gap-2 p-2 bg-slate-200 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700/80 rounded-md cursor-pointer list-none select-none border border-transparent dark:border-slate-700 transition-colors">
               <ChevronRight size={16} className="text-slate-500 dark:text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
-              <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-transparent dark:border-slate-700">{node.item}</span>
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide truncate">{node.description}</span>
+              <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-transparent dark:border-slate-700 shrink-0">{node.item}</span>
+              <div className="flex gap-2 items-start flex-1 pr-2">
+                <div className={`flex-1 ${expandedDescriptions.has(node.item) ? '' : 'line-clamp-3'}`}>
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide leading-tight whitespace-pre-wrap">{node.description}</span>
+                  {(node.extendedDescription && expandedDescriptions.has(node.item)) && (
+                    <div className="text-xs text-slate-600 dark:text-slate-400 whitespace-pre-wrap mt-1.5 pt-1.5 border-t border-slate-300 dark:border-slate-600 font-normal normal-case tracking-normal">{node.extendedDescription}</div>
+                  )}
+                </div>
+                {(node.extendedDescription || node.description.length > 80) && (
+                  <button onClick={(e) => toggleDescription(node.item, e)} className="text-slate-400 hover:text-emerald-600 p-0.5 rounded hover:bg-slate-300 dark:hover:bg-slate-700 shrink-0 mt-0.5">
+                    {expandedDescriptions.has(node.item) ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                )}
+              </div>
             </summary>
             <div className="pl-4 mt-1 border-l-2 border-slate-100 dark:border-slate-700 ml-3 flex flex-col gap-1">
-              {renderTree(node.children, term)}
+              {renderTree(node.children, term, level + 1)}
             </div>
           </details>
         );
@@ -960,7 +1016,7 @@ export function Editor() {
           : activeFormItem === node.item;
 
         return (
-          <div key={node.item} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isAdded ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200'}`}>
+          <div key={node.item} id={`catalog-item-${node.item}`} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isAdded ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200'}`}>
             <div 
               className="flex justify-between items-start gap-4 p-3 cursor-pointer"
               onClick={() => !isAdded && (isFormActive ? setActiveFormItem(null) : openForm(node))}
@@ -971,7 +1027,19 @@ export function Editor() {
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{node.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / {node.unit}</span>
                   {isAdded && <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full"><CheckCircle size={12}/> Adicionado</span>}
                 </div>
-                <p className={`text-sm text-slate-600 dark:text-slate-400 ${isFormActive ? '' : 'line-clamp-2'}`}>{node.description}</p>
+                <div className="flex gap-2 items-start mt-1">
+                  <div className={`flex-1 ${isFormActive ? '' : (expandedDescriptions.has(node.item) ? '' : 'line-clamp-3')}`}>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{node.description}</p>
+                    {(node.extendedDescription && (isFormActive || expandedDescriptions.has(node.item))) && (
+                      <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap mt-1.5 pt-1.5 border-t border-slate-200 dark:border-slate-700">{node.extendedDescription}</div>
+                    )}
+                  </div>
+                  {!isFormActive && (node.extendedDescription || node.description.length > 80) && (
+                    <button onClick={(e) => toggleDescription(node.item, e)} className="text-slate-400 hover:text-emerald-600 p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 shrink-0 mt-0.5">
+                      {expandedDescriptions.has(node.item) ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1378,12 +1446,27 @@ export function Editor() {
                   <div className="space-y-2">
                     {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
+                      const isCopySource = copyMemoryMode === item.item;
+                      const sourceItemForUnit = copyMemoryMode ? selectedItems.find(i => i.item === copyMemoryMode) : null;
+                      const canBeCopiedTo = copyMemoryMode && !isCopySource && sourceItemForUnit && (sourceItemForUnit.customUnit || sourceItemForUnit.unit) === (item.customUnit || item.unit);
+                      const isUnavailableForCopy = copyMemoryMode && !isCopySource && !canBeCopiedTo;
+
                       return (
-                      <div key={item.item} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200 dark:hover:border-emerald-700'}`}>
+                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isUnavailableForCopy ? 'opacity-40 grayscale bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 pointer-events-none' : (isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200 dark:hover:border-emerald-700')}`}>
                         <div className="p-3 hover:shadow-md transition-shadow group flex items-start gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="print:hidden">
                               <div className="flex items-center gap-2 mb-0.5">
+                                {copyMemoryMode && copyMemoryMode !== item.item && (() => {
+                                  const sourceItem = selectedItems.find(i => i.item === copyMemoryMode);
+                                  const targetUnit = item.customUnit || item.unit;
+                                  const sourceUnit = sourceItem ? (sourceItem.customUnit || sourceItem.unit) : null;
+                                  return sourceUnit === targetUnit;
+                                })() && (
+                                  <button onClick={(e) => { e.stopPropagation(); toggleItemForCopy(item.item); }} className="text-slate-400 hover:text-emerald-600">
+                                    {selectedItemsForCopy.has(item.item) ? <CheckSquare size={16} className="text-emerald-600" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded" />}
+                                  </button>
+                                )}
                                 <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">{item.customCode || item.item}</span>
                                 <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}
@@ -1391,11 +1474,25 @@ export function Editor() {
                                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
                               </div>
                               <div className="flex justify-between items-start gap-2">
-                                <div className="flex flex-col">
-                                  <p className="text-sm text-slate-800 dark:text-slate-200 font-medium line-clamp-3 leading-snug" title={item.customTitle || item.customDescription || item.description}>{item.customTitle || item.customDescription || item.description}</p>
-                                  {item.customTitle && item.customDescription && (
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{item.customDescription}</p>
-                                  )}
+                                <div className="flex flex-col flex-1">
+                                  <div className="flex items-start gap-1">
+                                    <div className={`flex-1 ${expandedDescriptions.has(item.item) ? '' : 'line-clamp-3'}`}>
+                                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-snug whitespace-pre-wrap" title={item.customTitle || item.customDescription || item.description}>
+                                        {item.customTitle || item.customDescription || item.description}
+                                      </p>
+                                      {item.customTitle && item.customDescription && (
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-pre-wrap">{item.customDescription}</p>
+                                      )}
+                                      {(item.extendedDescription && expandedDescriptions.has(item.item)) && (
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 font-normal">{item.extendedDescription}</div>
+                                      )}
+                                    </div>
+                                    {(item.extendedDescription || (item.customDescription && item.customDescription.length > 50) || item.description.length > 80) && (
+                                      <button onClick={(e) => toggleDescription(item.item, e)} className="p-0.5 text-slate-400 hover:text-emerald-600 transition-colors shrink-0 mt-0.5" title="Ver descrição completa">
+                                        {expandedDescriptions.has(item.item) ? <EyeOff size={14} /> : <Eye size={14} />}
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                                 <span className="text-xs font-bold text-slate-600 dark:text-slate-200 whitespace-nowrap bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 mt-0.5">
                                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}
@@ -1453,10 +1550,13 @@ export function Editor() {
                           </div>
                           {!isEditing && (
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                              <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded">
+                              <button onClick={(e) => handleStartCopy(item.item, e)} className={`p-1.5 rounded ${copyMemoryMode === item.item ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
+                                <Copy size={14}/>
+                              </button>
+                              <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
                                 <Edit2 size={14}/>
                               </button>
-                              <button onClick={() => handleRemoveItem(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded">
+                              <button onClick={() => handleRemoveItem(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded" title="Remover">
                                 <Trash2 size={14}/>
                               </button>
                             </div>
@@ -1853,6 +1953,33 @@ export function Editor() {
         <div className="fixed bottom-6 right-6 z-50 pointer-events-none">
           <div className={`px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
             <span className="font-medium text-sm">{toast.message}</span>
+          </div>
+    </div>
+      )}
+
+      {/* COPY MEMORY FLOATING BAR */}
+      {copyMemoryMode && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300 print:hidden">
+          <div className="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border border-emerald-200 dark:border-emerald-800 p-4 flex flex-col gap-3 min-w-[300px]">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
+              <Copy size={18} />
+              <span>Copiando memória de cálculo...</span>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Selecione os itens na lista que deverão receber a mesma memória e local.
+            </p>
+            <div className="flex justify-end gap-3 mt-1">
+              <button onClick={cancelCopyMemory} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
+                Cancelar
+              </button>
+              <button 
+                onClick={applyCopyMemory} 
+                disabled={selectedItemsForCopy.size === 0}
+                className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all"
+              >
+                Colar em {selectedItemsForCopy.size} {selectedItemsForCopy.size === 1 ? 'item' : 'itens'}
+              </button>
+            </div>
           </div>
         </div>
       )}
