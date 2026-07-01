@@ -903,7 +903,10 @@ export function Dashboard() {
         </main>
         
         <footer className="py-6 mt-auto text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
-          <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Desenvolvido por D de Design</a>
+          <div className="flex justify-center items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">{import.meta.env.APP_VERSION || 'v1.0'}</span>
+            <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Desenvolvido por D de Design</a>
+          </div>
           <a href="mailto:d.de.design1809@gmail.com" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">d.de.design1809@gmail.com</a>
         </footer>
   

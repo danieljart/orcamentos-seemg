@@ -3,8 +3,15 @@ import path from "path"
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'child_process'
+
+const commitCount = execSync('git rev-list --count HEAD').toString().trim()
+const appVersion = `v1.3.0.${commitCount}`
 
 export default defineConfig({
+  define: {
+    'import.meta.env.APP_VERSION': JSON.stringify(appVersion)
+  },
   server: {
     host: true,
   },
