@@ -828,6 +828,9 @@ export function Editor() {
         });
       });
 
+      const rowsToDelete = new Set<number>();
+      const activeSubtotalRows = new Set<number>();
+
       catalog.forEach(catItem => {
         const isSelected = selectedItemCodes.has(catItem.item);
         const isCategory = catItem.isCategory;
@@ -838,11 +841,10 @@ export function Editor() {
           catItem.rows.forEach(r => {
             const row = worksheet.getRow(r);
             if (row.getCell(3).text && row.getCell(3).text.includes('SUB-TOT')) return;
-            row.hidden = true;
+            rowsToDelete.add(r);
             if (!isCategory) {
               row.getCell(4).value = null;
             }
-            row.commit();
             lastRowIdx = r;
           });
 
@@ -853,8 +855,7 @@ export function Editor() {
             const col3 = nextRow.getCell(3).text;
             
             if (!col1 && !col2 && (!col3 || !col3.includes('SUB-TOT'))) {
-               nextRow.hidden = true;
-               nextRow.commit();
+               rowsToDelete.add(lastRowIdx + 1);
             }
           }
         }
@@ -873,10 +874,174 @@ export function Editor() {
          if (col3 && col3.includes('SUB-TOT')) {
              const catCode = worksheet.getRow(currentCategoryStart).getCell(1).text;
              if (!activeCategories.has(catCode)) {
-                 row.hidden = true;
-                 row.commit();
+                 rowsToDelete.add(r);
+             } else {
+                 activeSubtotalRows.add(r);
              }
          }
+      }
+
+      const deletedRowsAsc = Array.from(rowsToDelete).sort((a, b) => a - b);
+      
+      const newSubtotalRows = Array.from(activeSubtotalRows).map(r => {
+         let shift = 0;
+         for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
+         return r - shift;
+      });
+
+      // Find Total Custo row
+      let rowTotalCusto = 0;
+      worksheet.eachRow((row, r) => {
+         const colB = row.getCell(2).text || '';
+         const colC = row.getCell(3).text || '';
+         const text = (colB + ' ' + colC).toUpperCase();
+         if (text.includes('TOTAL CUSTO =')) rowTotalCusto = r;
+      });
+
+      const adjustFormula = (formula: string) => {
+        return formula.replace(/(\$?[A-Z]+\$?\d+):(\$?[A-Z]+\$?\d+)|(\$?[A-Z]+\$?\d+)/g, (_, rangeStart, rangeEnd, singleCell) => {
+            if (singleCell) {
+                const parts = singleCell.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+                if(!parts) return singleCell;
+                const [, col, dol, rStr] = parts;
+                const r = parseInt(rStr, 10);
+                // When a referenced cell is deleted (like the Projeto subtotal), replace it with 0
+                // This keeps BDI formulas mathematically correct (e.g., =(Total-0)*Perc )
+                if (deletedRowsAsc.includes(r)) return '0';
+                let shift = 0;
+                for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
+                return `${col}${dol}${r - shift}`;
+            } else {
+                const parts1 = rangeStart.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+                const r1 = parseInt(parts1[3], 10);
+                let shift1 = 0;
+                for (const del of deletedRowsAsc) { if (del < r1) shift1++; else break; }
+                
+                const parts2 = rangeEnd.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+                const r2 = parseInt(parts2[3], 10);
+                let shift2 = 0;
+                for (const del of deletedRowsAsc) { if (del <= r2) shift2++; else break; }
+                
+                return `${parts1[1]}${parts1[2]}${r1 - shift1}:${parts2[1]}${parts2[2]}${r2 - shift2}`;
+            }
+        });
+      };
+
+      worksheet.eachRow({ includeEmpty: true }, (row) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+           if (cell.formula && typeof cell.formula === 'string') {
+              const currentVal = cell.value as any;
+              cell.value = {
+                 ...currentVal,
+                 formula: adjustFormula(cell.formula)
+              };
+           }
+        });
+      });
+
+      // PERFECT BYPASS FOR EXCELJS MERGE AND STYLE BUGS
+      // exceljs corrupts merges on spliceRows, and its mergeCells() destroys cell borders.
+      // 1. Save all cell styles
+      // 2. Unmerge everything safely
+      // 3. Splice rows
+      // 4. Re-merge shifted coordinates
+      // 5. Restore all styles to undo border destruction
+      const originalMerges = (worksheet as any).model.merges ? [...(worksheet as any).model.merges] : [];
+      
+      const savedStyles = new Map<string, any>();
+      worksheet.eachRow({ includeEmpty: true }, (row, r) => {
+          row.eachCell({ includeEmpty: true }, (cell, c) => {
+              if (cell.style) {
+                  savedStyles.set(`${r},${c}`, JSON.parse(JSON.stringify(cell.style)));
+              }
+          });
+      });
+
+      originalMerges.forEach(rangeStr => {
+          try { worksheet.unMergeCells(rangeStr); } catch (e) {}
+      });
+
+      // Delete the rows from bottom to top in contiguous blocks
+      const blocks: {start: number, count: number}[] = [];
+      if (deletedRowsAsc.length > 0) {
+          let currentBlock = {start: deletedRowsAsc[0], count: 1};
+          for (let i = 1; i < deletedRowsAsc.length; i++) {
+             if (deletedRowsAsc[i] === currentBlock.start + currentBlock.count) {
+                 currentBlock.count++;
+             } else {
+                 blocks.push(currentBlock);
+                 currentBlock = {start: deletedRowsAsc[i], count: 1};
+             }
+          }
+          blocks.push(currentBlock);
+      }
+      
+      blocks.reverse().forEach(b => {
+          worksheet.spliceRows(b.start, b.count);
+      });
+      
+      // Calculate and re-apply merges perfectly
+      const shiftRow = (r: number) => {
+          let shift = 0;
+          for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
+          return r - shift;
+      };
+      const shiftRowEnd = (r: number) => {
+          let shift = 0;
+          for (const del of deletedRowsAsc) { if (del <= r) shift++; else break; }
+          return r - shift;
+      };
+
+      originalMerges.forEach(rangeStr => {
+          const parts = rangeStr.split(':');
+          if (parts.length === 2) {
+              const startMatch = parts[0].match(/([A-Z]+)(\d+)/);
+              const endMatch = parts[1].match(/([A-Z]+)(\d+)/);
+              if (startMatch && endMatch) {
+                  const r1 = parseInt(startMatch[2], 10);
+                  const r2 = parseInt(endMatch[2], 10);
+                  
+                  let allDeleted = true;
+                  for (let r = r1; r <= r2; r++) {
+                      if (!deletedRowsAsc.includes(r)) { allDeleted = false; break; }
+                  }
+                  if (allDeleted) return;
+
+                  const newR1 = shiftRow(r1);
+                  const newR2 = shiftRowEnd(r2);
+                  
+                  // Avoid invalid 1x1 merges
+                  if (newR1 <= newR2 && !(newR1 === newR2 && startMatch[1] === endMatch[1])) {
+                      try { worksheet.mergeCells(`${startMatch[1]}${newR1}:${endMatch[1]}${newR2}`); } catch(e) {}
+                  }
+              }
+          }
+      });
+      
+      // RESTORE ALL CELL STYLES! This completely undoes the destructive styling of exceljs mergeCells
+      savedStyles.forEach((style, key) => {
+          const [oldRStr, oldCStr] = key.split(',');
+          const oldR = parseInt(oldRStr, 10);
+          const c = parseInt(oldCStr, 10);
+          
+          if (deletedRowsAsc.includes(oldR)) return;
+          
+          const newR = shiftRow(oldR);
+          const cell = worksheet.getRow(newR).getCell(c);
+          cell.style = style;
+      });
+      
+      // Rewrite Grand Total formula
+      if (rowTotalCusto > 0) {
+         let shift = 0;
+         for (const del of deletedRowsAsc) { if (del < rowTotalCusto) shift++; else break; }
+         const newRowTotalCusto = rowTotalCusto - shift;
+         
+         const newGrandTotalFormula = newSubtotalRows.length > 0 
+              ? newSubtotalRows.map(r => `F${r}`).join('+')
+              : '0';
+              
+         worksheet.getRow(newRowTotalCusto).getCell(6).value = { formula: newGrandTotalFormula };
       }
 
       const buffer = await wb.xlsx.writeBuffer();
