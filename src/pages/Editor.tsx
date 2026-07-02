@@ -1620,8 +1620,8 @@ export function Editor() {
 
                 return (
                 <div key={mainGroupName} className="mb-6">
-                  <div className="mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">
-                    <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
+                  <div className="mb-3 bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:bg-transparent print:border-none print:border-b print:border-emerald-800 print:shadow-none print:px-0 print:rounded-none">
+                    <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
                       <span>{mainGroupName}</span>
                       <span className="text-emerald-600/70 dark:text-emerald-400 print:!text-emerald-900 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
                     </h3>
