@@ -1621,7 +1621,7 @@ export function Editor() {
                 return (
                 <div key={mainGroupName} className="mb-6">
                   <div className="mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">
-                    <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
                       <span>{mainGroupName}</span>
                       <span className="text-emerald-600/70 dark:text-emerald-400 print:!text-emerald-900 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
                     </h3>
@@ -1634,7 +1634,7 @@ export function Editor() {
                             {subGroupName}
                           </p>
                         )}
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
