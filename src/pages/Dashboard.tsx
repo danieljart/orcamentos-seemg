@@ -681,11 +681,11 @@ export function Dashboard() {
       )}
 
       {/* TOAST */}
-      <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10">
-        <div className="container mx-auto flex justify-between items-center">
+      <header className="bg-emerald-800 text-white shadow-md h-[64px] flex items-center sticky top-0 z-10 px-4">
+        <div className="container mx-auto flex justify-between items-center w-full h-full">
           <div className="flex items-center gap-3">
             <FileSpreadsheet size={28} className="text-emerald-300 hidden sm:block" />
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center">
               <h1 className="text-lg md:text-xl font-bold tracking-wide leading-tight">Portal de Orçamentos SEE-MG</h1>
               {userName && <span className="text-xs font-medium text-emerald-100">Engº. {userName}</span>}
             </div>

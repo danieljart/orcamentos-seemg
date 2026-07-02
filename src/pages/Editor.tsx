@@ -21,7 +21,7 @@ interface CatalogItem {
   extendedDescription?: string;
 }
 
-export interface SelectedItemOccurrence {
+interface SelectedItemOccurrence {
   id: string;
   quantity: string;
   memory: string;
@@ -57,7 +57,7 @@ const evaluateMath = (expr: any): string => {
 
 // Removed unused getMathFormula
 
-export const getItemTotalQuantity = (item: SelectedItem): number => {
+const getItemTotalQuantity = (item: SelectedItem): number => {
   if (!item.occurrences) return 0;
   return item.occurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
 };
@@ -431,6 +431,20 @@ export function Editor() {
 
   const removeOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string) => {
     setState(prev => prev.filter(occ => occ.id !== id));
+  };
+
+  const duplicateOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, occ: SelectedItemOccurrence) => {
+    setState(prev => {
+      const index = prev.findIndex(o => o.id === occ.id);
+      const newOcc = { ...occ, id: Math.random().toString(36).substring(2, 11) };
+      const newArr = [...prev];
+      if (index !== -1) {
+        newArr.splice(index + 1, 0, newOcc);
+      } else {
+        newArr.push(newOcc);
+      }
+      return newArr;
+    });
   };
 
 
@@ -1221,8 +1235,9 @@ export function Editor() {
                 {formOccurrences.map((occ, idx) => (
                   <div key={occ.id} className="relative bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700">
                     <div className="absolute top-2 right-2 flex gap-1">
+                      <button onClick={() => duplicateOccurrence(setFormOccurrences, occ)} className="text-slate-400 hover:text-emerald-600 p-1" title="Duplicar"><Copy size={14}/></button>
                       {formOccurrences.length > 1 && (
-                        <button onClick={() => removeOccurrence(setFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14}/></button>
+                        <button onClick={() => removeOccurrence(setFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1" title="Remover"><Trash2 size={14}/></button>
                       )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
@@ -1282,13 +1297,24 @@ export function Editor() {
   };
 
   const groupedSelected = useMemo(() => {
-    const groups: Record<string, SelectedItem[]> = {};
+    const groups: Record<string, Record<string, SelectedItem[]>> = {};
     selectedItems.forEach(item => {
       const catPrefix = item.item.substring(0, 2) + "0000";
       const cat = catalog.find(c => c.item === catPrefix);
-      const catName = cat ? cat.description : "Outros";
-      if (!groups[catName]) groups[catName] = [];
-      groups[catName].push(item);
+      const mainGroupName = cat ? cat.description : "Outros";
+
+      const subCatPrefix = item.item.substring(0, 4) + "00";
+      const subCat = catalog.find(c => c.item === subCatPrefix);
+      
+      let subGroupName = "";
+      if (subCat && subCat.item !== catPrefix && subCat.description && subCat.description.trim() !== '') {
+        subGroupName = subCat.description;
+      }
+
+      if (!groups[mainGroupName]) groups[mainGroupName] = {};
+      if (!groups[mainGroupName][subGroupName]) groups[mainGroupName][subGroupName] = [];
+      
+      groups[mainGroupName][subGroupName].push(item);
     });
     return groups;
   }, [selectedItems, catalog]);
@@ -1328,7 +1354,7 @@ export function Editor() {
   const isCloudSaveDisabled = isSaving || JSON.stringify(selectedItems) === lastSavedItemsJson;
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-800/50 flex flex-col">
+    <div className="h-screen overflow-hidden bg-slate-100 dark:bg-slate-800/50 flex flex-col">
       <datalist id="locations-list">
         {uniqueLocations.map(loc => (
           <option key={loc} value={loc} />
@@ -1376,11 +1402,11 @@ export function Editor() {
       )}
 
       {/* HEADER PRINCIPAL */}
-      <header className="bg-emerald-800 text-white shadow-md p-4 sticky top-0 z-10 print:hidden">
-        <div className="container mx-auto flex justify-between items-center">
+      <header className="bg-emerald-800 text-white shadow-md h-[64px] flex items-center sticky top-0 z-10 print:hidden px-4">
+        <div className="container mx-auto flex justify-between items-center w-full h-full">
           <div className="flex items-center gap-3">
             <FileSpreadsheet size={28} className="text-emerald-300 hidden sm:block" />
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center">
               <h1 className="text-lg md:text-xl font-bold tracking-wide leading-tight">Portal de Orçamentos SEE-MG</h1>
               {userName && <span className="text-xs font-medium text-emerald-100">Engº. {userName}</span>}
             </div>
@@ -1439,11 +1465,11 @@ export function Editor() {
         </div>
       </header>
 
-      <main className="container mx-auto h-full flex flex-col gap-4 p-4 pb-20 md:pb-4 print:block print:p-0 flex-1">
+      <main className="container mx-auto h-full flex flex-col gap-3 p-3 pb-20 md:pb-3 print:block print:p-0 flex-1 min-h-0 overflow-hidden">
         
         {/* Dados da Obra Info (FULL WIDTH) */}
-        <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/50 rounded-lg p-3 shadow-sm flex flex-col gap-2 relative group print:hidden">
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/50 rounded-lg px-3 h-[52px] shadow-sm flex flex-col justify-center relative group print:hidden shrink-0">
+          <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={() => setIsHeaderEditModalOpen(true)}
               className="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 p-1.5 rounded-md shadow-sm border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
@@ -1452,7 +1478,7 @@ export function Editor() {
               <Edit2 size={16} />
             </button>
           </div>
-          <div className="flex flex-wrap md:flex-nowrap items-start justify-between gap-x-4 gap-y-2 pr-12 w-full">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-x-4 pr-12 w-full">
             <div className="overflow-hidden flex-shrink min-w-[100px] max-w-[250px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Escola</span>
               <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate block" title={workbook.escola}>{workbook.escola}</span>
@@ -1477,15 +1503,17 @@ export function Editor() {
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">ISS</span>
               <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate block">{workbook.iss || 0}%</span>
             </div>
-            <div className="overflow-hidden shrink-0">
+            <div className="overflow-hidden shrink-0 flex flex-col justify-center">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Status</span>
-              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full inline-block truncate ${
-                workbook.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
-                workbook.status === 'Em revisão' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
-                'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
-              }`}>
-                {workbook.status || 'Em andamento'}
-              </span>
+              <div className="h-5 flex items-center mt-0.5">
+                <span className={`text-[10px] font-bold uppercase px-2 h-full flex items-center justify-center rounded-full truncate ${
+                  workbook.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
+                  workbook.status === 'Em revisão' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
+                  'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
+                }`}>
+                  {workbook.status || 'Em andamento'}
+                </span>
+              </div>
             </div>
             <div className="overflow-hidden shrink-0 flex flex-col items-end">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Rev</span>
@@ -1494,88 +1522,88 @@ export function Editor() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 overflow-hidden">
           {/* Lado Esquerdo: Busca e Catálogo */}
-          <div className="flex flex-col h-[50vh] lg:h-full lg:w-1/3 gap-3 print:hidden min-h-0">
-            <h2 className="text-lg font-bold text-emerald-900 dark:text-emerald-100 px-1">Pesquisa de Itens</h2>
-            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 min-h-0">
-            
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-t-xl space-y-4">
+          <div className="flex flex-col h-[50vh] lg:h-full lg:w-1/3 gap-3 print:hidden min-h-0 overflow-hidden">
+            {/* Caixa 1: Pesquisa */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-3 shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 shadow-sm"
+                  className="w-full pl-10 pr-4 h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm"
                   placeholder="Buscar por nome ou código do serviço no catálogo..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
-            </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-slate-50 dark:bg-slate-900/30">
-            {catalog.length === 0 ? (
-               <div className="text-center p-8 text-slate-400">Carregando catálogo...</div>
-            ) : (
-               renderTree(tree, searchTerm)
-            )}
-          </div>
+            </section>
+
+            {/* Caixa 2: Lista do Catálogo */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 space-y-1 bg-slate-50 dark:bg-slate-900/30">
+                {catalog.length === 0 ? (
+                   <div className="text-center p-8 text-slate-400">Carregando catálogo...</div>
+                ) : (
+                   renderTree(tree, searchTerm)
+                )}
+              </div>
             </section>
           </div>
 
           {/* Lado Direito: Itens Selecionados */}
-          <div className="flex flex-col h-full lg:w-2/3 print:border-none print:shadow-none print:h-auto print:block print:w-full gap-3">
-            <h2 className="text-lg font-bold text-emerald-900 dark:text-emerald-100 px-1 print:hidden">Orçamento ({selectedItems.length})</h2>
-            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-t-xl flex flex-col gap-4 print:bg-white dark:bg-slate-800 print:border-none print:p-0 print:mb-6">
+          <div className="flex flex-col h-full lg:w-2/3 print:border-none print:shadow-none print:h-auto print:block print:w-full gap-3 min-h-0 overflow-hidden">
             
-            {/* Cabeçalho Impressão */}
-            <div className="hidden print:block mb-6 border-b-2 border-emerald-800 pb-4">
-              <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-black text-emerald-900">
-                  Relatório de Orçamento{workbook.servicos ? ` - ${workbook.servicos}` : ''}
-                </h1>
-                <p className="text-lg font-bold text-slate-700 dark:text-slate-300">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-slate-700 dark:text-slate-300">
-                <p><strong>Escola:</strong> {workbook.escola}</p>
-                <p><strong>Município:</strong> {workbook.municipio}</p>
-                <p><strong>Código:</strong> {workbook.cod_escola}</p>
-                <p><strong>SRE:</strong> {workbook.sre}</p>
-                {workbook.engenheiro && <p><strong>Engenheiro:</strong> {workbook.engenheiro}</p>}
-                {workbook.crea && <p><strong>CREA:</strong> {workbook.crea}</p>}
-              </div>
-            </div>
-
-            {/* Linha 2: Totais */}
-            <div className={`grid gap-3 print:hidden ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
-              <div className="bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-sky-700 dark:text-sky-400">Custo Direto</span>
-                <span className="text-sm font-bold text-sky-900 dark:text-sky-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-              </div>
-              <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400">
-                  BDI OBRA ({(bdiRate * 100).toFixed(2)}%)
-                </span>
-                <span className="text-sm font-bold text-amber-900 dark:text-amber-200">{bdiObraAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-              </div>
-              {totalProj > 0 && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                  <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400">
-                    BDI PROJ (29.26%)
-                  </span>
-                  <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+            {/* Caixa 3: Totais */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-3 shrink-0 print:bg-white print:border-none print:shadow-none print:p-0 print:mb-6">
+              {/* Cabeçalho Impressão */}
+              <div className="hidden print:block mb-4 border-b-2 border-emerald-800 pb-2">
+                <div className="flex justify-between items-end mb-2">
+                  <h1 className="text-2xl font-black text-emerald-900">
+                    Relatório de Orçamento{workbook.servicos ? ` - ${workbook.servicos}` : ''}
+                  </h1>
+                  <p className="text-lg font-bold text-slate-700 dark:text-slate-300 print:text-black">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
-              )}
-              <div className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2.5 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-400">Total Geral</span>
-                <span className="text-sm font-bold text-emerald-950 dark:text-emerald-200">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <div className="grid grid-cols-3 gap-y-1 gap-x-4 text-[13px] text-slate-700 dark:text-slate-300 print:text-black">
+                  <p><strong>Escola:</strong> {workbook.escola || '-'}</p>
+                  <p><strong>Código:</strong> {workbook.cod_escola || '-'}</p>
+                  <p><strong>Engenheiro:</strong> {workbook.engenheiro || '-'}</p>
+                  <p><strong>Município:</strong> {workbook.municipio || '-'}</p>
+                  <p><strong>SRE:</strong> {workbook.sre || '-'}</p>
+                  <p><strong>CREA:</strong> {workbook.crea || '-'}</p>
+                </div>
               </div>
-            </div>
 
-          </div>
+              {/* Linha 2: Totais */}
+              <div className={`grid gap-3 print:hidden ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                <div className="bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-sky-700 dark:text-sky-400">Custo Direto</span>
+                  <span className="text-sm font-bold text-sky-900 dark:text-sky-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                </div>
+                <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400">
+                    BDI OBRA ({(bdiRate * 100).toFixed(2)}%)
+                  </span>
+                  <span className="text-sm font-bold text-amber-900 dark:text-amber-200">{bdiObraAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                </div>
+                {totalProj > 0 && (
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
+                    <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400">
+                      BDI PROJ (29.26%)
+                    </span>
+                    <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  </div>
+                )}
+                <div className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-400">Total Geral</span>
+                  <span className="text-sm font-bold text-emerald-950 dark:text-emerald-200">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                </div>
+              </div>
+            </section>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 print:overflow-visible print:p-0">
+            {/* Caixa 4: Lista do Orçamento */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 space-y-6 print:overflow-visible print:p-0">
             {selectedItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
                 <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-full">
@@ -1584,16 +1612,30 @@ export function Editor() {
                 <p>Nenhum serviço adicionado ainda.<br/>Selecione um item no catálogo ao lado.</p>
               </div>
             ) : (
-              Object.entries(groupedSelected).map(([catName, items]) => {
-                const groupTotal = items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+              Object.entries(groupedSelected).map(([mainGroupName, subGroups]) => {
+                let mainGroupTotal = 0;
+                Object.values(subGroups).forEach(items => {
+                  mainGroupTotal += items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+                });
+
                 return (
-                <div key={catName}>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 border-b dark:border-slate-700 pb-1 flex justify-between items-center">
-                    <span>{catName}</span>
-                    <span className="text-emerald-600/70 dark:text-emerald-400 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(groupTotal)}</span>
-                  </h3>
-                  <div className="space-y-2">
-                    {items.map(item => {
+                <div key={mainGroupName} className="mb-6">
+                  <div className="mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 print:text-emerald-800 uppercase tracking-wider flex justify-between items-center">
+                      <span>{mainGroupName}</span>
+                      <span className="text-emerald-600/70 dark:text-emerald-400 print:text-emerald-800 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    {Object.entries(subGroups).map(([subGroupName, items]) => (
+                      <div key={subGroupName}>
+                        {subGroupName && (
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 print:text-black mb-2 uppercase tracking-wide border-b border-slate-100 dark:border-slate-800 pb-1">
+                            {subGroupName}
+                          </p>
+                        )}
+                        <div className="space-y-2">
+                          {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
                       const sourceItemForUnit = copyMemoryMode ? selectedItems.find(i => i.item === copyMemoryMode) : null;
@@ -1668,28 +1710,30 @@ export function Editor() {
                             </div>
                             
                             {/* Layout Específico para Impressão */}
-                            <div className="hidden print:block">
+                            <div className="hidden print:block print:text-black">
                               <div className="flex justify-between items-start mb-1 border-b pb-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{item.customCode || item.item}</span>
+                                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 print:text-black">{item.customCode || item.item}</span>
                                   <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
                                     {item.customTitle && item.customDescription && (
-                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 line-clamp-1">{item.customDescription}</span>
+                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 print:text-black line-clamp-1">{item.customDescription}</span>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-xs text-slate-700 dark:text-slate-300 mt-2 space-y-1">
+                              <div className="text-xs text-slate-700 dark:text-slate-300 print:text-black mt-2 space-y-1">
                                 {item.occurrences?.map((occ) => (
-                                  <div key={occ.id} className="grid grid-cols-5 gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1">
+                                  <div key={occ.id} className={`grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 ${item.occurrences!.length > 1 ? 'grid-cols-5' : 'grid-cols-4'}`}>
                                     <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
                                     <p className="truncate" title={occ.memory}><strong>Memória:</strong> {occ.memory || '-'}</p>
                                     <p><strong>Qtd:</strong> {occ.quantity} {item.unit}</p>
-                                    <p><strong>Subtotal:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
+                                    {item.occurrences!.length > 1 && (
+                                      <p><strong>Subtotal:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
+                                    )}
                                   </div>
                                 ))}
-                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200">
+                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:text-black">
                                   <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
                                   <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
                                   <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
@@ -1743,8 +1787,9 @@ export function Editor() {
                               {editFormOccurrences.map((occ, idx) => (
                                 <div key={occ.id} className="relative bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700">
                                   <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                    <button onClick={() => duplicateOccurrence(setEditFormOccurrences, occ)} className="text-slate-400 hover:text-emerald-600 p-1 bg-white dark:bg-slate-800 rounded" title="Duplicar"><Copy size={14}/></button>
                                     {editFormOccurrences.length > 1 && (
-                                      <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1 bg-white dark:bg-slate-800 rounded"><Trash2 size={14}/></button>
+                                      <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1 bg-white dark:bg-slate-800 rounded" title="Remover"><Trash2 size={14}/></button>
                                     )}
                                   </div>
                                   <div className="flex flex-col gap-3">
@@ -1802,14 +1847,17 @@ export function Editor() {
                         )}
                       </div>
                     )})}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 );
               })
             )}
           </div>
-        </section>
-        </div>
+            </section>
+          </div>
         </div>
       </main>
 
@@ -1845,7 +1893,7 @@ export function Editor() {
 
       {/* HEADER EDIT MODAL */}
       {isHeaderEditModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto custom-scrollbar">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -1865,7 +1913,7 @@ export function Editor() {
               }
               setIsHeaderEditModalOpen(false);
               showToast("Dados atualizados com sucesso!", "success");
-            }} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            }} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Escola Estadual</label>
@@ -1961,7 +2009,7 @@ export function Editor() {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-4 overflow-y-auto flex-1 flex flex-col gap-2">
+            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-2">
               {history.map((h, idx) => (
                 <button
                   key={idx}
@@ -2028,7 +2076,7 @@ export function Editor() {
               </div>
             </div>
 
-            <div className="p-4 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-900/50">
+            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-50 dark:bg-slate-900/50">
               <div className="space-y-2">
                 {importCandidateItems
                   .filter(i => {

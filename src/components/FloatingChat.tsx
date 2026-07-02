@@ -69,7 +69,7 @@ export function FloatingChat() {
     <>
       {/* Toast Notification for Chat */}
       {toast && (
-        <div className={`fixed bottom-24 right-4 z-[60] px-4 py-3 rounded-lg shadow-lg font-medium text-sm animate-in slide-in-from-bottom-5 fade-in duration-300
+        <div className={`print:hidden fixed bottom-24 right-4 z-[60] px-4 py-3 rounded-lg shadow-lg font-medium text-sm animate-in slide-in-from-bottom-5 fade-in duration-300
           ${toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
           {toast.message}
         </div>
@@ -78,7 +78,7 @@ export function FloatingChat() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center
+        className={`print:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center
           ${isOpen ? 'bg-slate-700 hover:bg-slate-800 text-white rotate-90 scale-90' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105'}`}
       >
         {isOpen ? <X size={24} className="-rotate-90" /> : <MessageCircle size={28} />}
@@ -86,7 +86,7 @@ export function FloatingChat() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 border border-slate-100 dark:border-slate-700">
+        <div className="print:hidden fixed bottom-24 right-6 z-50 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 border border-slate-100 dark:border-slate-700">
           <div className="bg-emerald-600 p-4 text-white">
             <h3 className="font-bold text-lg">Central de Ajuda</h3>
             <p className="text-emerald-100 text-xs mt-1">Envie sua dúvida ou sugestão</p>
