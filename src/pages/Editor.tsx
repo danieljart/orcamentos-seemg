@@ -1562,9 +1562,9 @@ export function Editor() {
                   <h1 className="text-2xl font-black text-emerald-900">
                     Relatório de Orçamento{workbook.servicos ? ` - ${workbook.servicos}` : ''}
                   </h1>
-                  <p className="text-lg font-bold text-slate-700 dark:text-slate-300 print:text-black">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-lg font-bold text-slate-700 dark:text-slate-300 print:!text-black">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
-                <div className="grid grid-cols-3 gap-y-1 gap-x-4 text-[13px] text-slate-700 dark:text-slate-300 print:text-black">
+                <div className="grid grid-cols-3 gap-y-1 gap-x-4 text-[13px] text-slate-700 dark:text-slate-300 print:!text-black">
                   <p><strong>Escola:</strong> {workbook.escola || '-'}</p>
                   <p><strong>Código:</strong> {workbook.cod_escola || '-'}</p>
                   <p><strong>Engenheiro:</strong> {workbook.engenheiro || '-'}</p>
@@ -1621,16 +1621,16 @@ export function Editor() {
                 return (
                 <div key={mainGroupName} className="mb-6">
                   <div className="mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">
-                    <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 print:text-emerald-800 uppercase tracking-wider flex justify-between items-center">
+                    <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
                       <span>{mainGroupName}</span>
-                      <span className="text-emerald-600/70 dark:text-emerald-400 print:text-emerald-800 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
+                      <span className="text-emerald-600/70 dark:text-emerald-400 print:!text-emerald-900 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
                     </h3>
                   </div>
                   <div className="space-y-4">
                     {Object.entries(subGroups).map(([subGroupName, items]) => (
                       <div key={subGroupName}>
                         {subGroupName && (
-                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 print:text-black mb-2 uppercase tracking-wide border-b border-slate-100 dark:border-slate-800 pb-1">
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 print:!text-black mb-2 uppercase tracking-wide border-b border-slate-100 dark:border-slate-800 pb-1">
                             {subGroupName}
                           </p>
                         )}
@@ -1710,19 +1710,19 @@ export function Editor() {
                             </div>
                             
                             {/* Layout Específico para Impressão */}
-                            <div className="hidden print:block print:text-black">
+                            <div className="hidden print:block print:!text-black">
                               <div className="flex justify-between items-start mb-1 border-b pb-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 print:text-black">{item.customCode || item.item}</span>
+                                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 print:!text-black">{item.customCode || item.item}</span>
                                   <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:!text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
                                     {item.customTitle && item.customDescription && (
-                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 print:text-black line-clamp-1">{item.customDescription}</span>
+                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 print:!text-black line-clamp-1">{item.customDescription}</span>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-xs text-slate-700 dark:text-slate-300 print:text-black mt-2 space-y-1">
+                              <div className="text-xs text-slate-700 dark:text-slate-300 print:!text-black mt-2 space-y-1">
                                 {item.occurrences?.map((occ) => (
                                   <div key={occ.id} className={`grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 ${item.occurrences!.length > 1 ? 'grid-cols-5' : 'grid-cols-4'}`}>
                                     <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
@@ -1733,7 +1733,7 @@ export function Editor() {
                                     )}
                                   </div>
                                 ))}
-                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:text-black">
+                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:!text-black">
                                   <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
                                   <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
                                   <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
