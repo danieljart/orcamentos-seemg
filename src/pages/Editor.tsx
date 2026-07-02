@@ -1620,17 +1620,17 @@ export function Editor() {
 
                 return (
                 <div key={mainGroupName} className="mb-6">
-                  <div className="mb-3 bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:bg-transparent print:border-none print:border-b print:border-emerald-800 print:shadow-none print:px-0 print:rounded-none">
+                  <div className="mb-1 bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:bg-transparent print:border-none print:border-b print:border-emerald-800 print:shadow-none print:px-0 print:rounded-none">
                     <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
                       <span>{mainGroupName}</span>
                       <span className="text-emerald-600/70 dark:text-emerald-400 print:!text-emerald-900 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
                     </h3>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     {Object.entries(subGroups).map(([subGroupName, items]) => (
                       <div key={subGroupName}>
                         {subGroupName && (
-                          <div className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 mb-2 shadow-sm print:bg-transparent print:border-none print:border-b print:border-slate-300 print:shadow-none print:px-0 print:rounded-none print:mb-2">
+                          <div className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 mb-1 shadow-sm print:bg-transparent print:border-none print:border-b print:border-slate-300 print:shadow-none print:px-0 print:rounded-none print:mb-1">
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 print:!text-black uppercase tracking-wide">
                               {subGroupName}
                             </p>
