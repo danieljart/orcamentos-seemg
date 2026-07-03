@@ -738,7 +738,7 @@ export function Dashboard() {
             <input 
               type="text" 
               placeholder="Buscar por escola, município ou código..." 
-              className="w-full bg-white dark:bg-slate-800 pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all h-[42px]"
+              className="w-full bg-white dark:bg-slate-800 pl-10 p-3 text-sm rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -747,7 +747,7 @@ export function Dashboard() {
           <div className="flex-1 w-full flex flex-wrap xl:flex-nowrap gap-3">
              <div className="flex-1 min-w-[140px]">
                <Select value={statusFilter || 'all'} onValueChange={val => setStatusFilter(val === 'all' ? '' : val)}>
-                 <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                 <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 p-3 !h-auto rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
                    <SelectValue placeholder="Status (Todos)" />
                  </SelectTrigger>
                  <SelectContent position="popper" sideOffset={4}>
@@ -762,7 +762,7 @@ export function Dashboard() {
              {hasMultipleSREs ? (
                <div className="flex-1 min-w-[140px]">
                  <Select value={sreFilter || 'all'} onValueChange={val => setSreFilter(val === 'all' ? '' : val)}>
-                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 p-3 !h-auto rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
                      <SelectValue placeholder="SRE (Todas)" />
                    </SelectTrigger>
                    <SelectContent position="popper" sideOffset={4}>
@@ -776,7 +776,7 @@ export function Dashboard() {
              ) : (
                <div className="flex-1 min-w-[140px]">
                  <Select value={municipioFilter || 'all'} onValueChange={val => setMunicipioFilter(val === 'all' ? '' : val)}>
-                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 !h-[42px] rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                   <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 p-3 !h-auto rounded-lg shadow-sm font-medium text-slate-700 dark:text-slate-300">
                      <SelectValue placeholder="Município (Todos)" />
                    </SelectTrigger>
                    <SelectContent position="popper" sideOffset={4}>
@@ -791,17 +791,17 @@ export function Dashboard() {
 
             <button 
               onClick={() => setIsQuickEstimateOpen(true)}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2 h-[42px] rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 p-3 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
             >
               <Zap size={16} /> Rápido
             </button>
-            <label className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-2 h-[42px] rounded-lg hover:bg-slate-50 dark:bg-slate-900/50 transition-colors shadow-sm font-medium cursor-pointer whitespace-nowrap text-sm">
+            <label className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 p-3 rounded-lg hover:bg-slate-50 dark:bg-slate-900/50 transition-colors shadow-sm font-medium cursor-pointer whitespace-nowrap text-sm">
               <Upload size={16} /> Importar
               <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
             </label>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-emerald-600 text-white px-2 h-[42px] rounded-lg hover:bg-emerald-700 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-3 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm font-medium whitespace-nowrap text-sm"
             >
               <Plus size={16} /> Novo
             </button>
@@ -902,7 +902,7 @@ export function Dashboard() {
           </div>
         </main>
         
-        <footer className="py-6 mt-auto text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
+        <footer className="p-3 mt-auto text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
           <div className="flex justify-center items-center gap-2 mb-1">
             <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">{import.meta.env.APP_VERSION || 'v1.0'}</span>
             <a href="https://danieljardim3d.netlify.app" target="_blank" rel="noopener noreferrer" className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Desenvolvido por D de Design</a>

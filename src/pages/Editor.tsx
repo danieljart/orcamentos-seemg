@@ -1541,7 +1541,7 @@ export function Editor() {
 
             {/* Caixa 2: Lista do Catálogo */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 space-y-1 bg-slate-50 dark:bg-slate-900/30">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 space-y-1 bg-slate-50 dark:bg-slate-900/30">
                 {catalog.length === 0 ? (
                    <div className="text-center p-8 text-slate-400">Carregando catálogo...</div>
                 ) : (
@@ -1562,7 +1562,7 @@ export function Editor() {
                   <h1 className="text-2xl font-black text-emerald-900">
                     Relatório de Orçamento{workbook.servicos ? ` - ${workbook.servicos}` : ''}
                   </h1>
-                  <p className="text-lg font-bold text-slate-700 dark:text-slate-300 print:!text-black">Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-lg font-bold text-slate-700 dark:text-slate-300 print:!text-black">Rev {workbook.rev || '1'} - Data: {new Date(workbook.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-y-1 gap-x-4 text-[13px] text-slate-700 dark:text-slate-300 print:!text-black">
                   <p><strong>Escola:</strong> {workbook.escola || '-'}</p>
@@ -1603,7 +1603,7 @@ export function Editor() {
 
             {/* Caixa 4: Lista do Orçamento */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0 overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 space-y-6 print:overflow-visible print:p-0">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 space-y-6 print:overflow-visible print:p-0">
             {selectedItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
                 <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-full">
@@ -1619,24 +1619,41 @@ export function Editor() {
                 });
 
                 return (
-                <div key={mainGroupName} className="mb-6">
-                  <div className="mb-1 bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:bg-transparent print:border-none print:border-b print:border-emerald-800 print:shadow-none print:px-0 print:rounded-none">
-                    <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
-                      <span>{mainGroupName}</span>
-                      <span className="text-emerald-600/70 dark:text-emerald-400 print:!text-emerald-900 font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
-                    </h3>
-                  </div>
-                  <div className="space-y-1">
-                    {Object.entries(subGroups).map(([subGroupName, items]) => (
-                      <div key={subGroupName}>
+                <div key={mainGroupName} className="flex flex-col gap-[2px] mb-6">
+                  {(() => {
+                    const mainGroupCat = catalog.find(c => c.description === mainGroupName);
+                    const mainGroupCode = mainGroupCat ? mainGroupCat.item : null;
+                    return (
+                      <div className="bg-emerald-200 dark:bg-emerald-800/50 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:shadow-none print:border-emerald-300">
+                        <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            {mainGroupCode && <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-white/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 print:text-emerald-900 print:bg-white px-1.5 rounded border border-emerald-300/50 dark:border-emerald-700 print:border-emerald-300">{mainGroupCode}</span>}
+                            <span>{mainGroupName}</span>
+                          </div>
+                          <span className="text-emerald-900 dark:text-emerald-400 print:!text-emerald-900 font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
+                        </h3>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex flex-col gap-[2px]">
+                    {Object.entries(subGroups).map(([subGroupName, items]) => {
+                      const subGroupCat = catalog.find(c => c.description === subGroupName);
+                      const subGroupCode = subGroupCat ? subGroupCat.item : null;
+                      const subGroupTotal = items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+                      return (
+                      <div key={subGroupName} className="flex flex-col gap-[2px]">
                         {subGroupName && (
-                          <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800/50 rounded-md px-2 py-1.5 mb-1 shadow-sm print:bg-transparent print:border-none print:border-b print:border-slate-300 print:shadow-none print:px-0 print:rounded-none print:mb-1">
-                            <p className="text-[11px] font-bold text-sky-700 dark:text-sky-400 print:!text-black uppercase tracking-wide">
-                              {subGroupName}
-                            </p>
+                          <div className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/80 rounded-md px-3 py-1.5 shadow-sm print:shadow-none print:border-emerald-200">
+                            <div className="flex justify-between items-center">
+                              <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900 uppercase tracking-wide flex items-center gap-2">
+                                {subGroupCode && <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-white/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 print:text-emerald-900 print:bg-white px-1.5 rounded border border-emerald-300/50 dark:border-emerald-700 print:border-emerald-300">{subGroupCode}</span>}
+                                <span>{subGroupName}</span>
+                              </p>
+                              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subGroupTotal)}</span>
+                            </div>
                           </div>
                         )}
-                        <div className="space-y-1">
+                        <div className="flex flex-col gap-[2px]">
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
@@ -1645,11 +1662,12 @@ export function Editor() {
                       const isUnavailableForCopy = copyMemoryMode && !isCopySource && !canBeCopiedTo;
 
                       return (
-                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isUnavailableForCopy ? 'opacity-40 grayscale bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 pointer-events-none' : (isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200 dark:hover:border-emerald-700')}`}>
-                        <div className="p-3 hover:shadow-md transition-shadow group flex items-start gap-3">
-                          <div className="flex-1 min-w-0">
+                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isUnavailableForCopy ? 'opacity-40 grayscale bg-slate-200 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 pointer-events-none' : (isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/80 print:bg-white hover:border-emerald-200 dark:hover:border-emerald-700')}`}>
+                        <div className="p-3 hover:shadow-md transition-shadow group relative">
+                          <div className="w-full min-w-0">
                             <div className="print:hidden">
-                              <div className="flex items-center gap-2 mb-0.5">
+                              <div className="flex items-center justify-between mb-0.5">
+                                <div className="flex items-center gap-2">
                                 {copyMemoryMode && copyMemoryMode !== item.item && (() => {
                                   const sourceItem = selectedItems.find(i => i.item === copyMemoryMode);
                                   const targetUnit = item.customUnit || item.unit;
@@ -1660,11 +1678,25 @@ export function Editor() {
                                     {selectedItemsForCopy.has(item.item) ? <CheckSquare size={16} className="text-emerald-600" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded" />}
                                   </button>
                                 )}
-                                <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">{item.customCode || item.item}</span>
-                                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 px-1.5 rounded border border-slate-200 dark:border-slate-600">{item.customCode || item.item}</span>
+                                <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-1.5 rounded border border-slate-200 dark:border-slate-700">
                                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}
                                 </span>
                                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
+                                </div>
+                                {!isEditing && (
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                                    <button onClick={(e) => handleStartCopy(item.item, e)} className={`p-1.5 rounded ${copyMemoryMode === item.item ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
+                                      <Copy size={14}/>
+                                    </button>
+                                    <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
+                                      <Edit2 size={14}/>
+                                    </button>
+                                    <button onClick={() => handleRemoveItem(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded" title="Remover">
+                                      <Trash2 size={14}/>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                               <div className="flex justify-between items-start gap-2">
                                 <div className="flex flex-col flex-1">
@@ -1697,7 +1729,7 @@ export function Editor() {
                                     const price = item.customPrice !== undefined ? item.customPrice : item.price;
                                     const subtotal = (Number(evaluateMath(occ.quantity)) || 0) * price;
                                     return (
-                                      <div key={occ.id} className="flex flex-wrap justify-between items-center text-slate-600 dark:text-slate-300 bg-emerald-50/30 dark:bg-emerald-900/10 p-1.5 rounded gap-2">
+                                      <div key={occ.id} className="flex flex-wrap justify-between items-center text-slate-600 dark:text-slate-300 bg-emerald-100/40 dark:bg-emerald-900/20 p-1.5 rounded gap-2">
                                         <span className="flex-1 min-w-[120px] truncate" title={occ.location}><b>Local:</b> {occ.location || '-'}</span>
                                         <span className="flex-1 min-w-[100px] truncate" title={occ.memory}><b>Memória:</b> {occ.memory || '-'}</span>
                                         <span className="w-[80px]"><b>Qtd:</b> {occ.quantity} {item.customUnit || item.unit}</span>
@@ -1707,7 +1739,7 @@ export function Editor() {
                                   })}
                                 </div>
                               ) : (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">Local(is): {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1"><b>Local:</b> {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
                               )}
                             </div>
                             
@@ -1715,7 +1747,7 @@ export function Editor() {
                             <div className="hidden print:block print:!text-black">
                               <div className="flex justify-between items-start mb-1 border-b pb-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 print:!text-black">{item.customCode || item.item}</span>
+                                  <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold text-slate-700 bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300 print:!text-black print:bg-slate-100 px-1.5 rounded border border-slate-200 dark:border-slate-600 print:border-slate-300">{item.customCode || item.item}</span>
                                   <div className="flex flex-col">
                                     <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:!text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
                                     {item.customTitle && item.customDescription && (
@@ -1726,36 +1758,23 @@ export function Editor() {
                               </div>
                               <div className="text-xs text-slate-700 dark:text-slate-300 print:!text-black mt-2 space-y-1">
                                 {item.occurrences?.map((occ) => (
-                                  <div key={occ.id} className={`grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 ${item.occurrences!.length > 1 ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                                  <div key={occ.id} className="grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 grid-cols-5">
                                     <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
                                     <p className="truncate" title={occ.memory}><strong>Memória:</strong> {occ.memory || '-'}</p>
-                                    <p><strong>Qtd:</strong> {occ.quantity} {item.unit}</p>
-                                    {item.occurrences!.length > 1 && (
-                                      <p><strong>Subtotal:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
-                                    )}
+                                    <p><strong>Qtd:</strong> {occ.quantity} {item.customUnit || item.unit}</p>
+                                    <p><strong>{item.occurrences!.length > 1 ? 'Subtotal' : 'Total'}:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
                                   </div>
                                 ))}
-                                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:!text-black">
-                                  <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
-                                  <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
-                                  <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
-                                </div>
+                                {item.occurrences!.length > 1 && (
+                                  <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:!text-black">
+                                    <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
+                                    <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
+                                    <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                          {!isEditing && (
-                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                              <button onClick={(e) => handleStartCopy(item.item, e)} className={`p-1.5 rounded ${copyMemoryMode === item.item ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
-                                <Copy size={14}/>
-                              </button>
-                              <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
-                                <Edit2 size={14}/>
-                              </button>
-                              <button onClick={() => handleRemoveItem(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded" title="Remover">
-                                <Trash2 size={14}/>
-                              </button>
-                            </div>
-                          )}
                         </div>
 
                         {/* RIGHT INLINE FORM */}
@@ -1851,7 +1870,7 @@ export function Editor() {
                     )})}
                         </div>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 </div>
                 );
