@@ -30,6 +30,15 @@ export default function App() {
 
     async function loadSession() {
       const u = await db.auth.getUser();
+      if (u && u.email && !u.email.endsWith('@educacao.mg.gov.br')) {
+        await db.auth.signOut();
+        alert('Acesso negado: Utilize um e-mail institucional (@educacao.mg.gov.br)');
+        if (mounted) {
+          setUser(null);
+          setLoading(false);
+        }
+        return;
+      }
       if (mounted) {
         setUser(u);
         setLoading(false);
@@ -41,6 +50,15 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_IN') {
         const u = await db.auth.getUser();
+        if (u && u.email && !u.email.endsWith('@educacao.mg.gov.br')) {
+          await db.auth.signOut();
+          alert('Acesso negado: Utilize um e-mail institucional (@educacao.mg.gov.br)');
+          if (mounted) {
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
         if (mounted) {
           setUser(u);
           setLoading(false);

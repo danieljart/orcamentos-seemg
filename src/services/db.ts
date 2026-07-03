@@ -95,7 +95,11 @@ export const db = {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://orcamentos-seemg.netlify.app'
+          redirectTo: 'https://orcamentos-seemg.netlify.app',
+          queryParams: {
+            prompt: 'select_account',
+            hd: 'educacao.mg.gov.br'
+          }
         }
       });
       if (error) throw error;
