@@ -1630,8 +1630,8 @@ export function Editor() {
                     {Object.entries(subGroups).map(([subGroupName, items]) => (
                       <div key={subGroupName}>
                         {subGroupName && (
-                          <div className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 mb-1 shadow-sm print:bg-transparent print:border-none print:border-b print:border-slate-300 print:shadow-none print:px-0 print:rounded-none print:mb-1">
-                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 print:!text-black uppercase tracking-wide">
+                          <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800/50 rounded-md px-2 py-1.5 mb-1 shadow-sm print:bg-transparent print:border-none print:border-b print:border-slate-300 print:shadow-none print:px-0 print:rounded-none print:mb-1">
+                            <p className="text-[11px] font-bold text-sky-700 dark:text-sky-400 print:!text-black uppercase tracking-wide">
                               {subGroupName}
                             </p>
                           </div>
