@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Search, ChevronRight, ChevronDown, X, Calculator, ShoppingCart, Plus, Minus, Check } from 'lucide-react';
+import { loadCatalog } from '../lib/catalog';
+import type { PriceBase } from '../lib/catalog';
 
 interface CatalogItem {
   item: string;
@@ -13,17 +15,17 @@ export interface CartItem extends CatalogItem {
   quantity: string;
 }
 
-export function QuickEstimateModal({ onClose }: { onClose: (items?: CartItem[]) => void }) {
+export function QuickEstimateModal({ onClose, priceBase = '2026' }: { onClose: (items?: CartItem[]) => void; priceBase?: PriceBase }) {
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    fetch('/catalogo.json')
-      .then(res => res.json())
-      .then(data => setCatalog(data));
-  }, []);
+    loadCatalog(priceBase)
+      .then(data => setCatalog(data))
+      .catch(console.error);
+  }, [priceBase]);
 
   const toggleCategory = (itemCode: string) => {
     setExpandedCategories(prev => 

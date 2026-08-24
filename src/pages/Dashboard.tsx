@@ -9,6 +9,8 @@ import type { CartItem } from '../components/QuickEstimateModal';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
+import { loadCatalog, PRICE_BASES, DEFAULT_PRICE_BASE } from '../lib/catalog';
+import type { PriceBase } from '../lib/catalog';
 import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -65,6 +67,7 @@ export function Dashboard() {
   const [formCrea, setFormCrea] = useState('');
   const [formDataElaboracao, setFormDataElaboracao] = useState(new Date().toISOString().split('T')[0]);
   const [formRev, setFormRev] = useState('1');
+  const [formBasePrecos, setFormBasePrecos] = useState<PriceBase>(DEFAULT_PRICE_BASE);
 
   const [userSre, setUserSre] = useState('');
 
@@ -132,6 +135,17 @@ export function Dashboard() {
       setCatalogMap(newCatalogMap);
       setCatalogDescMap(newCatalogDescMap);
 
+      // Also load 2026 catalog for workbooks that use it
+      const catalog2026Map = new Map<string, number>();
+      try {
+        const cat2026 = await loadCatalog('2026');
+        cat2026.forEach((item: any) => {
+          catalog2026Map.set(item.item, item.price);
+        });
+      } catch (e) {
+        console.error('Failed to load 2026 catalog:', e);
+      }
+
       let grandTotal = 0;
       const cityTotals: Record<string, number> = {};
       const newAnalyticsData: { id: string, total: number, city: string, escola: string, date: Date }[] = [];
@@ -172,7 +186,7 @@ export function Dashboard() {
              customPrice = i.customPrice;
           }
 
-          const price = customPrice !== undefined ? customPrice : (newCatalogMap.get(code) || 0);
+          const price = customPrice !== undefined ? customPrice : ((wb.base_precos === '2026' ? catalog2026Map.get(code) : undefined) || newCatalogMap.get(code) || 0);
           
           let qty = 0;
           if (parsedOccurrences && Array.isArray(parsedOccurrences)) {
@@ -379,7 +393,8 @@ export function Dashboard() {
       engenheiro: formEngenheiro,
       crea: formCrea,
       data_elaboracao: formDataElaboracao,
-      rev: formRev
+      rev: formRev,
+      base_precos: formBasePrecos
     });
 
     if (pendingQuickItems && pendingQuickItems.length > 0) {
@@ -441,7 +456,8 @@ export function Dashboard() {
         municipio,
         sre,
         iss,
-        servicos
+        servicos,
+        base_precos: DEFAULT_PRICE_BASE
       });
       
       saveIssForMunicipio(municipio, iss);
@@ -503,7 +519,8 @@ export function Dashboard() {
           sre: wb.sre,
           cod_escola: wb.cod_escola,
           iss: wb.iss,
-          servicos: wb.servicos
+          servicos: wb.servicos,
+          base_precos: wb.base_precos || '2025'
         });
 
         // Copiar os itens da última versão do workbook original
@@ -845,6 +862,9 @@ export function Dashboard() {
                   }`}>
                     {wb.status || 'Em andamento'}
                   </span>
+                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 whitespace-nowrap">
+                    {wb.base_precos || '2025'}
+                  </span>
                   <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded hidden sm:inline-block">
                     {new Date(wb.created_at).toLocaleDateString('pt-BR')}
                   </span>
@@ -962,9 +982,18 @@ export function Dashboard() {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviços da Planilha</label>
                   <input type="text" value={formServicos} onChange={e => setFormServicos(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ex: Reforma do Telhado" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa ISS (%)</label>
-                  <input type="number" step="0.01" value={formISS} onChange={e => setFormISS(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ISS (%)</label>
+                    <input type="number" step="0.01" value={formISS} onChange={e => setFormISS(e.target.value)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Base</label>
+                    <select value={formBasePrecos} onChange={e => setFormBasePrecos(e.target.value as PriceBase)} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800">
+                      <option value="2026">2026</option>
+                      <option value="2025">2025</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="col-span-full border-t border-slate-100 dark:border-slate-700 mt-2 pt-4">
@@ -1163,7 +1192,7 @@ export function Dashboard() {
 
       {/* QUICK ESTIMATE MODAL */}
       {isQuickEstimateOpen && (
-        <QuickEstimateModal onClose={(items?: CartItem[]) => {
+        <QuickEstimateModal priceBase={formBasePrecos} onClose={(items?: CartItem[]) => {
           setIsQuickEstimateOpen(false);
           if (items && items.length > 0) {
             setPendingQuickItems(items);

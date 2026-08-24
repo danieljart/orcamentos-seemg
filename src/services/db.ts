@@ -17,6 +17,7 @@ export interface Workbook {
   sre: string;
   servicos: string;
   iss: string;
+  base_precos?: string;
   engenheiro?: string;
   crea?: string;
   data_elaboracao?: string;

@@ -1,0 +1,8827 @@
+[
+  {
+    "item": "010000",
+    "description": "INSTALAÇÃO DOS SERVIÇOS DE ENGENHARIA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      6
+    ]
+  },
+  {
+    "item": "010001",
+    "description": "Locação dos serviços de engenharia: execução de gabarito",
+    "unit": "M",
+    "price": 64.33,
+    "isCategory": false,
+    "rows": [
+      7,
+      8
+    ]
+  },
+  {
+    "item": "010002",
+    "description": "Locação para muros, cercas e alambrados",
+    "unit": "M",
+    "price": 1.17,
+    "isCategory": false,
+    "rows": [
+      10,
+      11
+    ]
+  },
+  {
+    "item": "010003",
+    "description": "Fornecimento e colocação de placa dos serviços de engenharia em chapa galvanizada (3,00 X 1,50m)   -  Governo do Estado  -  (Ampliação e / ou Reforma acima de R$ 30.000,00)",
+    "unit": "UN",
+    "price": 1206.72,
+    "isCategory": false,
+    "rows": [
+      13,
+      14
+    ]
+  },
+  {
+    "item": "010004",
+    "description": "Limpeza do terreno, raspagem, capina e queima manual",
+    "unit": "[object Object]",
+    "price": 1.66,
+    "isCategory": false,
+    "rows": [
+      16,
+      17
+    ]
+  },
+  {
+    "item": "010005",
+    "description": "Desmatamento, raspagem e limpeza mecanizada de terreno com árvores com diâmetro do tronco até 30cm com raspagem de no mínimo 15cm.",
+    "unit": "M²",
+    "price": 0.63,
+    "isCategory": false,
+    "rows": [
+      19,
+      20
+    ]
+  },
+  {
+    "item": "010006",
+    "description": "Barracão em madeira, piso cimentado e cobertura em telhas de fibrocimento ondulada",
+    "unit": "M²",
+    "price": 656.51,
+    "isCategory": false,
+    "rows": [
+      22,
+      23
+    ]
+  },
+  {
+    "item": "010007",
+    "description": "Barracão  em madeira, piso cimentado e cobertura em telhas de fibrocimento ondulada para instalação sanitária.",
+    "unit": "M²",
+    "price": 723.8,
+    "isCategory": false,
+    "rows": [
+      25,
+      26
+    ]
+  },
+  {
+    "item": "010008",
+    "description": "Tapume em chapa compensado de 12mm e pontaletes h= 2,20m.",
+    "unit": "M²",
+    "price": 180.39,
+    "isCategory": false,
+    "rows": [
+      28,
+      29
+    ]
+  },
+  {
+    "item": "010009",
+    "description": "Portão para tapume fixo de proteção com fechamento de obra em chapa de compensado, espessura de 12mm",
+    "unit": "M²",
+    "price": 156.84,
+    "isCategory": false,
+    "rows": [
+      31,
+      32
+    ]
+  },
+  {
+    "item": "010010",
+    "description": "Tapume fixo de proteção para fechamento de obra em telha metálica galvanizada, tipo trapezoidal, esp. 0,5mm, com módulo na dimensão de (300x220)cm, com reaproveitamento, inclusive pontalete e fixação",
+    "unit": "M²",
+    "price": 68.16,
+    "isCategory": false,
+    "rows": [
+      34,
+      35
+    ]
+  },
+  {
+    "item": "010011",
+    "description": "Portão para tapume fixo de proteção com fechamento de obra em telha metálica galvanizada, tipo trapezoidal esp. 0,5mm, com módulo na dimensão de (300x220)cm",
+    "unit": "M²",
+    "price": 194.71,
+    "isCategory": false,
+    "rows": [
+      37,
+      38
+    ]
+  },
+  {
+    "item": "010012",
+    "description": "Remanejamento de tapume fixo de proteção para fechamento de obra (madeira ou metálico), inclusive escavação manual e reaterro compactado",
+    "unit": "M²",
+    "price": 12.96,
+    "isCategory": false,
+    "rows": [
+      40,
+      41
+    ]
+  },
+  {
+    "item": "010013",
+    "description": "Ligação provisória de luz e força - instalação mínima",
+    "unit": "UN",
+    "price": 951.38,
+    "isCategory": false,
+    "rows": [
+      43,
+      44
+    ]
+  },
+  {
+    "item": "010014",
+    "description": "Ligação provisória de água e esgoto à rede pública para obra - instalação mínima",
+    "unit": "UN",
+    "price": 615.2,
+    "isCategory": false,
+    "rows": [
+      46,
+      47
+    ]
+  },
+  {
+    "item": "010100",
+    "description": "Padrão CEMIG aéreo TRIFÁSICO:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      49,
+      50
+    ]
+  },
+  {
+    "item": "010102",
+    "description": "Padrão CEMIG aéreo tipo B1 demanda de até 10 KVA, bifásico",
+    "unit": "UN",
+    "price": 2717.44,
+    "isCategory": false,
+    "rows": [
+      51,
+      52
+    ]
+  },
+  {
+    "item": "010103",
+    "description": "Padrão CEMIG aéreo tipo C1, demanda até 15 KVA, trifásico (serve como base, aproximadamente uma escola Tipo Escola Rural - escolas pequenas até 4 salas de aula)",
+    "unit": "UN",
+    "price": 2974.11,
+    "isCategory": false,
+    "rows": [
+      53,
+      54
+    ]
+  },
+  {
+    "item": "010104",
+    "description": "Padrão CEMIG aéreo tipo C4, demanda de 27,1 até 38 KVA, trifásico (serve como base, aproximadamente escolas entre 5 e 9 salas de aula)",
+    "unit": "UN",
+    "price": 3849.07,
+    "isCategory": false,
+    "rows": [
+      55,
+      56
+    ]
+  },
+  {
+    "item": "010105",
+    "description": "Padrão CEMIG aéreo tipo C8, demanda de 66,1 até 75 KVA, trifásico (serve como base, aproximadamente escolas a partir de 10 salas)",
+    "unit": "UN",
+    "price": 5448.57,
+    "isCategory": false,
+    "rows": [
+      57,
+      58
+    ]
+  },
+  {
+    "item": "010106",
+    "description": "Padrão CEMIG aéreo, tipo F2, carga instalada de 86,1kva até 95kva, trifásico, com saída subterrânea, inclusive poste, caixa para medidor, disjuntor, barramento, aterramento e acessórios",
+    "unit": "UN",
+    "price": 10351.68,
+    "isCategory": false,
+    "rows": [
+      59,
+      60
+    ]
+  },
+  {
+    "item": "010107",
+    "description": "Padrão CEMIG subterrâneo, tipo F3, carga instalada de 95,1kva até 114kva, trifásico, com saída subterrânea, inclusive poste, caixa para medidor, disjuntor, barramento, aterramento e acessórios",
+    "unit": "UN",
+    "price": 11639.94,
+    "isCategory": false,
+    "rows": [
+      61,
+      62
+    ]
+  },
+  {
+    "item": "010200",
+    "description": "Caixas de medição de energia padrão CEMIG:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      63,
+      64,
+      65
+    ]
+  },
+  {
+    "item": "010201",
+    "description": "Caixa para medição, tipo cm-14, com visor do leitor para via pública (LVP), dimensões conforme padrão CEMIG 46X35X21CM",
+    "unit": "UN",
+    "price": 280.29,
+    "isCategory": false,
+    "rows": [
+      66,
+      67,
+      68
+    ]
+  },
+  {
+    "item": "020000",
+    "description": "DEMOLIÇÕES E REMOÇÕES",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      69
+    ]
+  },
+  {
+    "item": "020001",
+    "description": "Remoção de padrão de energia qualquer",
+    "unit": "UN",
+    "price": 303.89,
+    "isCategory": false,
+    "rows": [
+      70,
+      71
+    ]
+  },
+  {
+    "item": "020002",
+    "description": "Demolição de tela de arame galvanizado (tela do alambrado)",
+    "unit": "M²",
+    "price": 3.89,
+    "isCategory": false,
+    "rows": [
+      73,
+      74
+    ]
+  },
+  {
+    "item": "020003",
+    "description": "Demolição de alvenaria de elevação em tijolo comum ou elemento vazado, incluindo o revestimento.",
+    "unit": "[object Object]",
+    "price": 129.49,
+    "isCategory": false,
+    "rows": [
+      76,
+      77
+    ]
+  },
+  {
+    "item": "020004",
+    "description": "Demolição de revestimento cerâmico incluindo base",
+    "unit": "M²",
+    "price": 25.49,
+    "isCategory": false,
+    "rows": [
+      79,
+      80
+    ]
+  },
+  {
+    "item": "020005",
+    "description": "Demolição de concreto simples, manual, inclusive afastamento",
+    "unit": "[object Object]",
+    "price": 358.77,
+    "isCategory": false,
+    "rows": [
+      82,
+      83
+    ]
+  },
+  {
+    "item": "020006",
+    "description": "Demolição mecânica de concreto armado",
+    "unit": "[object Object]",
+    "price": 305.22,
+    "isCategory": false,
+    "rows": [
+      85,
+      86
+    ]
+  },
+  {
+    "item": "020007",
+    "description": "Demolição de cobertura  de telha cerâmica sem reaproveitamento.",
+    "unit": "M²",
+    "price": 26.44,
+    "isCategory": false,
+    "rows": [
+      88,
+      89
+    ]
+  },
+  {
+    "item": "020008",
+    "description": "Demolição de cobertura  de telha cerâmica com reaproveitamento",
+    "unit": "M²",
+    "price": 29.62,
+    "isCategory": false,
+    "rows": [
+      91,
+      92
+    ]
+  },
+  {
+    "item": "020009",
+    "description": "Demolição de cobertura de telha ondulada  de  fibrocimento sem reaproveitamento",
+    "unit": "M²",
+    "price": 7.08,
+    "isCategory": false,
+    "rows": [
+      94,
+      95
+    ]
+  },
+  {
+    "item": "020010",
+    "description": "Demolição de cobertura de telha ondulada  de  fibrocimento, com reaproveitamento, transporte e empilhamento",
+    "unit": "M²",
+    "price": 15.61,
+    "isCategory": false,
+    "rows": [
+      97,
+      98
+    ]
+  },
+  {
+    "item": "020011",
+    "description": "Demolição de cobertura de telha metálica ou de PVC, com ou sem reaproveitamento, transporte e empilhamento.",
+    "unit": "M²",
+    "price": 10.93,
+    "isCategory": false,
+    "rows": [
+      100,
+      101
+    ]
+  },
+  {
+    "item": "020012",
+    "description": "Demolição de cobertura de telha tipo calha de fibrocimento, com ou sem reaproveitamento, transporte e empilhamento",
+    "unit": "M²",
+    "price": 28.87,
+    "isCategory": false,
+    "rows": [
+      103,
+      104
+    ]
+  },
+  {
+    "item": "020013",
+    "description": "Demolição de  estrutura de madeira para telhado de telha cerâmica com reaproveitamento, inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 27.32,
+    "isCategory": false,
+    "rows": [
+      106,
+      107
+    ]
+  },
+  {
+    "item": "020014",
+    "description": "Demolição de  estrutura de madeira para telhado de telha cerâmica sem reaproveitamento, inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 12.39,
+    "isCategory": false,
+    "rows": [
+      109,
+      110
+    ]
+  },
+  {
+    "item": "020015",
+    "description": "Demolição de  estrutura de madeira para telhado de telha ondulada de fibrocimento, plástica ou metálica com reaproveitamento, inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 18.21,
+    "isCategory": false,
+    "rows": [
+      112,
+      113
+    ]
+  },
+  {
+    "item": "020016",
+    "description": "Demolição de  estrutura de madeira para telhado de telha ondulada de fibrocimento, plástica ou metálica sem reaproveitamento, inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 8.26,
+    "isCategory": false,
+    "rows": [
+      115,
+      116
+    ]
+  },
+  {
+    "item": "020017",
+    "description": "Demolição de estrutura de madeira para telhado de telha tipo calha de fibrocimento com reaproveitamento inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 13.66,
+    "isCategory": false,
+    "rows": [
+      118,
+      119
+    ]
+  },
+  {
+    "item": "020018",
+    "description": "Demolição de estrutura de madeira para telhado de telha tipo calha de fibrocimento sem reaproveitamento inclusive transporte e empilhamento",
+    "unit": "M²",
+    "price": 6.2,
+    "isCategory": false,
+    "rows": [
+      121,
+      122
+    ]
+  },
+  {
+    "item": "020019",
+    "description": "Demolição de reboco ou emboço ou revestimento com argamassa",
+    "unit": "M²",
+    "price": 12.23,
+    "isCategory": false,
+    "rows": [
+      124,
+      125
+    ]
+  },
+  {
+    "item": "020020",
+    "description": "Remoção de alambrado",
+    "unit": "M²",
+    "price": 23.53,
+    "isCategory": false,
+    "rows": [
+      127,
+      128
+    ]
+  },
+  {
+    "item": "020021",
+    "description": "Remoção de soleira, peitoril e rodapé de cerâmica mármore ou granito inclusive a base",
+    "unit": "M",
+    "price": 10.38,
+    "isCategory": false,
+    "rows": [
+      130,
+      131
+    ]
+  },
+  {
+    "item": "020022",
+    "description": "Demolição de piso cimentado inclusive a base sobre lastro de concreto.",
+    "unit": "M²",
+    "price": 21.85,
+    "isCategory": false,
+    "rows": [
+      133,
+      134
+    ]
+  },
+  {
+    "item": "020023",
+    "description": "Demolição de piso cerâmico inclusive a base sobre lastro de concreto.",
+    "unit": "M²",
+    "price": 20.39,
+    "isCategory": false,
+    "rows": [
+      136,
+      137
+    ]
+  },
+  {
+    "item": "020024",
+    "description": "Demolição de piso em granilite / marmorite inclusive a base sobre lastro de concreto.",
+    "unit": "M²",
+    "price": 27.8,
+    "isCategory": false,
+    "rows": [
+      139,
+      140
+    ]
+  },
+  {
+    "item": "020025",
+    "description": "Demolição do piso em taco de madeira inclusive base",
+    "unit": "M²",
+    "price": 26.59,
+    "isCategory": false,
+    "rows": [
+      142,
+      143
+    ]
+  },
+  {
+    "item": "020026",
+    "description": "Demolição do piso em assoalho de madeira inclusive base e barrotes",
+    "unit": "M²",
+    "price": 30.58,
+    "isCategory": false,
+    "rows": [
+      145,
+      146
+    ]
+  },
+  {
+    "item": "020027",
+    "description": "Remoção de portas, janelas e grades metálicas, inclusive caixilhos",
+    "unit": "M²",
+    "price": 23.02,
+    "isCategory": false,
+    "rows": [
+      148,
+      149
+    ]
+  },
+  {
+    "item": "020028",
+    "description": "Demolição de piso vinílico, incluindo a base.",
+    "unit": "M²",
+    "price": 10.9,
+    "isCategory": false,
+    "rows": [
+      151,
+      152
+    ]
+  },
+  {
+    "item": "020029",
+    "description": "Demolição de piso de pedras (Mármore, Granito, Ardósia, São Tomé, Lagoa Santa), inclusive afastamento.",
+    "unit": "M²",
+    "price": 25.49,
+    "isCategory": false,
+    "rows": [
+      154,
+      155
+    ]
+  },
+  {
+    "item": "020030",
+    "description": "Demolição de pavimentação com pré-moldado de concreto",
+    "unit": "M²",
+    "price": 17.57,
+    "isCategory": false,
+    "rows": [
+      157,
+      158
+    ]
+  },
+  {
+    "item": "020031",
+    "description": "Retirada de folha de porta ou folha de janela de madeira.",
+    "unit": "M²",
+    "price": 11.2,
+    "isCategory": false,
+    "rows": [
+      160,
+      161
+    ]
+  },
+  {
+    "item": "020032",
+    "description": "Remoção de marcos chumbados de madeira, alisares e acessórios",
+    "unit": "UN",
+    "price": 22.07,
+    "isCategory": false,
+    "rows": [
+      163,
+      164
+    ]
+  },
+  {
+    "item": "020033",
+    "description": "Apicoamento de tetos, paredes e pisos com profundidade até 1 cm",
+    "unit": "M²",
+    "price": 12.45,
+    "isCategory": false,
+    "rows": [
+      166,
+      167
+    ]
+  },
+  {
+    "item": "020034",
+    "description": "Remoção de calha galvanizada ou PVC, inclusive afastamento.",
+    "unit": "M",
+    "price": 5.7,
+    "isCategory": false,
+    "rows": [
+      169,
+      170
+    ]
+  },
+  {
+    "item": "020035",
+    "description": "Remoção de louças (lavatório, pia, tanque, vaso sanitário)",
+    "unit": "UN",
+    "price": 53.07,
+    "isCategory": false,
+    "rows": [
+      172,
+      173
+    ]
+  },
+  {
+    "item": "020036",
+    "description": "Remoção de bancadas de pedra (mármore, granito ardósia, marmorite, etc.)",
+    "unit": "M²",
+    "price": 65.79,
+    "isCategory": false,
+    "rows": [
+      175,
+      176
+    ]
+  },
+  {
+    "item": "020037",
+    "description": "Demolição de contrapiso.",
+    "unit": "M²",
+    "price": 21.85,
+    "isCategory": false,
+    "rows": [
+      178,
+      179
+    ]
+  },
+  {
+    "item": "020038",
+    "description": "Remoção de rufo de chapa galvanizada, inclusive afastamento",
+    "unit": "M",
+    "price": 8.38,
+    "isCategory": false,
+    "rows": [
+      181,
+      182
+    ]
+  },
+  {
+    "item": "020039",
+    "description": "Remoção de divisórias sanitárias de pedra (mármore, granito ardósia, marmorite, etc.)",
+    "unit": "M²",
+    "price": 54.92,
+    "isCategory": false,
+    "rows": [
+      184,
+      185
+    ]
+  },
+  {
+    "item": "020100",
+    "description": "Demolição de forro",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      187,
+      188
+    ]
+  },
+  {
+    "item": "020101",
+    "description": "Forro de tábuas de pinho.",
+    "unit": "M²",
+    "price": 17.27,
+    "isCategory": false,
+    "rows": [
+      190,
+      191
+    ]
+  },
+  {
+    "item": "020102",
+    "description": "Forro de gesso em placas ou acartonados.",
+    "unit": "M²",
+    "price": 6.76,
+    "isCategory": false,
+    "rows": [
+      192,
+      193
+    ]
+  },
+  {
+    "item": "020103",
+    "description": "Forro de PVC.",
+    "unit": "M²",
+    "price": 7.77,
+    "isCategory": false,
+    "rows": [
+      194,
+      195
+    ]
+  },
+  {
+    "item": "030000",
+    "description": "TRABALHOS EM TERRA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      196
+    ]
+  },
+  {
+    "item": "030001",
+    "description": "Aterro Compactado manual, com soquete",
+    "unit": "[object Object]",
+    "price": 84.9,
+    "isCategory": false,
+    "rows": [
+      197,
+      198
+    ]
+  },
+  {
+    "item": "030002",
+    "description": "Escavação  manual de vala em solo de 1ª e 2ª categoria, profundidade em até 2,00m",
+    "unit": "[object Object]",
+    "price": 84.9,
+    "isCategory": false,
+    "rows": [
+      200,
+      201
+    ]
+  },
+  {
+    "item": "030003",
+    "description": "Escavação  manual em campo aberto em solo exceto rocha com profundidade em até 2,00m",
+    "unit": "[object Object]",
+    "price": 49.03,
+    "isCategory": false,
+    "rows": [
+      203,
+      204
+    ]
+  },
+  {
+    "item": "030004",
+    "description": "Regularização de fundo de vala com apiloamento com maço de 30kg",
+    "unit": "[object Object]",
+    "price": 28.62,
+    "isCategory": false,
+    "rows": [
+      206,
+      207
+    ]
+  },
+  {
+    "item": "030005",
+    "description": "Reaterro manual de vala apiloado",
+    "unit": "[object Object]",
+    "price": 84.9,
+    "isCategory": false,
+    "rows": [
+      209,
+      210
+    ]
+  },
+  {
+    "item": "030006",
+    "description": "Reaterro Compactado mecanizado empregando compactador de placa vibratória, em camadas de 20 a 40 cm.",
+    "unit": "[object Object]",
+    "price": 57.69,
+    "isCategory": false,
+    "rows": [
+      212,
+      213
+    ]
+  },
+  {
+    "item": "030007",
+    "description": "Escavação manual de tubulão a céu aberto",
+    "unit": "[object Object]",
+    "price": 415.78,
+    "isCategory": false,
+    "rows": [
+      215,
+      216
+    ]
+  },
+  {
+    "item": "030008",
+    "description": "Encamisamento de tubulão com tubo de concreto (manilha), diâmetro 90cm, inclusive transporte e fornecimento",
+    "unit": "M",
+    "price": 231.8,
+    "isCategory": false,
+    "rows": [
+      218,
+      219
+    ]
+  },
+  {
+    "item": "030009",
+    "description": "Regularização e compactação de terreno c/ placa vibratória, em camadas de 20 a 40cm de espessura",
+    "unit": "[object Object]",
+    "price": 6.1,
+    "isCategory": false,
+    "rows": [
+      221,
+      222
+    ]
+  },
+  {
+    "item": "030010",
+    "description": "Escavação mecanizada em campo aberto, profundidade até 2,00m, solo de 1ª categoria",
+    "unit": "[object Object]",
+    "price": 7.93,
+    "isCategory": false,
+    "rows": [
+      224,
+      225,
+      226
+    ]
+  },
+  {
+    "item": "040000",
+    "description": "SONDAGEM, FUNDAÇÕES, MUROS E CONTENÇÕES",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      227
+    ]
+  },
+  {
+    "item": "040001",
+    "description": "Armadura de aço, CA 50, corte e dobra no canteiro",
+    "unit": "KG",
+    "price": 14,
+    "isCategory": false,
+    "rows": [
+      228,
+      229
+    ]
+  },
+  {
+    "item": "040002",
+    "description": "Fôrma de madeira para fundação, com tábuas e sarrafos, 3 aproveitamentos e desforma",
+    "unit": "[object Object]",
+    "price": 83.88,
+    "isCategory": false,
+    "rows": [
+      231,
+      232
+    ]
+  },
+  {
+    "item": "040003",
+    "description": "Concreto armado para fundação (incluindo fornecimento, transporte, lançamento, forma e desforma)",
+    "unit": "[object Object]",
+    "price": 2325.78,
+    "isCategory": false,
+    "rows": [
+      234,
+      235
+    ]
+  },
+  {
+    "item": "040004",
+    "description": "Concreto estrutural virado no local, controle \"A\", consistência para vibração, brita 1, FCK=20 MPA e lançamento em fundação",
+    "unit": "M³",
+    "price": 674.74,
+    "isCategory": false,
+    "rows": [
+      237,
+      238
+    ]
+  },
+  {
+    "item": "040005",
+    "description": "Contrapiso não estrutural impermeabilizado, E=5 cm",
+    "unit": "[object Object]",
+    "price": 68.94,
+    "isCategory": false,
+    "rows": [
+      240,
+      241
+    ]
+  },
+  {
+    "item": "040006",
+    "description": "Execução de estaca broca c/ trado manual de 25 cm de diâmetro completa.",
+    "unit": "M",
+    "price": 105.72,
+    "isCategory": false,
+    "rows": [
+      243,
+      244
+    ]
+  },
+  {
+    "item": "040007",
+    "description": "Concreto magro de cimento Portland Fck >= 10,0 Mpa (execução, incluindo o fornecimento e transporte dos agregados)",
+    "unit": "M³",
+    "price": 633.24,
+    "isCategory": false,
+    "rows": [
+      246,
+      247
+    ]
+  },
+  {
+    "item": "040008",
+    "description": "Execução de estaca broca c/ trado manual de 30 cm de diâmetro completa.",
+    "unit": "M",
+    "price": 135.64,
+    "isCategory": false,
+    "rows": [
+      249,
+      250
+    ]
+  },
+  {
+    "item": "040100",
+    "description": "Muros.",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      252
+    ]
+  },
+  {
+    "item": "040101",
+    "description": "Muro divisório em bloco de concreto aparente espessura 15 cm, altura útil de 2,20m,  assentado com argamassa mista de cimento, cal hidratada e areia sem peneira traço 1:0,5:8 inclusive sapata corrida em concreto armado com Fck mínimo de 20 MPA e chapéu de muro",
+    "unit": "M",
+    "price": 457.58,
+    "isCategory": false,
+    "rows": [
+      253,
+      254
+    ]
+  },
+  {
+    "item": "040102",
+    "description": "Muro divisório com bloco de concreto revestido 14x19x39cm, e=15cm, altura h=2,20m, assentado  com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,5:8, inclusive sapata de concreto armado, Fck = 20 Mpa, incluindo chapéu de muro",
+    "unit": "M",
+    "price": 786.52,
+    "isCategory": false,
+    "rows": [
+      256,
+      257
+    ]
+  },
+  {
+    "item": "040103",
+    "description": "Chapéu de muro ou cimalha em concreto com pingadeira para muros em alvenaria em bloco de concreto ou tijolo cerâmico",
+    "unit": "M",
+    "price": 20.73,
+    "isCategory": false,
+    "rows": [
+      259,
+      260
+    ]
+  },
+  {
+    "item": "040200",
+    "description": "Impermeabilizações de fundações e drenos",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      262
+    ]
+  },
+  {
+    "item": "040201",
+    "description": "Impermeabilizações de sapatas em concreto ou alvenaria de embasamento com aplicação de tinta betuminosa",
+    "unit": "M²",
+    "price": 34.75,
+    "isCategory": false,
+    "rows": [
+      263,
+      264
+    ]
+  },
+  {
+    "item": "040202",
+    "description": "Dreno com areia grossa - fornecimento e colocação",
+    "unit": "M³",
+    "price": 254.36,
+    "isCategory": false,
+    "rows": [
+      266,
+      267
+    ]
+  },
+  {
+    "item": "040203",
+    "description": "Dreno com brita 2 e 3 - fornecimento e colocação",
+    "unit": "M³",
+    "price": 211.32,
+    "isCategory": false,
+    "rows": [
+      269,
+      270
+    ]
+  },
+  {
+    "item": "040204",
+    "description": "Tubo dreno plástico corrugado perfurado de 100mm em barras",
+    "unit": "M",
+    "price": 14.91,
+    "isCategory": false,
+    "rows": [
+      272,
+      273
+    ]
+  },
+  {
+    "item": "040205",
+    "description": "Tubo dreno plástico corrugado perfurado de 160mm em barras",
+    "unit": "M",
+    "price": 24.11,
+    "isCategory": false,
+    "rows": [
+      275,
+      276
+    ]
+  },
+  {
+    "item": "040206",
+    "description": "Manta Geotêxtil usada como filtro envolvendo o material drenante",
+    "unit": "M²",
+    "price": 16.21,
+    "isCategory": false,
+    "rows": [
+      278,
+      279
+    ]
+  },
+  {
+    "item": "040207",
+    "description": "Barbacã Ø 75mm.",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      280,
+      281
+    ]
+  },
+  {
+    "item": "040300",
+    "description": "Sondagem a percussão",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      284
+    ]
+  },
+  {
+    "item": "040301",
+    "description": "Mobilização e desmobilização por equipamentos de sondagem a percussão d= 2 1/2\"",
+    "unit": "UN",
+    "price": 3172.09,
+    "isCategory": false,
+    "rows": [
+      285,
+      286
+    ]
+  },
+  {
+    "item": "040302",
+    "description": "Sondagem a percussão d=2 1/2\"",
+    "unit": "M",
+    "price": 124.44,
+    "isCategory": false,
+    "rows": [
+      288,
+      289,
+      290
+    ]
+  },
+  {
+    "item": "050000",
+    "description": "SUPERESTRUTURA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      291
+    ]
+  },
+  {
+    "item": "050001",
+    "description": "Armadura de aço p/ vigas e pilares  CA-50, corte e dobra no canteiro",
+    "unit": "KG",
+    "price": 14,
+    "isCategory": false,
+    "rows": [
+      292,
+      293
+    ]
+  },
+  {
+    "item": "050002",
+    "description": "Fornecimento, transporte, execução de Fôrma de chapa compensada plastificada, e=12mm, 3 aproveitamentos, inclusive desforma para vigas, pilares e lajes maciças.",
+    "unit": "[object Object]",
+    "price": 81.57,
+    "isCategory": false,
+    "rows": [
+      295,
+      296
+    ]
+  },
+  {
+    "item": "050003",
+    "description": "Fornecimento, transporte, execução de Fôrma  de madeira maciça, 3 aproveitamentos, inclusive desforma para VIGAS",
+    "unit": "[object Object]",
+    "price": 114.82,
+    "isCategory": false,
+    "rows": [
+      298,
+      299
+    ]
+  },
+  {
+    "item": "050004",
+    "description": "Fornecimento, transporte, execução de Fôrma  de madeira maciça, 3 aproveitamentos, inclusive desforma para PILARES",
+    "unit": "[object Object]",
+    "price": 82.38,
+    "isCategory": false,
+    "rows": [
+      301,
+      302
+    ]
+  },
+  {
+    "item": "050005",
+    "description": "Concreto armado (incluindo fornecimento, transporte, lançamento, forma e desforma)",
+    "unit": "[object Object]",
+    "price": 3200.53,
+    "isCategory": false,
+    "rows": [
+      304,
+      305
+    ]
+  },
+  {
+    "item": "050006",
+    "description": "Concreto estrutural virado no local, consistência para vibração, brita 1 e 2, FCK 20 MPA e lançamento em estrutura",
+    "unit": "[object Object]",
+    "price": 832.31,
+    "isCategory": false,
+    "rows": [
+      307,
+      308
+    ]
+  },
+  {
+    "item": "050007",
+    "description": "Concreto estrutural virado no local, consistência para vibração, brita 1 e 2, FCK 25 MPA e lançamento em estrutura",
+    "unit": "M³",
+    "price": 856.98,
+    "isCategory": false,
+    "rows": [
+      310,
+      311
+    ]
+  },
+  {
+    "item": "050008",
+    "description": "laje pré-moldada unidirecional com enchimento em poliestireno expandido (EPS), inclusive concreto estrutural, usinado bombeado com Fck de 20mpa, e=12cm (capeamento 5 cm) sobrecarga mínima 100 Kgf / m²",
+    "unit": "[object Object]",
+    "price": 282.54,
+    "isCategory": false,
+    "rows": [
+      313,
+      314
+    ]
+  },
+  {
+    "item": "050009",
+    "description": "laje pré-moldada unidirecional com enchimento em poliestireno expandido (EPS), inclusive concreto estrutural, usinado bombeado com Fck de 20mpa, e=12cm (capeamento 5 cm) sobrecarga mínima 300 Kgf / m²",
+    "unit": "[object Object]",
+    "price": 305.03,
+    "isCategory": false,
+    "rows": [
+      316,
+      317
+    ]
+  },
+  {
+    "item": "050010",
+    "description": "Cimbramento (escoramento) de madeira",
+    "unit": "M³",
+    "price": 45.06,
+    "isCategory": false,
+    "rows": [
+      319,
+      320
+    ]
+  },
+  {
+    "item": "050011",
+    "description": "Descimbramento (retirada do escoramento) de madeira",
+    "unit": "M²",
+    "price": 0.82,
+    "isCategory": false,
+    "rows": [
+      322,
+      323
+    ]
+  },
+  {
+    "item": "050012",
+    "description": "Vergas ou contravergas retas em concreto armado Fck 20 Mpa",
+    "unit": "M³",
+    "price": 3727.88,
+    "isCategory": false,
+    "rows": [
+      325,
+      326,
+      327
+    ]
+  },
+  {
+    "item": "060000",
+    "description": "ALVENARIA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      328
+    ]
+  },
+  {
+    "item": "060100",
+    "description": "Execução de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      329
+    ]
+  },
+  {
+    "item": "060101",
+    "description": "Alvenaria de vedação com tijolo cerâmico furado 9x19x29cm, espessura da parede 9cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:2:8",
+    "unit": "[object Object]",
+    "price": 62.11,
+    "isCategory": false,
+    "rows": [
+      330,
+      331
+    ]
+  },
+  {
+    "item": "060102",
+    "description": "Alvenaria de vedação com tijolo cerâmico furado 14x19x29cm, espessura da parede 14cm, juntas de 10mm com argamassa mista de cimento cal hidratada e areia sem peneirar traço 1:2:8",
+    "unit": "[object Object]",
+    "price": 76.18,
+    "isCategory": false,
+    "rows": [
+      333,
+      334
+    ]
+  },
+  {
+    "item": "060103",
+    "description": "Alvenaria de vedação com tijolo cerâmico furado 19 x 19 x 29 cm, espessura da parede 19 cm, juntas de 10 mm, assentado com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:2:8",
+    "unit": "[object Object]",
+    "price": 99.39,
+    "isCategory": false,
+    "rows": [
+      336,
+      337
+    ]
+  },
+  {
+    "item": "060104",
+    "description": "Alvenaria de vedação com tijolo cerâmico laminado 5,5x11x23,5cm, espessura da parede 10cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:1:6",
+    "unit": "[object Object]",
+    "price": 155.44,
+    "isCategory": false,
+    "rows": [
+      339,
+      340
+    ]
+  },
+  {
+    "item": "060105",
+    "description": "Alvenaria de vedação com bloco de concreto, 9x19x39 cm, espessura da parede 9 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,5:8",
+    "unit": "[object Object]",
+    "price": 75.42,
+    "isCategory": false,
+    "rows": [
+      342,
+      343
+    ]
+  },
+  {
+    "item": "060106",
+    "description": "Alvenaria de vedação com bloco de concreto, 19x19x39 cm, espessura da parede 19 cm, juntas de 10mm com argamassa mista de cimento, cal e areia sem peneirar traço 1:0,5:8",
+    "unit": "[object Object]",
+    "price": 94.56,
+    "isCategory": false,
+    "rows": [
+      345,
+      346
+    ]
+  },
+  {
+    "item": "060107",
+    "description": "Alvenaria de vedação com bloco de concreto, 14x19x39 cm, espessura da parede 14 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,5:8",
+    "unit": "[object Object]",
+    "price": 81.72,
+    "isCategory": false,
+    "rows": [
+      348,
+      349
+    ]
+  },
+  {
+    "item": "060108",
+    "description": "Alvenaria estrutural com bloco de concreto, 19x19x39 cm, aparente espessura da parede 19 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,25:3",
+    "unit": "[object Object]",
+    "price": 109.34,
+    "isCategory": false,
+    "rows": [
+      351,
+      352
+    ]
+  },
+  {
+    "item": "060109",
+    "description": "Alvenaria estrutural com bloco de concreto 19x19x39cm cheios e armado.",
+    "unit": "M²",
+    "price": 285.47,
+    "isCategory": false,
+    "rows": [
+      354,
+      355,
+      356
+    ]
+  },
+  {
+    "item": "070000",
+    "description": "COBERTURA E FORRO",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      357
+    ]
+  },
+  {
+    "item": "070100",
+    "description": "Fornecimento, transporte e colocação de telhas, tipo:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      358
+    ]
+  },
+  {
+    "item": "070101",
+    "description": "Fibrocimento, perfil ondulado, e = 6 mm, altura 51 m, largura útil 1.050 mm, largura normal 1.100 mm, inclinação 27% ,  (m²=área de projeção do telhado x 1,05)",
+    "unit": "M²",
+    "price": 53.64,
+    "isCategory": false,
+    "rows": [
+      359,
+      360
+    ]
+  },
+  {
+    "item": "070102",
+    "description": "Fibrocimento estrutural, uma água, perfil trapezoidal, e = 8 mm, altura 181 mm, largura útil 490 mm e largura nominal 468 mm, inclinação mínima 5% (TIPO CANALETE 49 DA ETERNIT)",
+    "unit": "M²",
+    "price": 208.18,
+    "isCategory": false,
+    "rows": [
+      362,
+      363
+    ]
+  },
+  {
+    "item": "070103",
+    "description": "Cerâmica tipo Plan, inclinação 35%  (m²=área de projeção do telhado x 1,08)",
+    "unit": "M²",
+    "price": 112.99,
+    "isCategory": false,
+    "rows": [
+      365,
+      366
+    ]
+  },
+  {
+    "item": "070104",
+    "description": "Cerâmica Francesa, inclinação 35% (m²=área de projeção do telhado x 1,08)",
+    "unit": "[object Object]",
+    "price": 106.53,
+    "isCategory": false,
+    "rows": [
+      368,
+      369
+    ]
+  },
+  {
+    "item": "070105",
+    "description": "Cerâmica Colonial, inclinação 35% (m²= área de projeção do telhado x 1,08)",
+    "unit": "[object Object]",
+    "price": 137.79,
+    "isCategory": false,
+    "rows": [
+      371,
+      372
+    ]
+  },
+  {
+    "item": "070106",
+    "description": "Cerâmica romana, inclinação 35% (m² = área de projeção do telhado x 1,08)",
+    "unit": "[object Object]",
+    "price": 73.39,
+    "isCategory": false,
+    "rows": [
+      374,
+      375
+    ]
+  },
+  {
+    "item": "070107",
+    "description": "Cerâmica qualquer, inclinação 35% (m²= área de projeção do telhado x 1,08) apenas mão de obra",
+    "unit": "M²",
+    "price": 45.71,
+    "isCategory": false,
+    "rows": [
+      377,
+      378
+    ]
+  },
+  {
+    "item": "070108",
+    "description": "Telha de aço galvanizado trapezoidal, esp. Mínima = 0,5 mm/ inclinação:10% / largura nominal: 1265mm/ largura útil: 1207mm./ peso: 1,97 kg./m² / vão livre : 3,50 m.",
+    "unit": "M²",
+    "price": 99.99,
+    "isCategory": false,
+    "rows": [
+      380,
+      381
+    ]
+  },
+  {
+    "item": "070110",
+    "description": "Fibrocimento, perfil ondulado, (m²=área de projeção do telhado x 1,05) apenas mão de obra",
+    "unit": "M²",
+    "price": 18.85,
+    "isCategory": false,
+    "rows": [
+      383,
+      384
+    ]
+  },
+  {
+    "item": "070111",
+    "description": "Cerâmica americana, inclinação 35% (m² = área de projeção do telhado x 1,08)",
+    "unit": "M²",
+    "price": 87.7,
+    "isCategory": false,
+    "rows": [
+      386,
+      387
+    ]
+  },
+  {
+    "item": "070112",
+    "description": "Telha metálica galvanizada trapezoidal, tipo dupla termoacústica com duas faces trapezoidais, esp. 0,43mm, preenchimento em poliestireno expandido/isopor com esp. 30mm, acabamento natural, inclusive acessórios para fixação, fornecimento e instalação",
+    "unit": "M²",
+    "price": 165.53,
+    "isCategory": false,
+    "rows": [
+      389,
+      390
+    ]
+  },
+  {
+    "item": "070200",
+    "description": "Fornecimento, transporte e colocação de cumeeira e espigão:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      392
+    ]
+  },
+  {
+    "item": "070201",
+    "description": "Para telha cerâmica referência 3 unidades / m",
+    "unit": "M",
+    "price": 48.21,
+    "isCategory": false,
+    "rows": [
+      393,
+      394
+    ]
+  },
+  {
+    "item": "070202",
+    "description": "Normal de fibrocimento p/ telha de perfil ondulado, e = 6 ou 8 mm",
+    "unit": "M",
+    "price": 94.87,
+    "isCategory": false,
+    "rows": [
+      396,
+      397
+    ]
+  },
+  {
+    "item": "070203",
+    "description": "Normal de fibrocimento para telha tipo Kalheta, Canalete 49",
+    "unit": "M",
+    "price": 115.09,
+    "isCategory": false,
+    "rows": [
+      399,
+      400
+    ]
+  },
+  {
+    "item": "070205",
+    "description": "Emboçamento da fiada lateral de telha cerâmica com argamassa de cimento, cal hidratada e areia sem peneirar, no traço 1:2:9",
+    "unit": "M",
+    "price": 19.37,
+    "isCategory": false,
+    "rows": [
+      402,
+      403
+    ]
+  },
+  {
+    "item": "070206",
+    "description": "Cumeeira de aço termoacústica, perfil trapezoidal",
+    "unit": "M",
+    "price": 131.1,
+    "isCategory": false,
+    "rows": [
+      405,
+      406
+    ]
+  },
+  {
+    "item": "070300",
+    "description": "Substituição de peças de madeira complementares.",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      408,
+      409
+    ]
+  },
+  {
+    "item": "070301",
+    "description": "Dimensão 15 x 8 cm",
+    "unit": "M",
+    "price": 64.02,
+    "isCategory": false,
+    "rows": [
+      411,
+      412
+    ]
+  },
+  {
+    "item": "070302",
+    "description": "Dimensão 12 x 8 cm",
+    "unit": "M",
+    "price": 52.77,
+    "isCategory": false,
+    "rows": [
+      413,
+      414
+    ]
+  },
+  {
+    "item": "070303",
+    "description": "Dimensão 8 x 8 cm",
+    "unit": "M",
+    "price": 38.3,
+    "isCategory": false,
+    "rows": [
+      415,
+      416
+    ]
+  },
+  {
+    "item": "070304",
+    "description": "Dimensão   7 x 4 cm (caibro)",
+    "unit": "M",
+    "price": 20.4,
+    "isCategory": false,
+    "rows": [
+      417,
+      418
+    ]
+  },
+  {
+    "item": "070305",
+    "description": "dimensão 4 x 1,5 cm (ripa)",
+    "unit": "M",
+    "price": 13.14,
+    "isCategory": false,
+    "rows": [
+      419,
+      420
+    ]
+  },
+  {
+    "item": "070400",
+    "description": "Instalação de Calhas e rufos:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      421,
+      422
+    ]
+  },
+  {
+    "item": "070401",
+    "description": "Calha de chapa galvanizada, nº 24 desenvolvimento 33 cm",
+    "unit": "M",
+    "price": 44.62,
+    "isCategory": false,
+    "rows": [
+      424,
+      425
+    ]
+  },
+  {
+    "item": "070402",
+    "description": "Calha de chapa galvanizada, nº 24 desenvolvimento 50 cm",
+    "unit": "M",
+    "price": 61.93,
+    "isCategory": false,
+    "rows": [
+      426,
+      427
+    ]
+  },
+  {
+    "item": "070403",
+    "description": "Calha de chapa galvanizada, nº 24 desenvolvimento 60 cm",
+    "unit": "M",
+    "price": 72.34,
+    "isCategory": false,
+    "rows": [
+      428,
+      429
+    ]
+  },
+  {
+    "item": "070404",
+    "description": "Rufo de chapa de aço galvanizado nº 24, desenvolvimento 25cm",
+    "unit": "M",
+    "price": 41.05,
+    "isCategory": false,
+    "rows": [
+      430,
+      431
+    ]
+  },
+  {
+    "item": "070405",
+    "description": "Rufo de chapa de aço galvanizado nº 24, desenvolvimento 33cm",
+    "unit": "M",
+    "price": 49.9,
+    "isCategory": false,
+    "rows": [
+      432,
+      433
+    ]
+  },
+  {
+    "item": "070406",
+    "description": "Rufo de chapa de aço galvanizado nº 24, desenvolvimento 50cm",
+    "unit": "M",
+    "price": 69.92,
+    "isCategory": false,
+    "rows": [
+      434,
+      435
+    ]
+  },
+  {
+    "item": "070500",
+    "description": "Condutor de água pluvial e buzinotes",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      436,
+      437
+    ]
+  },
+  {
+    "item": "070501",
+    "description": "Condutor de água (tubo de PVC branco, com conexões, ponta bolsa e virola, diâmetro da seção 75mm)",
+    "unit": "M",
+    "price": 109.25,
+    "isCategory": false,
+    "rows": [
+      439,
+      440
+    ]
+  },
+  {
+    "item": "070502",
+    "description": "Condutor de água (tubo de PVC branco, com conexões, ponta bolsa e virola, diâmetro da seção 100mm)",
+    "unit": "M",
+    "price": 109.25,
+    "isCategory": false,
+    "rows": [
+      441,
+      442
+    ]
+  },
+  {
+    "item": "070503",
+    "description": "Buzinote para lajes e marquises em tubo PVC de 2\" embutido no concreto ou alvenaria.",
+    "unit": "M",
+    "price": 39.58,
+    "isCategory": false,
+    "rows": [
+      443,
+      444
+    ]
+  },
+  {
+    "item": "070600",
+    "description": "Fornecimento, transporte e execução de engradamento:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      446,
+      447
+    ]
+  },
+  {
+    "item": "070601",
+    "description": "Estrutura de madeira tesourada p/ telha cerâmica ou de concreto, vão de até 7,00m",
+    "unit": "[object Object]",
+    "price": 386.59,
+    "isCategory": false,
+    "rows": [
+      449,
+      450
+    ]
+  },
+  {
+    "item": "070602",
+    "description": "Estrutura de madeira tesourada p/ telha cerâmica ou de concreto, vão de 7,01 a 10,00m",
+    "unit": "[object Object]",
+    "price": 556.11,
+    "isCategory": false,
+    "rows": [
+      451,
+      452
+    ]
+  },
+  {
+    "item": "070603",
+    "description": "Estrutura de madeira tesourada p/ telha cerâmica ou de concreto, vão de 10,01 a 13,00m",
+    "unit": "M²",
+    "price": 732.25,
+    "isCategory": false,
+    "rows": [
+      453,
+      454
+    ]
+  },
+  {
+    "item": "070604",
+    "description": "Estrutura de madeira para telha cerâmica ou de concreto, ancorada em laje ou parede",
+    "unit": "M²",
+    "price": 113.52,
+    "isCategory": false,
+    "rows": [
+      455,
+      456
+    ]
+  },
+  {
+    "item": "070605",
+    "description": "Estrutura de madeira para telha de fibrocimento, plástico ou metálica todas onduladas, ancorada em laje ou parede.",
+    "unit": "[object Object]",
+    "price": 75.98,
+    "isCategory": false,
+    "rows": [
+      458,
+      459
+    ]
+  },
+  {
+    "item": "070607",
+    "description": "Estrutura de madeira para telha estrutural de fibrocimento tipo Kalheta, Canalete 49",
+    "unit": "M²",
+    "price": 36.41,
+    "isCategory": false,
+    "rows": [
+      461,
+      462
+    ]
+  },
+  {
+    "item": "070608",
+    "description": "Mão de obra e acessórios para montagem de estrutura de madeira para telha cerâmica ou telha de concreto (no caso de reaproveitamento da madeira do telhado demolido)",
+    "unit": "[object Object]",
+    "price": 94.11,
+    "isCategory": false,
+    "rows": [
+      464,
+      465
+    ]
+  },
+  {
+    "item": "070609",
+    "description": "Mão de obra e acessórios para montagem de estrutura de madeira para telha de fibrocimento, plástico ou metálica todas onduladas, ancorada em laje ou parede (no caso de reaproveitamento da madeira do telhado demolido)",
+    "unit": "[object Object]",
+    "price": 18.09,
+    "isCategory": false,
+    "rows": [
+      467,
+      468
+    ]
+  },
+  {
+    "item": "070610",
+    "description": "Fornecimento, fabricação, transporte e montagem de estrutura metálica para telhado sobre laje para telhas cerâmicas, inclusive tratamento anticorrosivo com aplicação de zarcão em duas demãos e pintura esmalte em duas demãos.",
+    "unit": "[object Object]",
+    "price": 342.67,
+    "isCategory": false,
+    "rows": [
+      470,
+      471
+    ]
+  },
+  {
+    "item": "070611",
+    "description": "Fornecimento, fabricação, transporte e montagem de estrutura metálica sem o apoio de lajes para telhas cerâmicas, de concreto, fibrocimento onduladas ou estruturais, metálicas ou de material vegetal. inclusive tratamento anticorrosivo com aplicação de zarcão em duas demãos e pintura esmalte em duas demãos. 13,87Kg/m²",
+    "unit": "KG",
+    "price": 26.25,
+    "isCategory": false,
+    "rows": [
+      473,
+      474
+    ]
+  },
+  {
+    "item": "070612",
+    "description": "Fornecimento, fabricação, transporte e montagem de estrutura metálica sobre lajes para telha ondulada de fibrocimento, metálica, plástica ou termoacústica",
+    "unit": "[object Object]",
+    "price": 50.35,
+    "isCategory": false,
+    "rows": [
+      476,
+      477
+    ]
+  },
+  {
+    "item": "070613",
+    "description": "Empena de madeira (régua)",
+    "unit": "[object Object]",
+    "price": 209.83,
+    "isCategory": false,
+    "rows": [
+      479,
+      480
+    ]
+  },
+  {
+    "item": "070614",
+    "description": "Fechamento de empena com quadro em perfil, cantoneira 2\" x 2\", soldado, e tela fio 12 malha 1/2\".",
+    "unit": "[object Object]",
+    "price": 237.09,
+    "isCategory": false,
+    "rows": [
+      482,
+      483
+    ]
+  },
+  {
+    "item": "070700",
+    "description": "Fornecimento, transporte e colocação de forro:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      485
+    ]
+  },
+  {
+    "item": "070701",
+    "description": "Forro com tábua de pinho de 10x1cm ou pinus, fixada em sarrafos de 10x2,5cm",
+    "unit": "[object Object]",
+    "price": 168.06,
+    "isCategory": false,
+    "rows": [
+      486,
+      487
+    ]
+  },
+  {
+    "item": "070703",
+    "description": "Forro de PVC em painéis lineares encaixados entre si e fixados em estrutura de aço (Metalon), dimensões 200x6000 mm",
+    "unit": "[object Object]",
+    "price": 79.81,
+    "isCategory": false,
+    "rows": [
+      489,
+      490
+    ]
+  },
+  {
+    "item": "070704",
+    "description": "Forro de gesso fixo monolítico com placa pré-moldada, encaixe macho-fêmea (espessura: 30 mm)",
+    "unit": "M²",
+    "price": 86.61,
+    "isCategory": false,
+    "rows": [
+      492,
+      493
+    ]
+  },
+  {
+    "item": "070705",
+    "description": "Forro de gesso acartonado  fixo monolítico,  suspensos por pendurais de arame galvanizado nº 18 painel, e=12,5 mm",
+    "unit": "[object Object]",
+    "price": 84.23,
+    "isCategory": false,
+    "rows": [
+      495,
+      496
+    ]
+  },
+  {
+    "item": "070800",
+    "description": "Impermeabilização de lajes",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      498
+    ]
+  },
+  {
+    "item": "070801",
+    "description": "Regularização sarrafeada de base para revestimento de piso com argamassa de cimento e areia sem peneirar espessura: 3 cm / traço: 1:3",
+    "unit": "M²",
+    "price": 50.71,
+    "isCategory": false,
+    "rows": [
+      499,
+      500
+    ]
+  },
+  {
+    "item": "070802",
+    "description": "Impermeabilização com manta asfáltica pré-fabricada com espessura mínima de 4mm",
+    "unit": "M²",
+    "price": 73.31,
+    "isCategory": false,
+    "rows": [
+      502,
+      503
+    ]
+  },
+  {
+    "item": "070803",
+    "description": "Proteção mecânica de superfície sujeita a pouco trânsito com com argamassa de areia e cimento traço 1:3 e=3,00cm",
+    "unit": "M²",
+    "price": 45.45,
+    "isCategory": false,
+    "rows": [
+      505,
+      506,
+      507
+    ]
+  },
+  {
+    "item": "080000",
+    "description": "INSTALAÇÕES HIDRÁULICAS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      508
+    ]
+  },
+  {
+    "item": "080100",
+    "description": "Fornecimento e instalação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      509
+    ]
+  },
+  {
+    "item": "080101",
+    "description": "Torneira de pressão para uso geral, amarela, p/ jardim",
+    "unit": "UN",
+    "price": 58.03,
+    "isCategory": false,
+    "rows": [
+      510,
+      511
+    ]
+  },
+  {
+    "item": "080102",
+    "description": "Torneira de pressão metálica com arejador, cromada, para uso em tanques.",
+    "unit": "UN",
+    "price": 89.45,
+    "isCategory": false,
+    "rows": [
+      513,
+      514
+    ]
+  },
+  {
+    "item": "080103",
+    "description": "Torneira de pressão metálica para pia de cozinha e laboratórios, bica móvel, de mesa / parede",
+    "unit": "UN",
+    "price": 143.98,
+    "isCategory": false,
+    "rows": [
+      516,
+      517
+    ]
+  },
+  {
+    "item": "080104",
+    "description": "Torneira de pressão metálica cromada e com arejador para lavatório de mesa / parede",
+    "unit": "UN",
+    "price": 100.64,
+    "isCategory": false,
+    "rows": [
+      519,
+      520
+    ]
+  },
+  {
+    "item": "080105",
+    "description": "Torneira de boia para Caixa d'água Ø 32mm.",
+    "unit": "UN",
+    "price": 307.73,
+    "isCategory": false,
+    "rows": [
+      522,
+      523
+    ]
+  },
+  {
+    "item": "080106",
+    "description": "Torneira elétrica automática, 5400 W",
+    "unit": "UN",
+    "price": 230.48,
+    "isCategory": false,
+    "rows": [
+      525,
+      526
+    ]
+  },
+  {
+    "item": "080200",
+    "description": "Fornecimento e instalação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      528
+    ]
+  },
+  {
+    "item": "080201",
+    "description": "Válvula de descarga metálica com registro interno e canopla, D: 32mm (1 1/4\") ou 40mm (1 1/2)",
+    "unit": "UN",
+    "price": 414.99,
+    "isCategory": false,
+    "rows": [
+      529,
+      530
+    ]
+  },
+  {
+    "item": "080202",
+    "description": "Caixa de descarga de sobrepor (suspensa) de plástico",
+    "unit": "UN",
+    "price": 181.71,
+    "isCategory": false,
+    "rows": [
+      532,
+      533
+    ]
+  },
+  {
+    "item": "080203",
+    "description": "Grelha metálica c/ porta grelha para ralo, inox c/ fecho 10x10",
+    "unit": "UN",
+    "price": 30.55,
+    "isCategory": false,
+    "rows": [
+      535,
+      536
+    ]
+  },
+  {
+    "item": "080204",
+    "description": "Grelha metálica c/ porta grelha para caixa sifonada, inox, com fecho giratório 15 x 15 cm",
+    "unit": "UN",
+    "price": 36.15,
+    "isCategory": false,
+    "rows": [
+      538,
+      539
+    ]
+  },
+  {
+    "item": "080205",
+    "description": "Lavatório de louça para coluna (somente lavatório completo, sem a coluna)",
+    "unit": "UN",
+    "price": 620.54,
+    "isCategory": false,
+    "rows": [
+      541,
+      542
+    ]
+  },
+  {
+    "item": "080206",
+    "description": "Lavatório de louça, com coluna completo.",
+    "unit": "UN",
+    "price": 705.27,
+    "isCategory": false,
+    "rows": [
+      544,
+      545
+    ]
+  },
+  {
+    "item": "080207",
+    "description": "Lavatório de louça, sem coluna completa para fixação direta.",
+    "unit": "UN",
+    "price": 607.14,
+    "isCategory": false,
+    "rows": [
+      547,
+      548
+    ]
+  },
+  {
+    "item": "080208",
+    "description": "Chuveiro Elétrico automático,220v-5400w",
+    "unit": "UN",
+    "price": 287.7,
+    "isCategory": false,
+    "rows": [
+      550,
+      551
+    ]
+  },
+  {
+    "item": "080209",
+    "description": "Vaso sanitário com caixa acoplada branca.",
+    "unit": "UN",
+    "price": 578.58,
+    "isCategory": false,
+    "rows": [
+      553,
+      554
+    ]
+  },
+  {
+    "item": "080210",
+    "description": "Vaso sanitário convencional branca.",
+    "unit": "UN",
+    "price": 442.29,
+    "isCategory": false,
+    "rows": [
+      556,
+      557
+    ]
+  },
+  {
+    "item": "080211",
+    "description": "Válvula para mictório com fechamento automático d = 1/2\"",
+    "unit": "UN",
+    "price": 302.15,
+    "isCategory": false,
+    "rows": [
+      559,
+      560
+    ]
+  },
+  {
+    "item": "080212",
+    "description": "Vaso sanitário sifonado convencional para PCD sem furo frontal com louça branca sem assento, incluso conjunto de ligação para bacia sanitária ajustável - fornecimento e instalação",
+    "unit": "UN",
+    "price": 873.26,
+    "isCategory": false,
+    "rows": [
+      562,
+      563
+    ]
+  },
+  {
+    "item": "080300",
+    "description": "Fornecimento e instalação de registro de pressão:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      565,
+      566
+    ]
+  },
+  {
+    "item": "080303",
+    "description": "Tipo base,  roscável 3/4\" (para tubo soldável ou PPR dn 25mm/cpvc dn 22mm), inclusive acabamento e canopla cromados",
+    "unit": "UN",
+    "price": 103.69,
+    "isCategory": false,
+    "rows": [
+      568,
+      569
+    ]
+  },
+  {
+    "item": "080304",
+    "description": "Tipo base,  roscável 1/2\" (para tubo soldável ou PPR dn 20mm/cpvc dn 15mm), inclusive acabamento e canopla cromados",
+    "unit": "UN",
+    "price": 104.4,
+    "isCategory": false,
+    "rows": [
+      570,
+      571
+    ]
+  },
+  {
+    "item": "080400",
+    "description": "Fornecimento e instalação de registro de gaveta com e sem acabamento:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      572,
+      573
+    ]
+  },
+  {
+    "item": "080401",
+    "description": "Acabamento bruto diâmetro 20mm (1/2\")",
+    "unit": "UN",
+    "price": 63.03,
+    "isCategory": false,
+    "rows": [
+      575,
+      576
+    ]
+  },
+  {
+    "item": "080402",
+    "description": "Acabamento bruto diâmetro 25mm (3/4\")",
+    "unit": "UN",
+    "price": 67.06,
+    "isCategory": false,
+    "rows": [
+      577,
+      578
+    ]
+  },
+  {
+    "item": "080403",
+    "description": "Acabamento bruto diâmetro 32mm (1\")",
+    "unit": "UN",
+    "price": 97.78,
+    "isCategory": false,
+    "rows": [
+      579,
+      580
+    ]
+  },
+  {
+    "item": "080404",
+    "description": "Acabamento bruto diâmetro 50mm (1 1/2\")",
+    "unit": "UN",
+    "price": 138.42,
+    "isCategory": false,
+    "rows": [
+      581,
+      582
+    ]
+  },
+  {
+    "item": "080405",
+    "description": "Acabamento bruto diâmetro 60mm (2\") (Registro Geral - prox.. a caixa d'água)",
+    "unit": "UN",
+    "price": 232.89,
+    "isCategory": false,
+    "rows": [
+      583,
+      584
+    ]
+  },
+  {
+    "item": "080406",
+    "description": "Com canopla diâmetro 20mm (1/2\") - (acabamento cromado)",
+    "unit": "UN",
+    "price": 98.9,
+    "isCategory": false,
+    "rows": [
+      585,
+      586
+    ]
+  },
+  {
+    "item": "080407",
+    "description": "Com canopla diâmetro 25mm (3/4\") - (acabamento cromado)",
+    "unit": "UN",
+    "price": 103.74,
+    "isCategory": false,
+    "rows": [
+      587,
+      588
+    ]
+  },
+  {
+    "item": "080408",
+    "description": "Com canopla diâmetro 32mm (1\") - (acabamento cromado)",
+    "unit": "UN",
+    "price": 131.14,
+    "isCategory": false,
+    "rows": [
+      589,
+      590
+    ]
+  },
+  {
+    "item": "080409",
+    "description": "Com canopla diâmetro 40mm (1 1/4\") - (acabamento cromado)",
+    "unit": "UN",
+    "price": 155.98,
+    "isCategory": false,
+    "rows": [
+      591,
+      592
+    ]
+  },
+  {
+    "item": "080410",
+    "description": "Com canopla diâmetro 50mm (1 1/2\") - (acabamento cromado)",
+    "unit": "UN",
+    "price": 189.57,
+    "isCategory": false,
+    "rows": [
+      593,
+      594
+    ]
+  },
+  {
+    "item": "080500",
+    "description": "Serviços de fixação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      595
+    ]
+  },
+  {
+    "item": "080501",
+    "description": "Lavatório (inclui apenas serviço de fixação)",
+    "unit": "UN",
+    "price": 136.36,
+    "isCategory": false,
+    "rows": [
+      596,
+      597
+    ]
+  },
+  {
+    "item": "080502",
+    "description": "Vaso sanitário (inclui apenas serviço de fixação)",
+    "unit": "UN",
+    "price": 125.87,
+    "isCategory": false,
+    "rows": [
+      599,
+      600
+    ]
+  },
+  {
+    "item": "080600",
+    "description": "Fornecimento, transporte e instalação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      602
+    ]
+  },
+  {
+    "item": "080601",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 0,76CV 3/4 HP",
+    "unit": "UN",
+    "price": 876.69,
+    "isCategory": false,
+    "rows": [
+      603,
+      604
+    ]
+  },
+  {
+    "item": "080602",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 1 CV.",
+    "unit": "UN",
+    "price": 1244.89,
+    "isCategory": false,
+    "rows": [
+      606,
+      607
+    ]
+  },
+  {
+    "item": "080603",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 1,5 CV.",
+    "unit": "UN",
+    "price": 1889.65,
+    "isCategory": false,
+    "rows": [
+      609,
+      610
+    ]
+  },
+  {
+    "item": "080604",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 2 CV",
+    "unit": "UN",
+    "price": 1898.34,
+    "isCategory": false,
+    "rows": [
+      612,
+      613
+    ]
+  },
+  {
+    "item": "080605",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 3 CV",
+    "unit": "UN",
+    "price": 2170.08,
+    "isCategory": false,
+    "rows": [
+      615,
+      616
+    ]
+  },
+  {
+    "item": "080606",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 5 CV",
+    "unit": "UN",
+    "price": 4456.4,
+    "isCategory": false,
+    "rows": [
+      618,
+      619
+    ]
+  },
+  {
+    "item": "080607",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 7,5 CV",
+    "unit": "UN",
+    "price": 6524.29,
+    "isCategory": false,
+    "rows": [
+      621,
+      622
+    ]
+  },
+  {
+    "item": "080608",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 10 CV",
+    "unit": "UN",
+    "price": 8266.84,
+    "isCategory": false,
+    "rows": [
+      624,
+      625
+    ]
+  },
+  {
+    "item": "080700",
+    "description": "Fornecimento, transporte e instalação da rede de água fria em tubo em PVC:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      627,
+      628
+    ]
+  },
+  {
+    "item": "080701",
+    "description": "Roscável de 1/2\" (inclui serviços de: execução de rasgo em alvenaria e enchimento de rasgo em alvenaria com argamassa para passagem da tubulação)",
+    "unit": "M",
+    "price": 42.99,
+    "isCategory": false,
+    "rows": [
+      630,
+      631
+    ]
+  },
+  {
+    "item": "080702",
+    "description": "Roscável de 3/4\" (inclui serviços de: execução de rasgo em alvenaria e enchimento de rasgo em alvenaria com argamassa para passagem da tubulação)",
+    "unit": "M",
+    "price": 50.06,
+    "isCategory": false,
+    "rows": [
+      632,
+      633
+    ]
+  },
+  {
+    "item": "080703",
+    "description": "Roscável de 1\" (inclui serviços de: execução de rasgo em alvenaria e enchimento de rasgo em alvenaria com argamassa para passagem da tubulação)",
+    "unit": "M",
+    "price": 67.44,
+    "isCategory": false,
+    "rows": [
+      634,
+      635
+    ]
+  },
+  {
+    "item": "080704",
+    "description": "Tubo PVC soldável  20mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 32.12,
+    "isCategory": false,
+    "rows": [
+      636,
+      637
+    ]
+  },
+  {
+    "item": "080705",
+    "description": "Tubo PVC soldável  25mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 34.68,
+    "isCategory": false,
+    "rows": [
+      638,
+      639
+    ]
+  },
+  {
+    "item": "080706",
+    "description": "Tubo PVC soldável  32mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 45.6,
+    "isCategory": false,
+    "rows": [
+      640,
+      641
+    ]
+  },
+  {
+    "item": "080707",
+    "description": "Tubo PVC soldável  40mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 53.11,
+    "isCategory": false,
+    "rows": [
+      642,
+      643
+    ]
+  },
+  {
+    "item": "080708",
+    "description": "Tubo PVC soldável  50mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 51.06,
+    "isCategory": false,
+    "rows": [
+      644,
+      645
+    ]
+  },
+  {
+    "item": "080709",
+    "description": "Tubo PVC soldável  60mm (com conexões), incluindo serviços de rasgo e enchimento de rasgo em alvenaria com argamassa para passagem de tubulação",
+    "unit": "M",
+    "price": 71.26,
+    "isCategory": false,
+    "rows": [
+      646,
+      647
+    ]
+  },
+  {
+    "item": "080800",
+    "description": "Fornecimento, transporte e instalação de reservatório d´água (OBS  quando a instalação for enterrada usar a do tipo cisterna)",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      648,
+      649
+    ]
+  },
+  {
+    "item": "080801",
+    "description": "De polietileno cilíndrico com tampa, capacidade 1.000 litros",
+    "unit": "UN",
+    "price": 1027,
+    "isCategory": false,
+    "rows": [
+      651,
+      652
+    ]
+  },
+  {
+    "item": "080802",
+    "description": "De polietileno cilíndrico com tampa, capacidade 1.500 litros",
+    "unit": "UN",
+    "price": 1963.99,
+    "isCategory": false,
+    "rows": [
+      653,
+      654
+    ]
+  },
+  {
+    "item": "080803",
+    "description": "De polietileno cilíndrico com tampa, capacidade 3.000 litros",
+    "unit": "UN",
+    "price": 2893.27,
+    "isCategory": false,
+    "rows": [
+      655,
+      656
+    ]
+  },
+  {
+    "item": "080804",
+    "description": "De polietileno cilíndrico com tampa, capacidade 5.000 litros",
+    "unit": "UN",
+    "price": 3771.84,
+    "isCategory": false,
+    "rows": [
+      657,
+      658
+    ]
+  },
+  {
+    "item": "080805",
+    "description": "Em fibra de vidro cilíndrico com tampa, capacidade 10.000 litros",
+    "unit": "UN",
+    "price": 5741.07,
+    "isCategory": false,
+    "rows": [
+      659,
+      660
+    ]
+  },
+  {
+    "item": "080806",
+    "description": "Em fibra de vidro cilíndrico com tampa, capacidade 15.000 litros",
+    "unit": "UN",
+    "price": 7243.84,
+    "isCategory": false,
+    "rows": [
+      661,
+      662
+    ]
+  },
+  {
+    "item": "080807",
+    "description": "Em fibra de vidro cilíndrico com tampa, capacidade 20.000 litros",
+    "unit": "UN",
+    "price": 8440.1,
+    "isCategory": false,
+    "rows": [
+      663,
+      664
+    ]
+  },
+  {
+    "item": "080900",
+    "description": "Dispenser em plástico ABS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      665
+    ]
+  },
+  {
+    "item": "080901",
+    "description": "Saboneteira tipo dispenser, para refil de 800ml",
+    "unit": "UN",
+    "price": 65.31,
+    "isCategory": false,
+    "rows": [
+      666,
+      667
+    ]
+  },
+  {
+    "item": "080903",
+    "description": "Dispenser toalheiro em ABS para folhas de papel",
+    "unit": "UN",
+    "price": 76.35,
+    "isCategory": false,
+    "rows": [
+      669,
+      670
+    ]
+  },
+  {
+    "item": "081000",
+    "description": "Fornecimento, transporte e instalação de bebedouro:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      672
+    ]
+  },
+  {
+    "item": "081001",
+    "description": "Bebedouro tipo cocho, C = 200 cm em alvenaria, revestido em azulejo, com filtro e sem refrigeração, 5 torneiras metálicas de parede, com ligação hidrosanitária  (conforme desenho caderno de especificações)",
+    "unit": "UN",
+    "price": 2125.09,
+    "isCategory": false,
+    "rows": [
+      673,
+      674
+    ]
+  },
+  {
+    "item": "081100",
+    "description": "Outros (Fornecimento e instalação):",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      676
+    ]
+  },
+  {
+    "item": "081101",
+    "description": "Mictório de aço inoxidável coletivo (completo)",
+    "unit": "M",
+    "price": 1117.98,
+    "isCategory": false,
+    "rows": [
+      677,
+      678
+    ]
+  },
+  {
+    "item": "081102",
+    "description": "Mictório de louça individual (completo)",
+    "unit": "UN",
+    "price": 574.8,
+    "isCategory": false,
+    "rows": [
+      680,
+      681
+    ]
+  },
+  {
+    "item": "081103",
+    "description": "Porta -papel de louça branca",
+    "unit": "UN",
+    "price": 76.09,
+    "isCategory": false,
+    "rows": [
+      683,
+      684
+    ]
+  },
+  {
+    "item": "081104",
+    "description": "Saboneteira de louça branca sem alça",
+    "unit": "UN",
+    "price": 54.33,
+    "isCategory": false,
+    "rows": [
+      686,
+      687
+    ]
+  },
+  {
+    "item": "081105",
+    "description": "Porta-toalhas de louça branca",
+    "unit": "UN",
+    "price": 48.68,
+    "isCategory": false,
+    "rows": [
+      689,
+      690
+    ]
+  },
+  {
+    "item": "081106",
+    "description": "Ralo Seco PVC quadrado 100 X 40mm com grelha branca",
+    "unit": "UN",
+    "price": 43.39,
+    "isCategory": false,
+    "rows": [
+      692,
+      693
+    ]
+  },
+  {
+    "item": "081107",
+    "description": "Ducha higiênica com registro para controle do fluxo de água 1/2\"",
+    "unit": "UN",
+    "price": 158.09,
+    "isCategory": false,
+    "rows": [
+      695,
+      696
+    ]
+  },
+  {
+    "item": "081108",
+    "description": "Lavatório de louça de embutir (cuba), com torneira de pressão e acessórios.",
+    "unit": "UN",
+    "price": 513.1,
+    "isCategory": false,
+    "rows": [
+      698,
+      699,
+      700
+    ]
+  },
+  {
+    "item": "090000",
+    "description": "INSTALAÇÕES SANITÁRIAS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      701
+    ]
+  },
+  {
+    "item": "090100",
+    "description": "Execução de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      702
+    ]
+  },
+  {
+    "item": "090101",
+    "description": "Caixa de Inspeção ou passagem em alvenaria  60 X 60 X 60 cm, inclusive tampa em concreto, escavação, reaterro e bota-fora",
+    "unit": "UN",
+    "price": 615.02,
+    "isCategory": false,
+    "rows": [
+      703,
+      704
+    ]
+  },
+  {
+    "item": "090102",
+    "description": "Caixa de Inspeção ou passagem em alvenaria  60 X 60 X 60 cm, inclusive tampa em grelha de aço, escavação, reaterro e bota-fora",
+    "unit": "UN",
+    "price": 913.27,
+    "isCategory": false,
+    "rows": [
+      706,
+      707
+    ]
+  },
+  {
+    "item": "090103",
+    "description": "Caixa de passagem em alvenaria e tampa de concreto, fundo de brita 50 x 50 x  60cm, inclusive escavação, reaterro e bota fora.",
+    "unit": "UN",
+    "price": 503.53,
+    "isCategory": false,
+    "rows": [
+      709,
+      710
+    ]
+  },
+  {
+    "item": "090104",
+    "description": "Caixa de gordura pré-fabricada simples volume de 120 litros.",
+    "unit": "UN",
+    "price": 573.14,
+    "isCategory": false,
+    "rows": [
+      712,
+      713
+    ]
+  },
+  {
+    "item": "090105",
+    "description": "Canaletas   de   águas   pluviais,   em concreto  moldado in-loco, largura 30cm, com grelha em barra redonda de 3/4\".",
+    "unit": "M",
+    "price": 357.67,
+    "isCategory": false,
+    "rows": [
+      715,
+      716
+    ]
+  },
+  {
+    "item": "090106",
+    "description": "Canaletas   de   águas   pluviais,  em concreto  moldado in-loco, largura 30cm com tampa de concreto pré-moldada perfurada para canaleta.",
+    "unit": "M",
+    "price": 306.97,
+    "isCategory": false,
+    "rows": [
+      718,
+      719
+    ]
+  },
+  {
+    "item": "090107",
+    "description": "Tampa de concreto pré-moldada perfurada para canaleta, largura 35 cm",
+    "unit": "M",
+    "price": 51.45,
+    "isCategory": false,
+    "rows": [
+      721,
+      722
+    ]
+  },
+  {
+    "item": "090108",
+    "description": "Grelha em ferro fundido para canaleta largura 30 cm (com caixilho de apoio)",
+    "unit": "M",
+    "price": 228.04,
+    "isCategory": false,
+    "rows": [
+      724,
+      725
+    ]
+  },
+  {
+    "item": "090200",
+    "description": "Canaleta em tubo de concreto meia-cana para águas pluviais",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      727,
+      728
+    ]
+  },
+  {
+    "item": "090201",
+    "description": "Canaleta em tubo de concreto meia-cana para águas pluviais, Ø 300 mm",
+    "unit": "M",
+    "price": 103.43,
+    "isCategory": false,
+    "rows": [
+      730,
+      731
+    ]
+  },
+  {
+    "item": "090202",
+    "description": "Canaleta em tubo de concreto meia-cana para águas pluviais, Ø 400 mm",
+    "unit": "M",
+    "price": 140.97,
+    "isCategory": false,
+    "rows": [
+      732,
+      733
+    ]
+  },
+  {
+    "item": "090203",
+    "description": "Canaleta em tubo de concreto meia-cana para águas pluviais, Ø 500 mm",
+    "unit": "M",
+    "price": 176.43,
+    "isCategory": false,
+    "rows": [
+      734,
+      735
+    ]
+  },
+  {
+    "item": "090300",
+    "description": "Fornecimento, transporte e instalação de tubulação em PVC esgoto diâmetros descritos:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      736,
+      737
+    ]
+  },
+  {
+    "item": "090301",
+    "description": "Diâmetro de 40 mm",
+    "unit": "M",
+    "price": 27.65,
+    "isCategory": false,
+    "rows": [
+      739,
+      740
+    ]
+  },
+  {
+    "item": "090302",
+    "description": "Diâmetro de 50 mm",
+    "unit": "M",
+    "price": 34.84,
+    "isCategory": false,
+    "rows": [
+      741,
+      742
+    ]
+  },
+  {
+    "item": "090303",
+    "description": "Diâmetro de 75 mm",
+    "unit": "M",
+    "price": 47.3,
+    "isCategory": false,
+    "rows": [
+      743,
+      744
+    ]
+  },
+  {
+    "item": "090304",
+    "description": "Diâmetro de 100 mm",
+    "unit": "M",
+    "price": 48.96,
+    "isCategory": false,
+    "rows": [
+      745,
+      746
+    ]
+  },
+  {
+    "item": "090305",
+    "description": "Diâmetro de 150 mm",
+    "unit": "M",
+    "price": 76.49,
+    "isCategory": false,
+    "rows": [
+      747,
+      748
+    ]
+  },
+  {
+    "item": "090400",
+    "description": "Outros:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      749
+    ]
+  },
+  {
+    "item": "090402",
+    "description": "Cuba simples de aço inoxidável, cuba simples, 465 x 330 mm.",
+    "unit": "UN",
+    "price": 453.28,
+    "isCategory": false,
+    "rows": [
+      750,
+      751
+    ]
+  },
+  {
+    "item": "090403",
+    "description": "Cuba de aço inox 304, dimensões 80 x 50 x 30cm, e=0,8mm, com válvula cromada, sifão cromado, torneira cromada (PARA LAVAR PANELAS).",
+    "unit": "UN",
+    "price": 3379.6,
+    "isCategory": false,
+    "rows": [
+      753,
+      754
+    ]
+  },
+  {
+    "item": "090406",
+    "description": "Tanque de louça com coluna",
+    "unit": "UN",
+    "price": 566.06,
+    "isCategory": false,
+    "rows": [
+      756,
+      757
+    ]
+  },
+  {
+    "item": "090500",
+    "description": "Fornecimento e instalação de caixa sifonada:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      759
+    ]
+  },
+  {
+    "item": "090501",
+    "description": "Em PVC, com grelha quadrada/redonda,150x150x50mm",
+    "unit": "UN",
+    "price": 99.01,
+    "isCategory": false,
+    "rows": [
+      760,
+      761,
+      762
+    ]
+  },
+  {
+    "item": "100000",
+    "description": "INSTALAÇÃO ELÉTRICA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      763
+    ]
+  },
+  {
+    "item": "100100",
+    "description": "Fornecimento e instalação de globo tipo drops:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      764
+    ]
+  },
+  {
+    "item": "100101",
+    "description": "Globo leitoso tamanho médio exceto lâmpada",
+    "unit": "UN",
+    "price": 78.61,
+    "isCategory": false,
+    "rows": [
+      765,
+      766
+    ]
+  },
+  {
+    "item": "100102",
+    "description": "Globo leitoso tamanho médio completo inclusive lâmpada",
+    "unit": "UN",
+    "price": 101.79,
+    "isCategory": false,
+    "rows": [
+      768,
+      769
+    ]
+  },
+  {
+    "item": "100200",
+    "description": "Fornecimento e instalação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      771
+    ]
+  },
+  {
+    "item": "100201",
+    "description": "Hastes terra Copperweld 3/4\"x 2,40m para aterramento",
+    "unit": "UN",
+    "price": 186.27,
+    "isCategory": false,
+    "rows": [
+      772,
+      773
+    ]
+  },
+  {
+    "item": "100300",
+    "description": "Fornecimento, transporte e instalação luminária em de calha comercial completa",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      775,
+      776
+    ]
+  },
+  {
+    "item": "100306",
+    "description": "Luminária de sobrepor com refletor e aletas - lâmpadas LED (2 x 18W)",
+    "unit": "UN",
+    "price": 315.14,
+    "isCategory": false,
+    "rows": [
+      778,
+      779
+    ]
+  },
+  {
+    "item": "100307",
+    "description": "Luminária LED completa para uma (1) lâmpada tubular led 1x9w-øt8, temperatura da cor 6500k calha de sobrepor",
+    "unit": "UN",
+    "price": 122.26,
+    "isCategory": false,
+    "rows": [
+      780,
+      781
+    ]
+  },
+  {
+    "item": "100308",
+    "description": "Luminária LED completa para uma (1) lâmpada tubular led 1x18w-øt8, temperatura da cor 6500k, calha de sobrepor",
+    "unit": "UN",
+    "price": 130.75,
+    "isCategory": false,
+    "rows": [
+      782,
+      783
+    ]
+  },
+  {
+    "item": "100309",
+    "description": "Luminária LED completa para duas (2) lâmpadas tubulares led 2x9w-øt8, temperatura da cor 6500k, calha de sobrepor",
+    "unit": "UN",
+    "price": 189.37,
+    "isCategory": false,
+    "rows": [
+      784,
+      785
+    ]
+  },
+  {
+    "item": "100310",
+    "description": "Luminária LED completa para duas (2) lâmpadas tubulares led 2x18w-øt8, temperatura da cor 6500k, calha de sobrepor",
+    "unit": "UN",
+    "price": 181.5,
+    "isCategory": false,
+    "rows": [
+      786,
+      787
+    ]
+  },
+  {
+    "item": "100311",
+    "description": "Luminária LED completa para quatro (4) lâmpadas tubulares led 4x9w-øt8, temperatura da cor 6500k, calha de sobrepor",
+    "unit": "UN",
+    "price": 276.25,
+    "isCategory": false,
+    "rows": [
+      788,
+      789
+    ]
+  },
+  {
+    "item": "100312",
+    "description": "Luminária LED completa para quatro (4) lâmpadas tubulares led 4x18w-øt8, temperatura da cor 6500k, calha de sobrepor",
+    "unit": "UN",
+    "price": 301.39,
+    "isCategory": false,
+    "rows": [
+      790,
+      791
+    ]
+  },
+  {
+    "item": "100313",
+    "description": "Retirada e recolocação da mesma luminária qualquer tipo (somente mão de obra)",
+    "unit": "UN",
+    "price": 95.9,
+    "isCategory": false,
+    "rows": [
+      792,
+      793
+    ]
+  },
+  {
+    "item": "100314",
+    "description": "Luminária comercial com difusor de sobrepor completa, para duas (2) lâmpadas tubulares led 2x18W-øT8, temperatura da cor 6500K, fornecimento e instalação, inclusive base e lâmpada",
+    "unit": "UN",
+    "price": 283.36,
+    "isCategory": false,
+    "rows": [
+      795,
+      796
+    ]
+  },
+  {
+    "item": "100400",
+    "description": "Fornecimento e instalação interruptor e tomadas, inclusive placa:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      798
+    ]
+  },
+  {
+    "item": "100401",
+    "description": "Tomada universal 2 P+T (10A)",
+    "unit": "UN",
+    "price": 34.59,
+    "isCategory": false,
+    "rows": [
+      799,
+      800
+    ]
+  },
+  {
+    "item": "100402",
+    "description": "Tomada universal 2 P+T (20A)",
+    "unit": "UN",
+    "price": 38.45,
+    "isCategory": false,
+    "rows": [
+      802,
+      803
+    ]
+  },
+  {
+    "item": "100403",
+    "description": "01 tecla simples 10A - 250V",
+    "unit": "UN",
+    "price": 32.41,
+    "isCategory": false,
+    "rows": [
+      805,
+      806
+    ]
+  },
+  {
+    "item": "100404",
+    "description": "02 teclas simples 10A - 250V",
+    "unit": "UN",
+    "price": 46.94,
+    "isCategory": false,
+    "rows": [
+      808,
+      809
+    ]
+  },
+  {
+    "item": "100405",
+    "description": "03 teclas simples 10A - 250V",
+    "unit": "UN",
+    "price": 65.48,
+    "isCategory": false,
+    "rows": [
+      811,
+      812
+    ]
+  },
+  {
+    "item": "100406",
+    "description": "01 tecla paralelo",
+    "unit": "UN",
+    "price": 39.83,
+    "isCategory": false,
+    "rows": [
+      814,
+      815
+    ]
+  },
+  {
+    "item": "100407",
+    "description": "Placa (espelho) para caixa 4x2\"",
+    "unit": "UN",
+    "price": 6.71,
+    "isCategory": false,
+    "rows": [
+      817,
+      818
+    ]
+  },
+  {
+    "item": "100408",
+    "description": "Placa (espelho) para caixa 4x4\"",
+    "unit": "UN",
+    "price": 11.13,
+    "isCategory": false,
+    "rows": [
+      820,
+      821
+    ]
+  },
+  {
+    "item": "100500",
+    "description": "Fornecimento e instalação de disjuntor automático:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      823,
+      824
+    ]
+  },
+  {
+    "item": "100501",
+    "description": "Monopolar DIN de 10  a 32 A",
+    "unit": "UN",
+    "price": 18.76,
+    "isCategory": false,
+    "rows": [
+      826,
+      827
+    ]
+  },
+  {
+    "item": "100502",
+    "description": "Monopolar DIN de 35 a 50 A",
+    "unit": "UN",
+    "price": 23.4,
+    "isCategory": false,
+    "rows": [
+      828,
+      829
+    ]
+  },
+  {
+    "item": "100503",
+    "description": "Bipolar DIN de 15 a 35 A",
+    "unit": "UN",
+    "price": 46.53,
+    "isCategory": false,
+    "rows": [
+      830,
+      831
+    ]
+  },
+  {
+    "item": "100504",
+    "description": "Bipolar DIN de 40 a 50 A",
+    "unit": "UN",
+    "price": 45.25,
+    "isCategory": false,
+    "rows": [
+      832,
+      833
+    ]
+  },
+  {
+    "item": "100505",
+    "description": "Tripolar DIN de 63A",
+    "unit": "UN",
+    "price": 85.89,
+    "isCategory": false,
+    "rows": [
+      834,
+      835
+    ]
+  },
+  {
+    "item": "100506",
+    "description": "Tripolar DIN de70A",
+    "unit": "UN",
+    "price": 106.78,
+    "isCategory": false,
+    "rows": [
+      836,
+      837
+    ]
+  },
+  {
+    "item": "100507",
+    "description": "Tripolar DIN de 80A,",
+    "unit": "UN",
+    "price": 191.54,
+    "isCategory": false,
+    "rows": [
+      838,
+      839
+    ]
+  },
+  {
+    "item": "100508",
+    "description": "Tripolar DIN de 100A",
+    "unit": "UN",
+    "price": 190.48,
+    "isCategory": false,
+    "rows": [
+      840,
+      841
+    ]
+  },
+  {
+    "item": "100509",
+    "description": "Tripolar DIN de 125A",
+    "unit": "UN",
+    "price": 308.65,
+    "isCategory": false,
+    "rows": [
+      842,
+      843
+    ]
+  },
+  {
+    "item": "100510",
+    "description": "Tripolar caixa moldada de 150A",
+    "unit": "UN",
+    "price": 562.46,
+    "isCategory": false,
+    "rows": [
+      844,
+      845
+    ]
+  },
+  {
+    "item": "100511",
+    "description": "Tripolar  caixa moldada de 160A",
+    "unit": "UN",
+    "price": 602.25,
+    "isCategory": false,
+    "rows": [
+      846,
+      847
+    ]
+  },
+  {
+    "item": "100512",
+    "description": "Tripolar  caixa moldada de 175A",
+    "unit": "UN",
+    "price": 618.13,
+    "isCategory": false,
+    "rows": [
+      848,
+      849
+    ]
+  },
+  {
+    "item": "100513",
+    "description": "Tripolar  caixa moldada de 200A",
+    "unit": "UN",
+    "price": 623.94,
+    "isCategory": false,
+    "rows": [
+      850,
+      851
+    ]
+  },
+  {
+    "item": "100514",
+    "description": "Tripolar  caixa moldada de 225A",
+    "unit": "UN",
+    "price": 629.76,
+    "isCategory": false,
+    "rows": [
+      852,
+      853
+    ]
+  },
+  {
+    "item": "100515",
+    "description": "Tripolar  caixa moldada de 250A",
+    "unit": "UN",
+    "price": 597.66,
+    "isCategory": false,
+    "rows": [
+      854,
+      855
+    ]
+  },
+  {
+    "item": "100516",
+    "description": "Tripolar  caixa moldada de 300A",
+    "unit": "UN",
+    "price": 1449.8,
+    "isCategory": false,
+    "rows": [
+      856,
+      857
+    ]
+  },
+  {
+    "item": "100517",
+    "description": "Tripolar  caixa moldada de 400A",
+    "unit": "UN",
+    "price": 1468.04,
+    "isCategory": false,
+    "rows": [
+      858,
+      859
+    ]
+  },
+  {
+    "item": "100518",
+    "description": "Disjuntor de proteção diferencial residual (DR), bipolar, tipo DIN, corrente nominal de 25A, alta sensibilidade, corrente diferencial residual nominal com atuação de 30ma",
+    "unit": "UN",
+    "price": 138.26,
+    "isCategory": false,
+    "rows": [
+      860,
+      861
+    ]
+  },
+  {
+    "item": "100519",
+    "description": "Disjuntor de proteção diferencial residual (DR), bipolar, tipo DIN, corrente nominal de 40A, alta sensibilidade, corrente diferencial residual nominal com atuação de 30ma",
+    "unit": "UN",
+    "price": 172.93,
+    "isCategory": false,
+    "rows": [
+      862,
+      863
+    ]
+  },
+  {
+    "item": "100520",
+    "description": "Disjuntor de proteção diferencial residual (DR), bipolar, tipo DIN, corrente nominal de 63a, alta sensibilidade, corrente diferencial residual nominal com atuação de 30ma",
+    "unit": "UN",
+    "price": 184.66,
+    "isCategory": false,
+    "rows": [
+      864,
+      865
+    ]
+  },
+  {
+    "item": "100521",
+    "description": "Dispositivo de proteção contra surto de tensão DPS 20kA - 175v",
+    "unit": "UN",
+    "price": 76.67,
+    "isCategory": false,
+    "rows": [
+      866,
+      867
+    ]
+  },
+  {
+    "item": "100522",
+    "description": "Dispositivo de proteção contra surto de tensão DPS 40kA - 175v",
+    "unit": "UN",
+    "price": 66.02,
+    "isCategory": false,
+    "rows": [
+      868,
+      869
+    ]
+  },
+  {
+    "item": "100523",
+    "description": "Dispositivo de proteção contra surto de tensão DPS 40kA - 440v",
+    "unit": "UN",
+    "price": 74.12,
+    "isCategory": false,
+    "rows": [
+      870,
+      871
+    ]
+  },
+  {
+    "item": "100524",
+    "description": "Dispositivo de proteção contra surto de tensão DPS 60kA - 275v",
+    "unit": "UN",
+    "price": 88.32,
+    "isCategory": false,
+    "rows": [
+      872,
+      873
+    ]
+  },
+  {
+    "item": "100600",
+    "description": "Fornecimento, transporte e instalação de cabos:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      874,
+      875
+    ]
+  },
+  {
+    "item": "100601",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 1,5 mm2",
+    "unit": "M",
+    "price": 3.28,
+    "isCategory": false,
+    "rows": [
+      877,
+      878
+    ]
+  },
+  {
+    "item": "100602",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 2,5 mm2",
+    "unit": "M",
+    "price": 4.76,
+    "isCategory": false,
+    "rows": [
+      879,
+      880
+    ]
+  },
+  {
+    "item": "100603",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 4,0 mm2",
+    "unit": "M",
+    "price": 6.59,
+    "isCategory": false,
+    "rows": [
+      881,
+      882
+    ]
+  },
+  {
+    "item": "100604",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 6,0 mm2",
+    "unit": "M",
+    "price": 9.19,
+    "isCategory": false,
+    "rows": [
+      883,
+      884
+    ]
+  },
+  {
+    "item": "100700",
+    "description": "Fornecimento, transporte e instalação de cabos Sintenax:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      885,
+      886
+    ]
+  },
+  {
+    "item": "100701",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 10 mm2",
+    "unit": "M",
+    "price": 16.01,
+    "isCategory": false,
+    "rows": [
+      888,
+      889
+    ]
+  },
+  {
+    "item": "100702",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 16 mm2",
+    "unit": "M",
+    "price": 21.8,
+    "isCategory": false,
+    "rows": [
+      890,
+      891
+    ]
+  },
+  {
+    "item": "100703",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 25 mm2",
+    "unit": "M",
+    "price": 34.88,
+    "isCategory": false,
+    "rows": [
+      892,
+      893
+    ]
+  },
+  {
+    "item": "100704",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 35 mm2",
+    "unit": "M",
+    "price": 40.5,
+    "isCategory": false,
+    "rows": [
+      894,
+      895
+    ]
+  },
+  {
+    "item": "100705",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 50 mm2",
+    "unit": "M",
+    "price": 53.22,
+    "isCategory": false,
+    "rows": [
+      896,
+      897
+    ]
+  },
+  {
+    "item": "100706",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 70 mm²",
+    "unit": "M",
+    "price": 88.05,
+    "isCategory": false,
+    "rows": [
+      898,
+      899
+    ]
+  },
+  {
+    "item": "100707",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 95mm²",
+    "unit": "M",
+    "price": 112.94,
+    "isCategory": false,
+    "rows": [
+      900,
+      901
+    ]
+  },
+  {
+    "item": "100708",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 120 mm²",
+    "unit": "M",
+    "price": 139.08,
+    "isCategory": false,
+    "rows": [
+      902,
+      903
+    ]
+  },
+  {
+    "item": "100709",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 150 mm²",
+    "unit": "M",
+    "price": 169.43,
+    "isCategory": false,
+    "rows": [
+      904,
+      905
+    ]
+  },
+  {
+    "item": "100710",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 185 mm²",
+    "unit": "M",
+    "price": 206.21,
+    "isCategory": false,
+    "rows": [
+      906,
+      907
+    ]
+  },
+  {
+    "item": "100711",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 240 mm²",
+    "unit": "M",
+    "price": 265.75,
+    "isCategory": false,
+    "rows": [
+      908,
+      909
+    ]
+  },
+  {
+    "item": "100712",
+    "description": "Isolamento tipo LSHF/ATOX, não halogenado e antichama seção 300 mm²",
+    "unit": "M",
+    "price": 333.55,
+    "isCategory": false,
+    "rows": [
+      910,
+      911
+    ]
+  },
+  {
+    "item": "100713",
+    "description": "Cobre nu # 10mm² para aterramento",
+    "unit": "M",
+    "price": 13.79,
+    "isCategory": false,
+    "rows": [
+      912,
+      913
+    ]
+  },
+  {
+    "item": "100800",
+    "description": "Conduletes em alumínio ou PVC",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      915,
+      916
+    ]
+  },
+  {
+    "item": "100802",
+    "description": "condulete em alumínio tipo C, LL OU LR d=3/4\"",
+    "unit": "UN",
+    "price": 41.92,
+    "isCategory": false,
+    "rows": [
+      918,
+      919
+    ]
+  },
+  {
+    "item": "100803",
+    "description": "condulete em alumínio tipo C, LL OU LR d=1\"",
+    "unit": "UN",
+    "price": 52.72,
+    "isCategory": false,
+    "rows": [
+      920,
+      921
+    ]
+  },
+  {
+    "item": "100804",
+    "description": "condulete em alumínio tipo C, LL OU LR d=1 1/4\"",
+    "unit": "UN",
+    "price": 64.21,
+    "isCategory": false,
+    "rows": [
+      922,
+      923
+    ]
+  },
+  {
+    "item": "100805",
+    "description": "condulete em alumínio tipo C, LL OU LR d=1 1/2\"",
+    "unit": "UN",
+    "price": 74.53,
+    "isCategory": false,
+    "rows": [
+      924,
+      925
+    ]
+  },
+  {
+    "item": "100807",
+    "description": "condulete em alumínio tipo B OU E d=3/4\"",
+    "unit": "UN",
+    "price": 38.53,
+    "isCategory": false,
+    "rows": [
+      926,
+      927
+    ]
+  },
+  {
+    "item": "100808",
+    "description": "condulete em alumínio tipo B OU E d=1\"",
+    "unit": "UN",
+    "price": 49.02,
+    "isCategory": false,
+    "rows": [
+      928,
+      929
+    ]
+  },
+  {
+    "item": "100809",
+    "description": "condulete em alumínio tipo B OU E d=1 1/4\"",
+    "unit": "UN",
+    "price": 56.23,
+    "isCategory": false,
+    "rows": [
+      930,
+      931
+    ]
+  },
+  {
+    "item": "100810",
+    "description": "condulete em alumínio tipo B OU E d=1 1/2\"",
+    "unit": "UN",
+    "price": 63.76,
+    "isCategory": false,
+    "rows": [
+      932,
+      933
+    ]
+  },
+  {
+    "item": "100812",
+    "description": "condulete em alumínio tipo T d=3/4\"",
+    "unit": "UN",
+    "price": 45.31,
+    "isCategory": false,
+    "rows": [
+      934,
+      935
+    ]
+  },
+  {
+    "item": "100813",
+    "description": "condulete em alumínio tipo T d=1\"",
+    "unit": "UN",
+    "price": 56.42,
+    "isCategory": false,
+    "rows": [
+      936,
+      937
+    ]
+  },
+  {
+    "item": "100814",
+    "description": "condulete em alumínio tipo T d=1 1/4\"",
+    "unit": "UN",
+    "price": 72.19,
+    "isCategory": false,
+    "rows": [
+      938,
+      939
+    ]
+  },
+  {
+    "item": "100815",
+    "description": "condulete em alumínio tipo T d=1 1/2\"",
+    "unit": "UN",
+    "price": 85.3,
+    "isCategory": false,
+    "rows": [
+      940,
+      941
+    ]
+  },
+  {
+    "item": "100817",
+    "description": "condulete em alumínio tipo X d=3/4\"",
+    "unit": "UN",
+    "price": 48.7,
+    "isCategory": false,
+    "rows": [
+      942,
+      943
+    ]
+  },
+  {
+    "item": "100818",
+    "description": "condulete em alumínio tipo X d=1\"",
+    "unit": "UN",
+    "price": 60.12,
+    "isCategory": false,
+    "rows": [
+      944,
+      945
+    ]
+  },
+  {
+    "item": "100819",
+    "description": "condulete em alumínio tipo X d=1 1/4\"",
+    "unit": "UN",
+    "price": 80.7,
+    "isCategory": false,
+    "rows": [
+      946,
+      947
+    ]
+  },
+  {
+    "item": "100820",
+    "description": "condulete em alumínio tipo X d=1 1/2\"",
+    "unit": "UN",
+    "price": 96.07,
+    "isCategory": false,
+    "rows": [
+      948,
+      949
+    ]
+  },
+  {
+    "item": "100821",
+    "description": "condulete em PVC tipo C, LL OU LR d=3/4\"",
+    "unit": "UN",
+    "price": 26.17,
+    "isCategory": false,
+    "rows": [
+      950,
+      951
+    ]
+  },
+  {
+    "item": "100822",
+    "description": "condulete em PVC tipo C, LL OU LR d=1\"",
+    "unit": "UN",
+    "price": 30.12,
+    "isCategory": false,
+    "rows": [
+      952,
+      953
+    ]
+  },
+  {
+    "item": "100823",
+    "description": "condulete em PVC tipo B OU E d=3/4\"",
+    "unit": "UN",
+    "price": 22.69,
+    "isCategory": false,
+    "rows": [
+      954,
+      955
+    ]
+  },
+  {
+    "item": "100824",
+    "description": "condulete em PVC tipo B OU E d=1\"",
+    "unit": "UN",
+    "price": 24.59,
+    "isCategory": false,
+    "rows": [
+      956,
+      957
+    ]
+  },
+  {
+    "item": "100825",
+    "description": "condulete em PVC tipo T d=3/4\"",
+    "unit": "UN",
+    "price": 31.01,
+    "isCategory": false,
+    "rows": [
+      958,
+      959
+    ]
+  },
+  {
+    "item": "100826",
+    "description": "condulete em PVC tipo T d=1\"",
+    "unit": "UN",
+    "price": 37.19,
+    "isCategory": false,
+    "rows": [
+      960,
+      961
+    ]
+  },
+  {
+    "item": "100827",
+    "description": "condulete em PVC tipo X d=3/4\"",
+    "unit": "UN",
+    "price": 34.42,
+    "isCategory": false,
+    "rows": [
+      962,
+      963
+    ]
+  },
+  {
+    "item": "100828",
+    "description": "condulete em PVC tipo X d=1\"",
+    "unit": "UN",
+    "price": 42.03,
+    "isCategory": false,
+    "rows": [
+      964,
+      965
+    ]
+  },
+  {
+    "item": "100900",
+    "description": "Fornecimento e colocação de eletroduto em PVC roscável, com conexões:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      966,
+      967
+    ]
+  },
+  {
+    "item": "100901",
+    "description": "Diâmetro 20mm (3/4\")",
+    "unit": "M",
+    "price": 22.72,
+    "isCategory": false,
+    "rows": [
+      969,
+      970
+    ]
+  },
+  {
+    "item": "100902",
+    "description": "Diâmetro 25mm (1\")",
+    "unit": "M",
+    "price": 24.77,
+    "isCategory": false,
+    "rows": [
+      971,
+      972
+    ]
+  },
+  {
+    "item": "100903",
+    "description": "Diâmetro 32mm (1.1/4\")",
+    "unit": "M",
+    "price": 31.62,
+    "isCategory": false,
+    "rows": [
+      973,
+      974
+    ]
+  },
+  {
+    "item": "100904",
+    "description": "Diâmetro 40mm (1 1/2\")",
+    "unit": "M",
+    "price": 33.55,
+    "isCategory": false,
+    "rows": [
+      975,
+      976
+    ]
+  },
+  {
+    "item": "100905",
+    "description": "Diâmetro 50 mm (2\")",
+    "unit": "M",
+    "price": 39.15,
+    "isCategory": false,
+    "rows": [
+      977,
+      978
+    ]
+  },
+  {
+    "item": "100906",
+    "description": "Diâmetro 75 mm (3\")",
+    "unit": "M",
+    "price": 64.1,
+    "isCategory": false,
+    "rows": [
+      979,
+      980
+    ]
+  },
+  {
+    "item": "101000",
+    "description": "Fornecimento e colocação de mangueira PVC flexível corrugado:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      981,
+      982
+    ]
+  },
+  {
+    "item": "101001",
+    "description": "Diâmetro 20mm (1/2\")",
+    "unit": "M",
+    "price": 12.94,
+    "isCategory": false,
+    "rows": [
+      984,
+      985
+    ]
+  },
+  {
+    "item": "101002",
+    "description": "Diâmetro 25mm (3/4\")",
+    "unit": "M",
+    "price": 13.3,
+    "isCategory": false,
+    "rows": [
+      986,
+      987
+    ]
+  },
+  {
+    "item": "101003",
+    "description": "Diâmetro 32mm (1\")",
+    "unit": "M",
+    "price": 18.28,
+    "isCategory": false,
+    "rows": [
+      988,
+      989
+    ]
+  },
+  {
+    "item": "101100",
+    "description": "Eletroduto de ferro galvanizado leve e médio com conexões",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      990,
+      991
+    ]
+  },
+  {
+    "item": "101101",
+    "description": "Diâmetro 20mm (3/4\")",
+    "unit": "M",
+    "price": 26.84,
+    "isCategory": false,
+    "rows": [
+      993,
+      994
+    ]
+  },
+  {
+    "item": "101102",
+    "description": "Diâmetro 25mm (1\")",
+    "unit": "M",
+    "price": 28.74,
+    "isCategory": false,
+    "rows": [
+      995,
+      996
+    ]
+  },
+  {
+    "item": "101103",
+    "description": "Diâmetro 32mm (1.1/4\")",
+    "unit": "M",
+    "price": 44.76,
+    "isCategory": false,
+    "rows": [
+      997,
+      998
+    ]
+  },
+  {
+    "item": "101104",
+    "description": "Diâmetro 40mm (1 1/2\")",
+    "unit": "M",
+    "price": 44.63,
+    "isCategory": false,
+    "rows": [
+      999,
+      1000
+    ]
+  },
+  {
+    "item": "101105",
+    "description": "Diâmetro 50 mm (2\")",
+    "unit": "M",
+    "price": 46.24,
+    "isCategory": false,
+    "rows": [
+      1001,
+      1002
+    ]
+  },
+  {
+    "item": "101200",
+    "description": "Outros:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1003
+    ]
+  },
+  {
+    "item": "101201",
+    "description": "Sirene p/ alcance até 500 m",
+    "unit": "UN",
+    "price": 1161.36,
+    "isCategory": false,
+    "rows": [
+      1004,
+      1005
+    ]
+  },
+  {
+    "item": "101202",
+    "description": "Caixa de passagem 4\"x 2\" sem placa",
+    "unit": "UN",
+    "price": 11.67,
+    "isCategory": false,
+    "rows": [
+      1007,
+      1008
+    ]
+  },
+  {
+    "item": "101203",
+    "description": "Caixa de passagem 4\"x 4\" sem placa",
+    "unit": "UN",
+    "price": 15.84,
+    "isCategory": false,
+    "rows": [
+      1010,
+      1011
+    ]
+  },
+  {
+    "item": "101204",
+    "description": "Caixa octogonal p/ teto (laje maciça ou pré fabricada)",
+    "unit": "UN",
+    "price": 11.9,
+    "isCategory": false,
+    "rows": [
+      1013,
+      1014
+    ]
+  },
+  {
+    "item": "101205",
+    "description": "Luminária tipo tartaruga para lâmpada incandescente, LED ou fluorescente compacta.",
+    "unit": "UN",
+    "price": 67.65,
+    "isCategory": false,
+    "rows": [
+      1016,
+      1017
+    ]
+  },
+  {
+    "item": "101207",
+    "description": "Poste telecônico reto h=9,0m em aço galvanizado",
+    "unit": "UN",
+    "price": 1670.96,
+    "isCategory": false,
+    "rows": [
+      1019,
+      1020
+    ]
+  },
+  {
+    "item": "101208",
+    "description": "Plafonier para lâmpada fluorescente / LED compacta",
+    "unit": "UN",
+    "price": 9.83,
+    "isCategory": false,
+    "rows": [
+      1022,
+      1023
+    ]
+  },
+  {
+    "item": "101209",
+    "description": "Refletor Slim LED 100W de potência, branco Frio, 6500k, Autovolt.",
+    "unit": "UN",
+    "price": 78.26,
+    "isCategory": false,
+    "rows": [
+      1025,
+      1026
+    ]
+  },
+  {
+    "item": "101210",
+    "description": "Refletor Slim LED 150W de potência, branco Frio, 6500k, Autovolt",
+    "unit": "UN",
+    "price": 107.3,
+    "isCategory": false,
+    "rows": [
+      1028,
+      1029
+    ]
+  },
+  {
+    "item": "101211",
+    "description": "Refletor Slim LED 200W de potência, branco Frio, 6500k",
+    "unit": "UN",
+    "price": 129.6,
+    "isCategory": false,
+    "rows": [
+      1031,
+      1032
+    ]
+  },
+  {
+    "item": "101212",
+    "description": "Relé fotoelétrico, tensão 120v com capacidade de carga 1200va, inclusive base e instalação",
+    "unit": "UN",
+    "price": 52.36,
+    "isCategory": false,
+    "rows": [
+      1034,
+      1035
+    ]
+  },
+  {
+    "item": "101213",
+    "description": "Sensor de presença sem fotocélula, fixação em parede ou poste",
+    "unit": "UN",
+    "price": 70.67,
+    "isCategory": false,
+    "rows": [
+      1037,
+      1038
+    ]
+  },
+  {
+    "item": "101300",
+    "description": "Lâmpadas Led ou Fluorescentes 127V",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1040,
+      1041
+    ]
+  },
+  {
+    "item": "101310",
+    "description": "Lâmpada LED 9 W bivolt branca, formato tradicional (base E27)",
+    "unit": "UN",
+    "price": 7.54,
+    "isCategory": false,
+    "rows": [
+      1043,
+      1044
+    ]
+  },
+  {
+    "item": "101311",
+    "description": "Lâmpada LED 15 W bivolt branca, formato tradicional (base E27)",
+    "unit": "UN",
+    "price": 11.33,
+    "isCategory": false,
+    "rows": [
+      1045,
+      1046
+    ]
+  },
+  {
+    "item": "101312",
+    "description": "Lâmpada LED 20 W bivolt branca, formato tradicional (base E27)",
+    "unit": "UN",
+    "price": 18.19,
+    "isCategory": false,
+    "rows": [
+      1047,
+      1048
+    ]
+  },
+  {
+    "item": "101313",
+    "description": "Lâmpada tubular  LED, base G13, potência 9w, diâmetro 26mm/t8, temperatura da cor 6500k",
+    "unit": "UN",
+    "price": 18.46,
+    "isCategory": false,
+    "rows": [
+      1049,
+      1050
+    ]
+  },
+  {
+    "item": "101314",
+    "description": "Lâmpada tubular  LED, base G13, potência 18w, diâmetro 26mm/t8, temperatura da cor 6500k",
+    "unit": "UN",
+    "price": 19.19,
+    "isCategory": false,
+    "rows": [
+      1051,
+      1052
+    ]
+  },
+  {
+    "item": "101315",
+    "description": "Lâmpada tubular LED, base G13, potência 40w, diâmetro 26mm/t8, temperatura da cor 6500k",
+    "unit": "UN",
+    "price": 46.08,
+    "isCategory": false,
+    "rows": [
+      1053,
+      1054
+    ]
+  },
+  {
+    "item": "101400",
+    "description": "Quadro de distribuição PVC ou chapa de aço de embutir ou sobrepor e barramentos",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1055,
+      1056
+    ]
+  },
+  {
+    "item": "101401",
+    "description": "Quadro de distribuição de embutir em PVC para 4 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 92.58,
+    "isCategory": false,
+    "rows": [
+      1058,
+      1059
+    ]
+  },
+  {
+    "item": "101402",
+    "description": "Quadro de distribuição de embutir em PVC, para 8 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 119.61,
+    "isCategory": false,
+    "rows": [
+      1060,
+      1061
+    ]
+  },
+  {
+    "item": "101403",
+    "description": "Quadro de distribuição de embutir em PVC, para 12 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 200.43,
+    "isCategory": false,
+    "rows": [
+      1062,
+      1063
+    ]
+  },
+  {
+    "item": "101404",
+    "description": "Quadro de distribuição de embutir em PVC, para 16 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 292.83,
+    "isCategory": false,
+    "rows": [
+      1064,
+      1065
+    ]
+  },
+  {
+    "item": "101405",
+    "description": "Quadro de distribuição de sobrepor em PVC para 4 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 79.32,
+    "isCategory": false,
+    "rows": [
+      1066,
+      1067
+    ]
+  },
+  {
+    "item": "101406",
+    "description": "Quadro de distribuição de sobrepor em PVC, para 8 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 101.78,
+    "isCategory": false,
+    "rows": [
+      1068,
+      1069
+    ]
+  },
+  {
+    "item": "101407",
+    "description": "Quadro de distribuição de sobrepor em PVC, para 12 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 136.1,
+    "isCategory": false,
+    "rows": [
+      1070,
+      1071
+    ]
+  },
+  {
+    "item": "101408",
+    "description": "Quadro de distribuição de sobrepor em PVC, para 16 disjuntores DIN, inclusive barramentos neutro/terra, exclusive barramento de fase",
+    "unit": "UN",
+    "price": 203.75,
+    "isCategory": false,
+    "rows": [
+      1072,
+      1073
+    ]
+  },
+  {
+    "item": "101409",
+    "description": "Quadro de distribuição de embutir em chapa, para 16 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 100a",
+    "unit": "UN",
+    "price": 414.8,
+    "isCategory": false,
+    "rows": [
+      1074,
+      1075
+    ]
+  },
+  {
+    "item": "101410",
+    "description": "Quadro de distribuição de embutir em chapa, para 24 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 150a",
+    "unit": "UN",
+    "price": 698.44,
+    "isCategory": false,
+    "rows": [
+      1076,
+      1077
+    ]
+  },
+  {
+    "item": "101411",
+    "description": "Quadro de distribuição de embutir em chapa, para 34 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 100a",
+    "unit": "UN",
+    "price": 704.34,
+    "isCategory": false,
+    "rows": [
+      1078,
+      1079
+    ]
+  },
+  {
+    "item": "101412",
+    "description": "Quadro de distribuição de embutir em chapa, para 34 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 150a",
+    "unit": "UN",
+    "price": 710.24,
+    "isCategory": false,
+    "rows": [
+      1080,
+      1081
+    ]
+  },
+  {
+    "item": "101413",
+    "description": "Quadro de distribuição de sobrepor em chapa, para 16 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 100a",
+    "unit": "UN",
+    "price": 377.17,
+    "isCategory": false,
+    "rows": [
+      1082,
+      1083
+    ]
+  },
+  {
+    "item": "101414",
+    "description": "Quadro de distribuição de sobrepor em chapa, para 24 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 100a",
+    "unit": "UN",
+    "price": 449.91,
+    "isCategory": false,
+    "rows": [
+      1084,
+      1085
+    ]
+  },
+  {
+    "item": "101415",
+    "description": "Quadro de distribuição de sobrepor em chapa, para 24 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 150a",
+    "unit": "UN",
+    "price": 624.5,
+    "isCategory": false,
+    "rows": [
+      1086,
+      1087
+    ]
+  },
+  {
+    "item": "101416",
+    "description": "Quadro de distribuição de sobrepor em chapa, para 34 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 100a",
+    "unit": "UN",
+    "price": 602.84,
+    "isCategory": false,
+    "rows": [
+      1088,
+      1089
+    ]
+  },
+  {
+    "item": "101417",
+    "description": "Quadro de distribuição de sobrepor em chapa, para 34 disjuntores DIN, inclusive barramentos neutro/terra e barramento trifásico de 150a",
+    "unit": "UN",
+    "price": 916.98,
+    "isCategory": false,
+    "rows": [
+      1090,
+      1091
+    ]
+  },
+  {
+    "item": "101418",
+    "description": "Barramento bifásico de 80a para quadro de distribuição",
+    "unit": "UN",
+    "price": 305.29,
+    "isCategory": false,
+    "rows": [
+      1092,
+      1093
+    ]
+  },
+  {
+    "item": "101419",
+    "description": "Barramento monofásico de 80a para quadro de distribuição",
+    "unit": "UN",
+    "price": 102.41,
+    "isCategory": false,
+    "rows": [
+      1094,
+      1095
+    ]
+  },
+  {
+    "item": "101420",
+    "description": "Barramento trifásico de 80a para quadro de distribuição",
+    "unit": "UN",
+    "price": 313.71,
+    "isCategory": false,
+    "rows": [
+      1096,
+      1098
+    ]
+  },
+  {
+    "item": "110000",
+    "description": "ESQUADRIAS DE MADEIRA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1099
+    ]
+  },
+  {
+    "item": "110100",
+    "description": "Retirada, fornecimento e Instalação de nova porta com aproveitamento dos marcos e guarnições:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1100,
+      1101
+    ]
+  },
+  {
+    "item": "110101",
+    "description": "Prancheta - 0,60 x 2,10m",
+    "unit": "UN",
+    "price": 455.86,
+    "isCategory": false,
+    "rows": [
+      1103,
+      1104
+    ]
+  },
+  {
+    "item": "110102",
+    "description": "Prancheta - 0,70 x 2,10m",
+    "unit": "UN",
+    "price": 470.46,
+    "isCategory": false,
+    "rows": [
+      1105,
+      1106
+    ]
+  },
+  {
+    "item": "110103",
+    "description": "Prancheta - 0,80 x 2,10m",
+    "unit": "UN",
+    "price": 509.71,
+    "isCategory": false,
+    "rows": [
+      1107,
+      1108
+    ]
+  },
+  {
+    "item": "110104",
+    "description": "Prancheta - 0,90 x 2,10m",
+    "unit": "UN",
+    "price": 549.25,
+    "isCategory": false,
+    "rows": [
+      1109,
+      1110
+    ]
+  },
+  {
+    "item": "110105",
+    "description": "Maciça externa - 0,80 x 2,10m",
+    "unit": "UN",
+    "price": 1599.71,
+    "isCategory": false,
+    "rows": [
+      1111,
+      1112
+    ]
+  },
+  {
+    "item": "110106",
+    "description": "Maciça externa - 0,90 x 2,10m",
+    "unit": "UN",
+    "price": 1702.23,
+    "isCategory": false,
+    "rows": [
+      1113,
+      1114
+    ]
+  },
+  {
+    "item": "110107",
+    "description": "Sanitária - 0,60 x 1,50m",
+    "unit": "UN",
+    "price": 506.92,
+    "isCategory": false,
+    "rows": [
+      1115,
+      1116
+    ]
+  },
+  {
+    "item": "110200",
+    "description": "Remoção e substituição de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1117
+    ]
+  },
+  {
+    "item": "110201",
+    "description": "Marco de porta e alisar (em angelim) inclusive M.O. de retirar o antigo e colocação do novo",
+    "unit": "UN",
+    "price": 492.43,
+    "isCategory": false,
+    "rows": [
+      1118,
+      1119
+    ]
+  },
+  {
+    "item": "110300",
+    "description": "Serviços de fixação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1121
+    ]
+  },
+  {
+    "item": "110301",
+    "description": "Portas (completa)",
+    "unit": "UN",
+    "price": 81.87,
+    "isCategory": false,
+    "rows": [
+      1122,
+      1123
+    ]
+  },
+  {
+    "item": "110302",
+    "description": "Janelas de madeira (completa)",
+    "unit": "UN",
+    "price": 318.56,
+    "isCategory": false,
+    "rows": [
+      1125,
+      1126
+    ]
+  },
+  {
+    "item": "110400",
+    "description": "Fornecimento e colocação de régua de proteção:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1128
+    ]
+  },
+  {
+    "item": "110401",
+    "description": "De carteiras e/ou cartazes, de 10x1,7cm c/ canto boleado em Ipê, Peroba rosa ou similar, resinado ou pintado",
+    "unit": "M",
+    "price": 60.05,
+    "isCategory": false,
+    "rows": [
+      1129,
+      1130
+    ]
+  },
+  {
+    "item": "110500",
+    "description": "Instalação de porta interna / externa, completa, inclusive marcos e alizares",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1132,
+      1133
+    ]
+  },
+  {
+    "item": "110501",
+    "description": "Porta interna de madeira, colocação e acabamento, de uma folha com batente, guarnição e ferragem, 0,60x2,10m (porta completa)",
+    "unit": "UN",
+    "price": 893.71,
+    "isCategory": false,
+    "rows": [
+      1135,
+      1136
+    ]
+  },
+  {
+    "item": "110502",
+    "description": "Porta interna de madeira, colocação e acabamento, de uma folha com batente, guarnição e ferragem, 0,70x2,10m (porta completa)",
+    "unit": "UN",
+    "price": 904.22,
+    "isCategory": false,
+    "rows": [
+      1137,
+      1138
+    ]
+  },
+  {
+    "item": "110503",
+    "description": "Porta interna de madeira, colocação e acabamento, de uma folha com batente, guarnição e ferragem, 0,80x2,10m (porta completa)",
+    "unit": "UN",
+    "price": 939.35,
+    "isCategory": false,
+    "rows": [
+      1139,
+      1140
+    ]
+  },
+  {
+    "item": "110504",
+    "description": "Porta interna de madeira colocação e acabamento  de uma folha com batente, guarnição e ferragem 0,90x2,10 m (porta completa)",
+    "unit": "UN",
+    "price": 974.79,
+    "isCategory": false,
+    "rows": [
+      1141,
+      1142
+    ]
+  },
+  {
+    "item": "110505",
+    "description": "Porta externa de madeira maciça, colocação e acabamento, de uma folha com batente, guarnição e ferragem - 0,80 x 2,10m (porta completa)",
+    "unit": "UN",
+    "price": 1904.12,
+    "isCategory": false,
+    "rows": [
+      1143,
+      1144
+    ]
+  },
+  {
+    "item": "110506",
+    "description": "Porta externa de madeira maciça, colocação e acabamento, de uma folha com batente, guarnição e ferragem - 0,90 x 2,10m (porta completa)",
+    "unit": "UN",
+    "price": 2001.93,
+    "isCategory": false,
+    "rows": [
+      1145,
+      1146
+    ]
+  },
+  {
+    "item": "110507",
+    "description": "Porta externa de madeira maciça, colocação e acabamento, de duas folhas com batente, guarnição e ferragem  - 1,29 x 2,10m (porta completa)",
+    "unit": "UN",
+    "price": 7154.41,
+    "isCategory": false,
+    "rows": [
+      1147,
+      1148
+    ]
+  },
+  {
+    "item": "110600",
+    "description": "Portas sanitárias",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1149
+    ]
+  },
+  {
+    "item": "110601",
+    "description": "Porta de madeira p/ sanitário 90 x 210cm, conforme norma de acessibilidade, acabamento liso à prova d'água, com puxador horizontal interno, Ø= 1 1/4”, C=45cm, a 90cm do piso, maçaneta tipo alavanca, proteção na parte inferior, interna e externa, em chapa de aço inox h=40cm.",
+    "unit": "UN",
+    "price": 1080.31,
+    "isCategory": false,
+    "rows": [
+      1150,
+      1151
+    ]
+  },
+  {
+    "item": "110602",
+    "description": "Porta de madeira, interna, colocação e acabamento liso à prova d'água, com batente metálico, para sanitário e vestiário, 0,60 x 1,65m",
+    "unit": "UN",
+    "price": 492.81,
+    "isCategory": false,
+    "rows": [
+      1153,
+      1154
+    ]
+  },
+  {
+    "item": "110700",
+    "description": "Revisão e recuperação de portas e janelas de madeira",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1156
+    ]
+  },
+  {
+    "item": "110701",
+    "description": "Revisão e recuperação de portas e janelas de madeira com aproveitamento de 70%",
+    "unit": "M²",
+    "price": 371.75,
+    "isCategory": false,
+    "rows": [
+      1157,
+      1158
+    ]
+  },
+  {
+    "item": "110800",
+    "description": "Instalação de Janela de madeira com batente com vidro completa.",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1160
+    ]
+  },
+  {
+    "item": "110801",
+    "description": "Janela de madeira com batente e vidros completa",
+    "unit": "M²",
+    "price": 1428.2,
+    "isCategory": false,
+    "rows": [
+      1161,
+      1162,
+      1164,
+      1165
+    ]
+  },
+  {
+    "item": "120000",
+    "description": "ESQUADRIAS METÁLICAS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1166
+    ]
+  },
+  {
+    "item": "120100",
+    "description": "Fornecimento e instalação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1167
+    ]
+  },
+  {
+    "item": "120101",
+    "description": "Porta metálica, tipo de abrir, com uma (1) folha, em chapa galvanizada lambril, modelo quadrado, fornecimento e assentamento, EXCLUSIVE fechadura, targeta e dobradiça",
+    "unit": "[object Object]",
+    "price": 511.7,
+    "isCategory": false,
+    "rows": [
+      1168,
+      1169
+    ]
+  },
+  {
+    "item": "120102",
+    "description": "Porta/portão metálico, tipo de correr, com uma ou duas folhas, em chapa galvanizada lambril, modelo ondulada, inclusive fornecimento, assentamento, perfis para marco, EXCLUSIVE fechadura e roldanas",
+    "unit": "[object Object]",
+    "price": 583.99,
+    "isCategory": false,
+    "rows": [
+      1171,
+      1172
+    ]
+  },
+  {
+    "item": "120103",
+    "description": "Janela de ferro completa, colocação e acabamento de correr",
+    "unit": "[object Object]",
+    "price": 817.82,
+    "isCategory": false,
+    "rows": [
+      1174,
+      1175
+    ]
+  },
+  {
+    "item": "120104",
+    "description": "Janela de ferro completa, colocação e acabamento basculante",
+    "unit": "[object Object]",
+    "price": 746.89,
+    "isCategory": false,
+    "rows": [
+      1177,
+      1178
+    ]
+  },
+  {
+    "item": "120105",
+    "description": "Grade de proteção de ferro (colocação e acabamento)",
+    "unit": "[object Object]",
+    "price": 503.76,
+    "isCategory": false,
+    "rows": [
+      1180,
+      1181
+    ]
+  },
+  {
+    "item": "120106",
+    "description": "Janela de alumínio sob encomenda, colocação e acabamento , basculante, com contramarcos.",
+    "unit": "M²",
+    "price": 808.61,
+    "isCategory": false,
+    "rows": [
+      1183,
+      1184
+    ]
+  },
+  {
+    "item": "120107",
+    "description": "Janela de alumínio sob encomenda, colocação e acabamento , de correr, com contramarcos",
+    "unit": "M²",
+    "price": 1029.92,
+    "isCategory": false,
+    "rows": [
+      1186,
+      1187
+    ]
+  },
+  {
+    "item": "120108",
+    "description": "Porta veneziana em alumínio completa, dimensão (60x210) cm, tipo de abrir, com uma (1) folha, linha 25/suprema, acabamento anodizado natural, inclusive perfis, ferragens e instalação",
+    "unit": "UN",
+    "price": 1617.5,
+    "isCategory": false,
+    "rows": [
+      1189,
+      1190
+    ]
+  },
+  {
+    "item": "120109",
+    "description": "Porta veneziana em alumínio completa, dimensão (70x210) cm, tipo de abrir, com uma (1) folha, linha 25/suprema, acabamento anodizado natural, inclusive perfis, ferragens e instalação",
+    "unit": "UN",
+    "price": 1765.66,
+    "isCategory": false,
+    "rows": [
+      1192,
+      1193,
+      1194
+    ]
+  },
+  {
+    "item": "120110",
+    "description": "Porta veneziana em alumínio completa, dimensão (80x210) cm, tipo de abrir, com uma (1) folha, linha 25/suprema, acabamento anodizado natural, inclusive perfis, ferragens e instalação",
+    "unit": "UN",
+    "price": 1915.8,
+    "isCategory": false,
+    "rows": [
+      1195,
+      1196
+    ]
+  },
+  {
+    "item": "120111",
+    "description": "Porta veneziana em alumínio completa, dimensão (90x210) cm, tipo de abrir, com uma (1) folha, linha 25/suprema, acabamento anodizado natural, inclusive perfis, ferragens e instalação",
+    "unit": "UN",
+    "price": 2065.03,
+    "isCategory": false,
+    "rows": [
+      1198,
+      1199
+    ]
+  },
+  {
+    "item": "120200",
+    "description": "Recuperação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1201
+    ]
+  },
+  {
+    "item": "120201",
+    "description": "Porta e portão de ferro",
+    "unit": "M²",
+    "price": 210.73,
+    "isCategory": false,
+    "rows": [
+      1202,
+      1203
+    ]
+  },
+  {
+    "item": "120202",
+    "description": "Janela de correr de ferro",
+    "unit": "M²",
+    "price": 231.72,
+    "isCategory": false,
+    "rows": [
+      1205,
+      1206
+    ]
+  },
+  {
+    "item": "120203",
+    "description": "Basculante de ferro",
+    "unit": "M²",
+    "price": 231.72,
+    "isCategory": false,
+    "rows": [
+      1208,
+      1209
+    ]
+  },
+  {
+    "item": "120300",
+    "description": "Outros:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1211
+    ]
+  },
+  {
+    "item": "120301",
+    "description": "Fixação de grade de proteção (inclui apenas o serviço de fixação-só  M.O)",
+    "unit": "[object Object]",
+    "price": 175.88,
+    "isCategory": false,
+    "rows": [
+      1212,
+      1213
+    ]
+  },
+  {
+    "item": "120302",
+    "description": "Serviço de fixação de janelas, de correr,  basculante, portas e portões de aço (completa). Somente M.O.",
+    "unit": "UN",
+    "price": 119.59,
+    "isCategory": false,
+    "rows": [
+      1215,
+      1216,
+      1217
+    ]
+  },
+  {
+    "item": "130000",
+    "description": "FERRAGENS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1218
+    ]
+  },
+  {
+    "item": "130100",
+    "description": "Fornecimento e colocação de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1219
+    ]
+  },
+  {
+    "item": "130101",
+    "description": "Fechaduras para porta interna",
+    "unit": "UN",
+    "price": 118.43,
+    "isCategory": false,
+    "rows": [
+      1220,
+      1221
+    ]
+  },
+  {
+    "item": "130102",
+    "description": "Fechaduras para porta externa",
+    "unit": "UN",
+    "price": 124.53,
+    "isCategory": false,
+    "rows": [
+      1223,
+      1224
+    ]
+  },
+  {
+    "item": "130103",
+    "description": "Tarjeta livre / ocupado para porta sanitária.",
+    "unit": "UN",
+    "price": 50.96,
+    "isCategory": false,
+    "rows": [
+      1226,
+      1227
+    ]
+  },
+  {
+    "item": "130104",
+    "description": "Mola hidráulica aérea para porta.",
+    "unit": "UN",
+    "price": 243.81,
+    "isCategory": false,
+    "rows": [
+      1229,
+      1230
+    ]
+  },
+  {
+    "item": "130105",
+    "description": "Roldana para portão tipo \"U\" ou meia cana diâmetro de 3\" com capacidade de carga de 200Kg de aço, acabamento zincado",
+    "unit": "UN",
+    "price": 78,
+    "isCategory": false,
+    "rows": [
+      1232,
+      1233
+    ]
+  },
+  {
+    "item": "130106",
+    "description": "Dobradiça de ferro, medidas (3.1/2\"x3\"), tipo pino solto com bola, acabamento cromado, inclusive acessórios para fixação",
+    "unit": "UN",
+    "price": 23.11,
+    "isCategory": false,
+    "rows": [
+      1235,
+      1236
+    ]
+  },
+  {
+    "item": "130200",
+    "description": "Outros: (fornecimento e execução):",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1238
+    ]
+  },
+  {
+    "item": "130201",
+    "description": "Barra apoio deficiente tubo em aço inox 1 1/4\"  L=100cm para parede",
+    "unit": "UN",
+    "price": 180.91,
+    "isCategory": false,
+    "rows": [
+      1239,
+      1240
+    ]
+  },
+  {
+    "item": "130202",
+    "description": "Barra apoio deficiente tubo em aço inox 1 1/4\" L=80cm para apoio de lavatório",
+    "unit": "UN",
+    "price": 182.17,
+    "isCategory": false,
+    "rows": [
+      1242,
+      1243
+    ]
+  },
+  {
+    "item": "130203",
+    "description": "Corrimão simples em tubo de aço galvanizado d = 1 1/2\"- fixado em alvenaria",
+    "unit": "M",
+    "price": 116.18,
+    "isCategory": false,
+    "rows": [
+      1245,
+      1246
+    ]
+  },
+  {
+    "item": "130204",
+    "description": "Corrimão duplo em tubo de aço galvanizado d = 1 1/2\"- fixado em alvenaria",
+    "unit": "M",
+    "price": 207.24,
+    "isCategory": false,
+    "rows": [
+      1248,
+      1249
+    ]
+  },
+  {
+    "item": "130205",
+    "description": "Corrimão simples em tubo de aço galvanizado d = 1 1/2\" - fixado em piso",
+    "unit": "M",
+    "price": 191.05,
+    "isCategory": false,
+    "rows": [
+      1251,
+      1252
+    ]
+  },
+  {
+    "item": "130206",
+    "description": "Corrimão duplo em tubo de aço galvanizado d = 1 1/2\" - fixado em piso",
+    "unit": "M",
+    "price": 282.12,
+    "isCategory": false,
+    "rows": [
+      1254,
+      1255
+    ]
+  },
+  {
+    "item": "130207",
+    "description": "Guarda-corpo externo h=1,30 em tubo de ferro galvanizado d=2\".",
+    "unit": "M",
+    "price": 656.73,
+    "isCategory": false,
+    "rows": [
+      1257,
+      1258
+    ]
+  },
+  {
+    "item": "130208",
+    "description": "Guarda-corpo em tubo de ferro galvanizado d=2\", e corrimão simples de tubo de aço galvanizado de d=1 1/2\".",
+    "unit": "M",
+    "price": 746.58,
+    "isCategory": false,
+    "rows": [
+      1260,
+      1261
+    ]
+  },
+  {
+    "item": "130209",
+    "description": "Guarda-corpo externo h=1,30m em aço galvanizado  d = 2\" e corrimão duplo de tubo de aço galvanizado de d=1 1/2\"",
+    "unit": "M",
+    "price": 830.44,
+    "isCategory": false,
+    "rows": [
+      1263,
+      1264
+    ]
+  },
+  {
+    "item": "130210",
+    "description": "Guarda-corpo interno h=1,10m em aço galvanizado d = 2\"",
+    "unit": "M",
+    "price": 587.66,
+    "isCategory": false,
+    "rows": [
+      1266,
+      1267
+    ]
+  },
+  {
+    "item": "130211",
+    "description": "Guarda-corpo interno h=1,10m em tubo de ferro galvanizado d=2\", e corrimão simples de tubo de aço galvanizado de d=1 1/2\".",
+    "unit": "M",
+    "price": 677.51,
+    "isCategory": false,
+    "rows": [
+      1269,
+      1270
+    ]
+  },
+  {
+    "item": "130212",
+    "description": "Guarda-corpo interno h=1,10m em aço galvanizado  d = 2\" e corrimão duplo de tubo de aço galvanizado de d=1 1/2\"",
+    "unit": "M",
+    "price": 767.37,
+    "isCategory": false,
+    "rows": [
+      1272,
+      1273,
+      1274
+    ]
+  },
+  {
+    "item": "140000",
+    "description": "REVESTIMENTO",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1275
+    ]
+  },
+  {
+    "item": "140100",
+    "description": "Execução de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1276
+    ]
+  },
+  {
+    "item": "140101",
+    "description": "Emboço com argamassa 1:6 cimento e areia lavada média peneirada, para paredes revestidas com tinta, e = 20mm",
+    "unit": "M²",
+    "price": 40.29,
+    "isCategory": false,
+    "rows": [
+      1277,
+      1278
+    ]
+  },
+  {
+    "item": "140102",
+    "description": "Reboco com argamassa 1:2:8 cimento, cal e areia",
+    "unit": "M²",
+    "price": 40.1,
+    "isCategory": false,
+    "rows": [
+      1280,
+      1281
+    ]
+  },
+  {
+    "item": "140103",
+    "description": "Revestimento camada única 1:3, cimento e areia e=20mm ( emboço desempenado)",
+    "unit": "M²",
+    "price": 38.66,
+    "isCategory": false,
+    "rows": [
+      1283,
+      1284
+    ]
+  },
+  {
+    "item": "140104",
+    "description": "Chapisco com argamassa 1:3 cimento e areia, a colher",
+    "unit": "M²",
+    "price": 10.87,
+    "isCategory": false,
+    "rows": [
+      1286,
+      1287
+    ]
+  },
+  {
+    "item": "140105",
+    "description": "Chapisco com argamassa 1:3 cimento e areia, a peneira",
+    "unit": "M²",
+    "price": 15.55,
+    "isCategory": false,
+    "rows": [
+      1289,
+      1290
+    ]
+  },
+  {
+    "item": "140106",
+    "description": "Chapisco rústico para parede interna ou externa com argamassa de cimento e pedrisco traço 1:2:3 e = 20 mm.",
+    "unit": "M²",
+    "price": 16.69,
+    "isCategory": false,
+    "rows": [
+      1292,
+      1293
+    ]
+  },
+  {
+    "item": "140107",
+    "description": "Azulejo extra assentado internamente com argamassa pré-fabricada de cimento colante, inclusive c/ rejuntamento interno ou externo",
+    "unit": "M²",
+    "price": 97.75,
+    "isCategory": false,
+    "rows": [
+      1295,
+      1296
+    ]
+  },
+  {
+    "item": "140108",
+    "description": "Rejuntamento de azulejos externos e internos, argamassa pré-fabricada, junta até 3 mm",
+    "unit": "M²",
+    "price": 6.7,
+    "isCategory": false,
+    "rows": [
+      1298,
+      1299
+    ]
+  },
+  {
+    "item": "140109",
+    "description": "Revestimento com cerâmica aplicado em parede, acabamento esmaltado, ambiente interno/externo, padrão extra, cor branca, dimensão da peça até 2.025cm², CLASSE 3 OU LC, assentamento com argamassa industrializada, inclusive rejuntamento",
+    "unit": "M²",
+    "price": 82.18,
+    "isCategory": false,
+    "rows": [
+      1301,
+      1302
+    ]
+  },
+  {
+    "item": "140200",
+    "description": "Outros:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1304
+    ]
+  },
+  {
+    "item": "140201",
+    "description": "Enchimento de junta com mastique e = 3 mm",
+    "unit": "M",
+    "price": 38.21,
+    "isCategory": false,
+    "rows": [
+      1305,
+      1306
+    ]
+  },
+  {
+    "item": "140202",
+    "description": "Tratamento de junta de dilatação de lajes de transição, com isopor e espessura de  2 cm",
+    "unit": "M",
+    "price": 1.44,
+    "isCategory": false,
+    "rows": [
+      1308,
+      1309,
+      1310
+    ]
+  },
+  {
+    "item": "150000",
+    "description": "PISOS E RODAPÉS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1311
+    ]
+  },
+  {
+    "item": "150100",
+    "description": "Fornecimento e assentamento de pisos, em:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1312
+    ]
+  },
+  {
+    "item": "150101",
+    "description": "Taco de madeira ipê ou similar, assentado c/ argamassa de cimento e areia peneirada traço 1:4, inclusive desbastamento da superfície de base",
+    "unit": "[object Object]",
+    "price": 423.39,
+    "isCategory": false,
+    "rows": [
+      1313,
+      1314
+    ]
+  },
+  {
+    "item": "150102",
+    "description": "Tábua corrida (Assoalho) de madeira ipê ou similar , largura 10 ou 20cm, fixada sobre barrotes trapezoidais de madeira 5x3x2cm com espaçamento de 35cm, assentado em argamassa de cimento e areia sem peneirar traço 1:5)",
+    "unit": "[object Object]",
+    "price": 487.12,
+    "isCategory": false,
+    "rows": [
+      1316,
+      1317
+    ]
+  },
+  {
+    "item": "150103",
+    "description": "Ardósia em placas 30x30cm e=1cm, assentado com argamassa pré-fabricada de cimento colante, inclusive rejunte com juntas de 5mm",
+    "unit": "[object Object]",
+    "price": 81.98,
+    "isCategory": false,
+    "rows": [
+      1319,
+      1320
+    ]
+  },
+  {
+    "item": "150104",
+    "description": "Revestimento com cerâmica aplicado em piso, acabamento esmaltado, ambiente interno ou externo, padrão extra, cor clara, dimensão da peça até 2.025cm², CLASSE 5 ou LE, assentamento com argamassa industrializada, inclusive rejuntamento",
+    "unit": "[object Object]",
+    "price": 87.7,
+    "isCategory": false,
+    "rows": [
+      1322,
+      1323
+    ]
+  },
+  {
+    "item": "150105",
+    "description": "Ladrilho hidráulico, assentado com argamassa pré-fabricada de cimento colante",
+    "unit": "[object Object]",
+    "price": 92.84,
+    "isCategory": false,
+    "rows": [
+      1325,
+      1326
+    ]
+  },
+  {
+    "item": "150106",
+    "description": "Piso em concreto Fck mínimo de 13,5 Mpa, controle tipo \"C\", incluindo preparo de caixa e=8cm, revestimento rústico",
+    "unit": "[object Object]",
+    "price": 101.55,
+    "isCategory": false,
+    "rows": [
+      1328,
+      1329
+    ]
+  },
+  {
+    "item": "150107",
+    "description": "Piso em granilite (marmorite) cimento comum em quadros em de 1,0x 1,0 m",
+    "unit": "[object Object]",
+    "price": 130.66,
+    "isCategory": false,
+    "rows": [
+      1331,
+      1332
+    ]
+  },
+  {
+    "item": "150108",
+    "description": "Degrau de granilite moldado \"in loco\", piso 30 cm, espelho 20 cm",
+    "unit": "M",
+    "price": 74.79,
+    "isCategory": false,
+    "rows": [
+      1334,
+      1335
+    ]
+  },
+  {
+    "item": "150111",
+    "description": "Piso cimentado com argamassa de cimento e areia sem peneirar, traço 1:3, e=2,5cm",
+    "unit": "[object Object]",
+    "price": 68.97,
+    "isCategory": false,
+    "rows": [
+      1337,
+      1338
+    ]
+  },
+  {
+    "item": "150112",
+    "description": "Piso cerâmico vermelho natural 24 x 5,2cm, assentado com argamassa pré-fabricada, inclusive rejuntamento.",
+    "unit": "M²",
+    "price": 134.86,
+    "isCategory": false,
+    "rows": [
+      1340,
+      1341
+    ]
+  },
+  {
+    "item": "150113",
+    "description": "Placa podotátil direcional ou alerta de borracha e = 5 mm assentada com cola",
+    "unit": "M²",
+    "price": 225.92,
+    "isCategory": false,
+    "rows": [
+      1343,
+      1344
+    ]
+  },
+  {
+    "item": "150115",
+    "description": "Placa cimentícia 40 x 40 cm, e = 3,5 cm, de alta resistência, podotátil direcional ou alerta, assentada com argamassa de cimento e areia",
+    "unit": "M²",
+    "price": 140.82,
+    "isCategory": false,
+    "rows": [
+      1346,
+      1347
+    ]
+  },
+  {
+    "item": "150116",
+    "description": "Revestimento com porcelanato aplicado em piso, acabamento esmaltado acetinado, ambiente interno/externo, padrão extra, borda retificada, dimensão da peça até 45x45cm, assentamento com argamassa industrializada, inclusive rejuntamento (indicado para áreas molhadas)",
+    "unit": "M²",
+    "price": 106.72,
+    "isCategory": false,
+    "rows": [
+      1349,
+      1350
+    ]
+  },
+  {
+    "item": "150117",
+    "description": "Revestimento com porcelanato aplicado em piso, acabamento polido, ambiente interno, padrão extra, borda retificada, dimensão da peça até 60x60cm, assentamento com argamassa industrializada, inclusive rejuntamento",
+    "unit": "M²",
+    "price": 106.72,
+    "isCategory": false,
+    "rows": [
+      1352,
+      1353
+    ]
+  },
+  {
+    "item": "150200",
+    "description": "Fornecimento e instalação de rodapés",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1355
+    ]
+  },
+  {
+    "item": "150201",
+    "description": "Madeira h=7cm.",
+    "unit": "M",
+    "price": 37.39,
+    "isCategory": false,
+    "rows": [
+      1356,
+      1357
+    ]
+  },
+  {
+    "item": "150202",
+    "description": "Argamassa  H=7cm ( traço 1:3)",
+    "unit": "M",
+    "price": 23.46,
+    "isCategory": false,
+    "rows": [
+      1359,
+      1360
+    ]
+  },
+  {
+    "item": "150203",
+    "description": "Cerâmica H = 10cm",
+    "unit": "M",
+    "price": 13.6,
+    "isCategory": false,
+    "rows": [
+      1362,
+      1363
+    ]
+  },
+  {
+    "item": "150204",
+    "description": "Ardósia de 7cm de altura, assentado com argamassa pré-fabricada de cimento colante",
+    "unit": "M",
+    "price": 18.77,
+    "isCategory": false,
+    "rows": [
+      1365,
+      1366
+    ]
+  },
+  {
+    "item": "150205",
+    "description": "Granilite moldado no local com 10 cm",
+    "unit": "M",
+    "price": 57.35,
+    "isCategory": false,
+    "rows": [
+      1368,
+      1369
+    ]
+  },
+  {
+    "item": "150206",
+    "description": "Granito, na cor cinza andorinha, esp. 2cm, altura de 7cm, acabamento polido, assentamento com argamassa industrializada, inclusive rejuntamento",
+    "unit": "M",
+    "price": 34.45,
+    "isCategory": false,
+    "rows": [
+      1371,
+      1372
+    ]
+  },
+  {
+    "item": "150300",
+    "description": "Contra- piso e regularização:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1374
+    ]
+  },
+  {
+    "item": "150301",
+    "description": "Lastro de concreto (contrapiso) não estrutural impermeabilizado, E=6 cm",
+    "unit": "[object Object]",
+    "price": 68.94,
+    "isCategory": false,
+    "rows": [
+      1375,
+      1376
+    ]
+  },
+  {
+    "item": "150302",
+    "description": "Regularização sarrafeada de base para revestimento de piso com argamassa de cimento e areia sem peneirar traço 1:3,  e=3cm",
+    "unit": "M²",
+    "price": 50.71,
+    "isCategory": false,
+    "rows": [
+      1378,
+      1379
+    ]
+  },
+  {
+    "item": "150400",
+    "description": "Outros (fornecimento e assentamento):",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1381
+    ]
+  },
+  {
+    "item": "150401",
+    "description": "Fita antiderrapante adesiva",
+    "unit": "M",
+    "price": 13.14,
+    "isCategory": false,
+    "rows": [
+      1382,
+      1383
+    ]
+  },
+  {
+    "item": "150402",
+    "description": "Pavimentação intertravada em peças pré-moldadas de concreto sobre colchão de areia de e=6,0cm (e=8,0 cm, Fck das pçs. De concreto = 35 Mpa)",
+    "unit": "[object Object]",
+    "price": 112.4,
+    "isCategory": false,
+    "rows": [
+      1385,
+      1386
+    ]
+  },
+  {
+    "item": "150403",
+    "description": "Pavimentação intertravada em peças pré-moldadas de concreto sobre colchão de areia de e=6,0cm (EXCETO FORNECIMENTO DAS PEÇAS PRÉ-MOLDADAS)",
+    "unit": "[object Object]",
+    "price": 14.81,
+    "isCategory": false,
+    "rows": [
+      1388,
+      1389
+    ]
+  },
+  {
+    "item": "150404",
+    "description": "Grama esmeralda em placas",
+    "unit": "[object Object]",
+    "price": 38.09,
+    "isCategory": false,
+    "rows": [
+      1391,
+      1392
+    ]
+  },
+  {
+    "item": "150405",
+    "description": "Passeio de concreto e= 8 cm, Fck 15 Mpa, c/ preparo p/ terreno, incluindo preparo de caixa, sem revestimento com argamassa de cimento e areia",
+    "unit": "[object Object]",
+    "price": 85.81,
+    "isCategory": false,
+    "rows": [
+      1394,
+      1395
+    ]
+  },
+  {
+    "item": "150406",
+    "description": "Meio-fio de concreto fundido \"in loco\" 15 x 45 cm inclusive escavação e reaterro",
+    "unit": "M",
+    "price": 147.89,
+    "isCategory": false,
+    "rows": [
+      1397,
+      1398,
+      1399
+    ]
+  },
+  {
+    "item": "150407",
+    "description": "Meio-fio de concreto pré-moldado (12 X 16,7 X 35) cm, inclusive escavação e reaterro",
+    "unit": "M",
+    "price": 83.2,
+    "isCategory": false,
+    "rows": [
+      1400,
+      1401,
+      1402
+    ]
+  },
+  {
+    "item": "150408",
+    "description": "Meio-fio de concreto pré-moldado (12 X 18 X 45) cm, inclusive escavação e reaterro",
+    "unit": "M",
+    "price": 99.2,
+    "isCategory": false,
+    "rows": [
+      1403,
+      1404
+    ]
+  },
+  {
+    "item": "150409",
+    "description": "Aplicação de resina plastificante sobre revestimento de pedra piso ou parede",
+    "unit": "M²",
+    "price": 23.7,
+    "isCategory": false,
+    "rows": [
+      1406,
+      1407
+    ]
+  },
+  {
+    "item": "150410",
+    "description": "Limpeza, estucamento e polimento de piso granilite/marmorite, exclusive resina",
+    "unit": "M²",
+    "price": 26.94,
+    "isCategory": false,
+    "rows": [
+      1409,
+      1410,
+      1411
+    ]
+  },
+  {
+    "item": "160000",
+    "description": "VIDROS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1412
+    ]
+  },
+  {
+    "item": "160100",
+    "description": "Fornecimento, transporte e instalação de vidro, tipo:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1413
+    ]
+  },
+  {
+    "item": "160101",
+    "description": "Cristal comum liso, colocado em caixilho com ou sem baguetes, duas demãos de massa  e=4mm",
+    "unit": "[object Object]",
+    "price": 209.93,
+    "isCategory": false,
+    "rows": [
+      1414,
+      1415
+    ]
+  },
+  {
+    "item": "160102",
+    "description": "Comum fantasia , colocado em caixilho com ou sem baguetes, duas demãos de massa e=4mm",
+    "unit": "[object Object]",
+    "price": 300.29,
+    "isCategory": false,
+    "rows": [
+      1417,
+      1418
+    ]
+  },
+  {
+    "item": "160104",
+    "description": "Espelho cristal para sanitário, e=4 mm (40 X 60cm)",
+    "unit": "UN",
+    "price": 106.06,
+    "isCategory": false,
+    "rows": [
+      1420,
+      1421
+    ]
+  },
+  {
+    "item": "160105",
+    "description": "Espelho 90 x 60cm, e=4mm, c/ moldura em alumínio",
+    "unit": "UN",
+    "price": 222.83,
+    "isCategory": false,
+    "rows": [
+      1423,
+      1424,
+      1425
+    ]
+  },
+  {
+    "item": "170000",
+    "description": "PINTURA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1426
+    ]
+  },
+  {
+    "item": "170100",
+    "description": "Pintura:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1427
+    ]
+  },
+  {
+    "item": "170101",
+    "description": "Caiação em parede com 03 demãos",
+    "unit": "[object Object]",
+    "price": 20.85,
+    "isCategory": false,
+    "rows": [
+      1428,
+      1429
+    ]
+  },
+  {
+    "item": "170102",
+    "description": "Látex PVA em parede (2 demãos), com fundo preparador / selador",
+    "unit": "[object Object]",
+    "price": 25.91,
+    "isCategory": false,
+    "rows": [
+      1431,
+      1432
+    ]
+  },
+  {
+    "item": "170103",
+    "description": "Tinta acrílica em parede, sem emassamento (duas demãos)",
+    "unit": "[object Object]",
+    "price": 25.8,
+    "isCategory": false,
+    "rows": [
+      1434,
+      1435
+    ]
+  },
+  {
+    "item": "170104",
+    "description": "Barrado à óleo interno e externo duas demãos, sem emassamento , inclusive selador",
+    "unit": "[object Object]",
+    "price": 29.35,
+    "isCategory": false,
+    "rows": [
+      1437,
+      1438
+    ]
+  },
+  {
+    "item": "170105",
+    "description": "Esmalte em esquadrias de ferro com duas demãos e uma demão de zarcão",
+    "unit": "[object Object]",
+    "price": 36.6,
+    "isCategory": false,
+    "rows": [
+      1440,
+      1441
+    ]
+  },
+  {
+    "item": "170106",
+    "description": "Aplicação de fundo anticorrosivo (zarcão) em esquadrias metálicas",
+    "unit": "M²",
+    "price": 15.94,
+    "isCategory": false,
+    "rows": [
+      1443,
+      1444
+    ]
+  },
+  {
+    "item": "170107",
+    "description": "Óleo ou esmalte em esquadrias de madeira com duas demãos, sem massa corrida, com fundo nivelador p/ madeira",
+    "unit": "[object Object]",
+    "price": 37.18,
+    "isCategory": false,
+    "rows": [
+      1446,
+      1447
+    ]
+  },
+  {
+    "item": "170108",
+    "description": "Verniz em esquadrias de madeira com duas demãos",
+    "unit": "[object Object]",
+    "price": 26.14,
+    "isCategory": false,
+    "rows": [
+      1449,
+      1450
+    ]
+  },
+  {
+    "item": "170109",
+    "description": "Verniz em réguas de afixar cartazes e proteção de carteiras, 2 demãos, fosco",
+    "unit": "M",
+    "price": 11.34,
+    "isCategory": false,
+    "rows": [
+      1452,
+      1453
+    ]
+  },
+  {
+    "item": "170110",
+    "description": "Emassamento de parede interna com massa corrida à base de PVA com duas demãos, para pintura látex",
+    "unit": "[object Object]",
+    "price": 21.97,
+    "isCategory": false,
+    "rows": [
+      1455,
+      1456
+    ]
+  },
+  {
+    "item": "170111",
+    "description": "Emassamento de parede interna ou externa com massa corrida com duas demãos, p/ pintura óleo",
+    "unit": "[object Object]",
+    "price": 25.75,
+    "isCategory": false,
+    "rows": [
+      1458,
+      1459
+    ]
+  },
+  {
+    "item": "170200",
+    "description": "Outros:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1461
+    ]
+  },
+  {
+    "item": "170201",
+    "description": "Verniz acrílico, 2 demãos; sobre alvenaria ou concreto",
+    "unit": "[object Object]",
+    "price": 20.29,
+    "isCategory": false,
+    "rows": [
+      1462,
+      1463
+    ]
+  },
+  {
+    "item": "170202",
+    "description": "Pintura com tinta acrílica em piso de concreto 2 demãos aplicado com rolo de lã, acabamento liso exceto quadra",
+    "unit": "[object Object]",
+    "price": 14.11,
+    "isCategory": false,
+    "rows": [
+      1465,
+      1466
+    ]
+  },
+  {
+    "item": "170203",
+    "description": "Pintura texturizada com desempenadeira de aço, lixamento do emboço e fundo selador",
+    "unit": "M²",
+    "price": 41.9,
+    "isCategory": false,
+    "rows": [
+      1468,
+      1469
+    ]
+  },
+  {
+    "item": "170204",
+    "description": "Limpeza total e tratamento de superfície de concreto aparente ou tijolinho laminado, incluindo remoção de tinta antiga, raspagem, estucagem e polimento com resina ou verniz acrílico",
+    "unit": "M²",
+    "price": 53.35,
+    "isCategory": false,
+    "rows": [
+      1471,
+      1472,
+      1473
+    ]
+  },
+  {
+    "item": "180000",
+    "description": "BANCADAS, PRATELEIRAS E DIVISÓRIAS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1474
+    ]
+  },
+  {
+    "item": "180100",
+    "description": "Execução  de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1475
+    ]
+  },
+  {
+    "item": "180101",
+    "description": "Banco interno em concreto e alvenaria, acabamento em verniz, e = 8 cm, l = 40 cm",
+    "unit": "M",
+    "price": 267.28,
+    "isCategory": false,
+    "rows": [
+      1476,
+      1477
+    ]
+  },
+  {
+    "item": "180102",
+    "description": "Banco de jardim em concreto, 130 x 40 cm, h = 45 cm",
+    "unit": "UN",
+    "price": 217.6,
+    "isCategory": false,
+    "rows": [
+      1479,
+      1480
+    ]
+  },
+  {
+    "item": "180103",
+    "description": "Conjunto de mesa e bancos de concreto para jogos (02 bancos em arco com Raio interno = 80 cm e h = 43 cm e mesa com d = 130 cm, e = 8 cm , h = 75 cm)",
+    "unit": "CJ",
+    "price": 990.35,
+    "isCategory": false,
+    "rows": [
+      1482,
+      1483
+    ]
+  },
+  {
+    "item": "180105",
+    "description": "Prateleira de ardósia e=2 cm apoiada em alvenaria ou embutida na parede",
+    "unit": "[object Object]",
+    "price": 323.42,
+    "isCategory": false,
+    "rows": [
+      1485,
+      1486
+    ]
+  },
+  {
+    "item": "180106",
+    "description": "Prateleira de ardósia e=2 cm, apoiada em  console de metalon 20x30 cm",
+    "unit": "[object Object]",
+    "price": 361.04,
+    "isCategory": false,
+    "rows": [
+      1488,
+      1489
+    ]
+  },
+  {
+    "item": "180107",
+    "description": "Prateleira de granito cinza andorinha, e = 2 cm, apoiada sobre alvenaria",
+    "unit": "M²",
+    "price": 410.48,
+    "isCategory": false,
+    "rows": [
+      1491,
+      1492
+    ]
+  },
+  {
+    "item": "180108",
+    "description": "Prateleira de granito cinza andorinha, e = 2 cm, apoiada em console de metalon 20 x 30 mm",
+    "unit": "M²",
+    "price": 448.1,
+    "isCategory": false,
+    "rows": [
+      1494,
+      1495
+    ]
+  },
+  {
+    "item": "180109",
+    "description": "Soleira ou peitoril de ardósia e=2cm",
+    "unit": "[object Object]",
+    "price": 314.59,
+    "isCategory": false,
+    "rows": [
+      1497,
+      1498
+    ]
+  },
+  {
+    "item": "180110",
+    "description": "Soleira ou peitoril de granito cinza andorinha e=2cm",
+    "unit": "M²",
+    "price": 374.53,
+    "isCategory": false,
+    "rows": [
+      1500,
+      1501
+    ]
+  },
+  {
+    "item": "180200",
+    "description": "Outros (fornecimento e execução):",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1503
+    ]
+  },
+  {
+    "item": "180201",
+    "description": "Bancada p/ lavatório em ardósia e= 3cm e L = 55cm em console de metalon",
+    "unit": "[object Object]",
+    "price": 396.22,
+    "isCategory": false,
+    "rows": [
+      1504,
+      1505
+    ]
+  },
+  {
+    "item": "180202",
+    "description": "Bancada de granito para pia ou lavatório e=3cm, apoiada em console de metalon",
+    "unit": "M²",
+    "price": 445.82,
+    "isCategory": false,
+    "rows": [
+      1507,
+      1508
+    ]
+  },
+  {
+    "item": "180203",
+    "description": "Bancada de granito e = 3cm apoiada em alvenaria",
+    "unit": "M²",
+    "price": 409.66,
+    "isCategory": false,
+    "rows": [
+      1510,
+      1511
+    ]
+  },
+  {
+    "item": "180204",
+    "description": "Divisória de granito cinza andorinha (incluindo todas as ferragens em latão cromado), e = 3cm",
+    "unit": "M²",
+    "price": 708.66,
+    "isCategory": false,
+    "rows": [
+      1513,
+      1514
+    ]
+  },
+  {
+    "item": "180205",
+    "description": "Divisória  em  ardósia  polida (incluindo todas as ferragens em latão cromado), e = 3cm com ferragens em latão cromado",
+    "unit": "M²",
+    "price": 471.14,
+    "isCategory": false,
+    "rows": [
+      1516,
+      1517
+    ]
+  },
+  {
+    "item": "180206",
+    "description": "Bancada em granito, cor cinza andorinha, esp. 2cm, acabamento polido, apoiada em alvenaria, EXCLUSIVE alvenaria, rodabanca/frontão, testeira/faixa, furo em bancada,",
+    "unit": "M²",
+    "price": 450.25,
+    "isCategory": false,
+    "rows": [
+      1519,
+      1520
+    ]
+  },
+  {
+    "item": "180207",
+    "description": "Bancada em granito, cor cinza andorinha, esp. 2cm, acabamento polido, apoiada em console de metalon (50x30) mm, EXCLUSIVE rodabanca/frontão, testeira/faixa, furo em bancada,",
+    "unit": "M²",
+    "price": 486.4,
+    "isCategory": false,
+    "rows": [
+      1522,
+      1523
+    ]
+  },
+  {
+    "item": "180208",
+    "description": "Furo de bojo em bancada de ardósia/granito/mármore, inclusive colagem de bojo com massa plástica",
+    "unit": "UN",
+    "price": 136.94,
+    "isCategory": false,
+    "rows": [
+      1525,
+      1526
+    ]
+  },
+  {
+    "item": "180209",
+    "description": "Rodabanca para bancada em ardósia, cor natural, esp. 2cm, altura de 10cm, inclusive polimento, corte/colagem em meia esquadria e massa plástica na cor da pedra",
+    "unit": "M",
+    "price": 52.74,
+    "isCategory": false,
+    "rows": [
+      1528,
+      1529
+    ]
+  },
+  {
+    "item": "180210",
+    "description": "Testeira para bancada em ardósia, cor natural, esp. 2cm , altura de 5cm, inclusive polimento, corte/colagem em meia esquadria e massa plástica na cor da pedra",
+    "unit": "M",
+    "price": 223.54,
+    "isCategory": false,
+    "rows": [
+      1531,
+      1532
+    ]
+  },
+  {
+    "item": "180211",
+    "description": "Rodabanca para bancada em granito, cor cinza andorinha, esp. 2cm, altura de 10cm, inclusive rejuntamento em massa plástica na cor da pedra",
+    "unit": "M",
+    "price": 61.45,
+    "isCategory": false,
+    "rows": [
+      1534,
+      1535
+    ]
+  },
+  {
+    "item": "180212",
+    "description": "Testeira para bancada em granito, cor cinza andorinha, esp. 2cm, altura de 5cm, inclusive polimento, corte/colagem em meia esquadria e massa plástica na cor da pedra",
+    "unit": "M",
+    "price": 227.89,
+    "isCategory": false,
+    "rows": [
+      1537,
+      1538,
+      1539
+    ]
+  },
+  {
+    "item": "190000",
+    "description": "DIVERSOS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1540
+    ]
+  },
+  {
+    "item": "190100",
+    "description": "Execução  de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1541
+    ]
+  },
+  {
+    "item": "190101",
+    "description": "Alambrado em tela soldada galvanizada, fixada em mourões de concreto armado ponta virada, h=2,80m (espaçados a cada 2,50m), com a cinta de fundação e com acréscimo de 3 fios de arame farpado",
+    "unit": "M",
+    "price": 357.22,
+    "isCategory": false,
+    "rows": [
+      1542,
+      1543
+    ]
+  },
+  {
+    "item": "190103",
+    "description": "Fornecimento e instalação de tela de arame galvanizado em alambrados com quadros em tubos galvanizados existentes.",
+    "unit": "M²",
+    "price": 59.76,
+    "isCategory": false,
+    "rows": [
+      1545,
+      1546
+    ]
+  },
+  {
+    "item": "190200",
+    "description": "Telas protetoras",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1548
+    ]
+  },
+  {
+    "item": "190201",
+    "description": "Tela de nylon tipo mosquiteiro com moldura em alumínio anodizado natural",
+    "unit": "M²",
+    "price": 97.58,
+    "isCategory": false,
+    "rows": [
+      1549,
+      1550
+    ]
+  },
+  {
+    "item": "190202",
+    "description": "Tela de nylon tipo mosquiteiro com moldura em madeira.",
+    "unit": "M²",
+    "price": 65.22,
+    "isCategory": false,
+    "rows": [
+      1552,
+      1553
+    ]
+  },
+  {
+    "item": "190203",
+    "description": "Tela de proteção contra pássaros",
+    "unit": "M²",
+    "price": 31.84,
+    "isCategory": false,
+    "rows": [
+      1555,
+      1556
+    ]
+  },
+  {
+    "item": "190300",
+    "description": "Desafixação e posterior fixação de equipamentos e acessórios (apenas mão de obra)",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1558,
+      1559
+    ]
+  },
+  {
+    "item": "190302",
+    "description": "Desafixação, afastamento e posterior fixação de conduletes de alumínio qualquer tipo ou tamanho",
+    "unit": "UN",
+    "price": 22.79,
+    "isCategory": false,
+    "rows": [
+      1561,
+      1562
+    ]
+  },
+  {
+    "item": "190303",
+    "description": "Desafixação, afastamento e posterior fixação de armários e caixas de sobrepor qualquer tipo e tamanho tamanho",
+    "unit": "UN",
+    "price": 48.29,
+    "isCategory": false,
+    "rows": [
+      1563,
+      1564
+    ]
+  },
+  {
+    "item": "190304",
+    "description": "Desafixação, afastamento e posterior fixação de eletroduto de PVC rígido qualquer diâmetro",
+    "unit": "M",
+    "price": 20.44,
+    "isCategory": false,
+    "rows": [
+      1565,
+      1566
+    ]
+  },
+  {
+    "item": "190305",
+    "description": "Desafixação, afastamento e posterior fixação de eletroduto de ferro galvanizado leve, médio ou pesado qualquer diâmetro",
+    "unit": "M",
+    "price": 27.98,
+    "isCategory": false,
+    "rows": [
+      1567,
+      1568
+    ]
+  },
+  {
+    "item": "190306",
+    "description": "Desafixação, afastamento e posterior fixação de eletrocalha ou canaleta metálica galvanizada de qualquer tipo, com ou sem tampa",
+    "unit": "M",
+    "price": 49.57,
+    "isCategory": false,
+    "rows": [
+      1569,
+      1570
+    ]
+  },
+  {
+    "item": "190307",
+    "description": "Desafixação, afastamento e posterior fixação de canaleta em PVC para instalação elétrica aparente de qualquer tipo, com ou sem tampa",
+    "unit": "M",
+    "price": 9.95,
+    "isCategory": false,
+    "rows": [
+      1571,
+      1572
+    ]
+  },
+  {
+    "item": "190308",
+    "description": "Desafixação, afastamento e posterior fixação de quadro para giz, pincel atômico e de cartazes",
+    "unit": "UN",
+    "price": 92.42,
+    "isCategory": false,
+    "rows": [
+      1573,
+      1574
+    ]
+  },
+  {
+    "item": "190400",
+    "description": "Placas e sinalizadores",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1575
+    ]
+  },
+  {
+    "item": "190401",
+    "description": "Sinalização com pictograma para vaga de estacionamento ou pátio em tinta acrílica fosca para pessoas com modalidade reduzida.",
+    "unit": "UN",
+    "price": 327.82,
+    "isCategory": false,
+    "rows": [
+      1576,
+      1577
+    ]
+  },
+  {
+    "item": "190402",
+    "description": "Placa em chapa de aço escovado 25x12 cm",
+    "unit": "UN",
+    "price": 46.3,
+    "isCategory": false,
+    "rows": [
+      1579,
+      1580
+    ]
+  },
+  {
+    "item": "190403",
+    "description": "Placa de alumínio fundido com denominação dos cômodos 20x5cm",
+    "unit": "UN",
+    "price": 23.89,
+    "isCategory": false,
+    "rows": [
+      1582,
+      1583
+    ]
+  },
+  {
+    "item": "190404",
+    "description": "Placa de alumínio fundido com numeração de portas  5x5cm",
+    "unit": "UN",
+    "price": 11.16,
+    "isCategory": false,
+    "rows": [
+      1585,
+      1586
+    ]
+  },
+  {
+    "item": "190405",
+    "description": "Placa de alumínio anodizado 25x25cm para identificação",
+    "unit": "UN",
+    "price": 51.05,
+    "isCategory": false,
+    "rows": [
+      1588,
+      1589
+    ]
+  },
+  {
+    "item": "190406",
+    "description": "Placa em alumínio 15x15cm, com pictograma em película adesiva",
+    "unit": "UN",
+    "price": 37.57,
+    "isCategory": false,
+    "rows": [
+      1591,
+      1592
+    ]
+  },
+  {
+    "item": "190500",
+    "description": "Casa de gás em alvenaria para:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1594,
+      1595
+    ]
+  },
+  {
+    "item": "190501",
+    "description": "2 botijões de gás 13 Kg (EXCLUSIVE CILINDRO)",
+    "unit": "UN",
+    "price": 2161.1,
+    "isCategory": false,
+    "rows": [
+      1597,
+      1598
+    ]
+  },
+  {
+    "item": "190502",
+    "description": "2 botijões de gás 45 Kg (INCLUSIVE CILINDRO CHEIO)",
+    "unit": "UN",
+    "price": 5688.14,
+    "isCategory": false,
+    "rows": [
+      1599,
+      1600
+    ]
+  },
+  {
+    "item": "190503",
+    "description": "4 botijões de gás 13 Kg (EXCLUSIVE CILINDRO)",
+    "unit": "UN",
+    "price": 2887.17,
+    "isCategory": false,
+    "rows": [
+      1601,
+      1602
+    ]
+  },
+  {
+    "item": "190504",
+    "description": "4 botijões de gás 45 Kg (INCLUSIVE CILINDRO CHEIO)",
+    "unit": "UN",
+    "price": 7999.32,
+    "isCategory": false,
+    "rows": [
+      1603,
+      1604
+    ]
+  },
+  {
+    "item": "190505",
+    "description": "Laudo de Vistoria e ART com execução de teste de estanqueidade de gás com emissão de laudo técnico (PARA RENOVAÇÃO DE AVCB)",
+    "unit": "UN",
+    "price": 750,
+    "isCategory": false,
+    "rows": [
+      1605,
+      1606
+    ]
+  },
+  {
+    "item": "190600",
+    "description": "Andaimes",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1607
+    ]
+  },
+  {
+    "item": "190601",
+    "description": "Andaime em cavalete metálico para alvenaria, com chapa de compensado e tábua, com reaproveitamento, inclusive montagem/desmontagem e remanejamento",
+    "unit": "M",
+    "price": 2,
+    "isCategory": false,
+    "rows": [
+      1608,
+      1609
+    ]
+  },
+  {
+    "item": "190602",
+    "description": "Andaime em cavalete metálico para forro ou serviço em altura interno, com chapa de compensado e tábua, com reaproveitamento, inclusive montagem/desmontagem e remanejamento",
+    "unit": "M²",
+    "price": 1.82,
+    "isCategory": false,
+    "rows": [
+      1611,
+      1612
+    ]
+  },
+  {
+    "item": "190603",
+    "description": "Fornecimento de andaime metálico para fachada (locação), inclusive piso metálico e sapatas, exclusive montagem e desmontagem",
+    "unit": "M²XMÊS",
+    "price": 12.5,
+    "isCategory": false,
+    "rows": [
+      1614,
+      1615
+    ]
+  },
+  {
+    "item": "190604",
+    "description": "Montagem e desmontagem de andaime metálico para fachada com piso metálico, exclusive fornecimento do andaime e rodapé/guarda-corpo em madeira",
+    "unit": "M²",
+    "price": 10.4,
+    "isCategory": false,
+    "rows": [
+      1617,
+      1618
+    ]
+  },
+  {
+    "item": "190605",
+    "description": "Fornecimento de andaime metálico tubular tipo torre (locação), inclusive rodízios, exclusive montagem e desmontagem",
+    "unit": "MXMÊS",
+    "price": 21.13,
+    "isCategory": false,
+    "rows": [
+      1620,
+      1621
+    ]
+  },
+  {
+    "item": "190606",
+    "description": "Montagem e desmontagem de andaime metálico tubular tipo torre, exclusive fornecimento do andaime",
+    "unit": "M",
+    "price": 12.04,
+    "isCategory": false,
+    "rows": [
+      1623,
+      1624,
+      1625
+    ]
+  },
+  {
+    "item": "200000",
+    "description": "QUADRA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1626
+    ]
+  },
+  {
+    "item": "200100",
+    "description": "Execução de:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1627
+    ]
+  },
+  {
+    "item": "200101",
+    "description": "Locação dos serviços de engenharia: execução de gabarito",
+    "unit": "M",
+    "price": 64.33,
+    "isCategory": false,
+    "rows": [
+      1628,
+      1629
+    ]
+  },
+  {
+    "item": "200102",
+    "description": "Regularização de fundo de vala com apiloamento com maço de 30kg",
+    "unit": "[object Object]",
+    "price": 28.62,
+    "isCategory": false,
+    "rows": [
+      1631,
+      1632
+    ]
+  },
+  {
+    "item": "200103",
+    "description": "Lastro de concreto (contrapiso) não estrutural impermeabilizado, E=6 cm",
+    "unit": "[object Object]",
+    "price": 68.94,
+    "isCategory": false,
+    "rows": [
+      1634,
+      1635
+    ]
+  },
+  {
+    "item": "200104",
+    "description": "Piso cimentado com argamassa de cimento e areia sem peneirar, traço 1:4, e=2,5cm",
+    "unit": "[object Object]",
+    "price": 68.97,
+    "isCategory": false,
+    "rows": [
+      1637,
+      1638
+    ]
+  },
+  {
+    "item": "200105",
+    "description": "Pintura com tinta a base epóxi em piso de quadra esportiva concreto 2 demãos",
+    "unit": "[object Object]",
+    "price": 28.71,
+    "isCategory": false,
+    "rows": [
+      1640,
+      1641
+    ]
+  },
+  {
+    "item": "200106",
+    "description": "Demarcação de quadra (tinta acrílica em piso para faixas de demarcação, com faixas de 5 cm e 8 cm de largura, aplicada com trincha)",
+    "unit": "M",
+    "price": 9.18,
+    "isCategory": false,
+    "rows": [
+      1643,
+      1644
+    ]
+  },
+  {
+    "item": "200107",
+    "description": "Preparação para pintura epóxi em piso, inclusive uma demão de primer epóxi",
+    "unit": "M²",
+    "price": 29.81,
+    "isCategory": false,
+    "rows": [
+      1646,
+      1647
+    ]
+  },
+  {
+    "item": "200200",
+    "description": "Alambrados e portão",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1649,
+      1650
+    ]
+  },
+  {
+    "item": "200201",
+    "description": "Alambrado para quadra esportiva com tela de arame galvanizado, fixada em quadros de tubos de aço galvanizado, h=1m",
+    "unit": "M",
+    "price": 210.21,
+    "isCategory": false,
+    "rows": [
+      1652,
+      1653
+    ]
+  },
+  {
+    "item": "200202",
+    "description": "Alambrado para quadra esportiva com tela de arame galvanizado , fixada em quadros de tubos de aço galvanizado, h=2m",
+    "unit": "M",
+    "price": 342.58,
+    "isCategory": false,
+    "rows": [
+      1654,
+      1655
+    ]
+  },
+  {
+    "item": "200203",
+    "description": "Alambrado para quadra esportiva com tela de arame galvanizado, fixada em quadros de tubos de aço galvanizado, h=4m",
+    "unit": "M",
+    "price": 529.46,
+    "isCategory": false,
+    "rows": [
+      1656,
+      1657
+    ]
+  },
+  {
+    "item": "200204",
+    "description": "Portão para alambrado, com uma (1) folha, dimensão (90x210)cm, em tela de arame, exclusive pintura, inclusive fixação e fornecimento em quadros de tubos de aço carbono galvanizado diâmetro de 50mm (2\"),",
+    "unit": "UN",
+    "price": 701.47,
+    "isCategory": false,
+    "rows": [
+      1658,
+      1659
+    ]
+  },
+  {
+    "item": "200300",
+    "description": "Outros",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1661
+    ]
+  },
+  {
+    "item": "200301",
+    "description": "Equipamentos esportivos (vôlei, futsal, basquete) todos juntos",
+    "unit": "CJ",
+    "price": 9659.49,
+    "isCategory": false,
+    "rows": [
+      1662,
+      1663
+    ]
+  },
+  {
+    "item": "200302",
+    "description": "Colchão de brita (lastro de brita 2 e 3 apiloado manualmente com maço de 30kg)",
+    "unit": "M³",
+    "price": 211.32,
+    "isCategory": false,
+    "rows": [
+      1665,
+      1666
+    ]
+  },
+  {
+    "item": "200303",
+    "description": "Regularização sarrafeada de base para revestimento de piso com argamassa de cimento e areia sem peneirar traço 1:3,  e=3cm",
+    "unit": "M²",
+    "price": 50.71,
+    "isCategory": false,
+    "rows": [
+      1668,
+      1669
+    ]
+  },
+  {
+    "item": "200304",
+    "description": "Armadura de tela de aço CA 60B (tela de aço CA 60 soldada com trama de 100x100mm D=4,20mm do fio e arame recozido)",
+    "unit": "M²",
+    "price": 30.36,
+    "isCategory": false,
+    "rows": [
+      1671,
+      1672
+    ]
+  },
+  {
+    "item": "200305",
+    "description": "Concreto Fck=25Mpa, e=8cm lançado em piso de quadra, executado em etapa única, para polimento mecânico, inclusive com juntas ou cortes em placas não maiores que 4,0 m2 e polimento mecânico superficial",
+    "unit": "M³",
+    "price": 880.46,
+    "isCategory": false,
+    "rows": [
+      1674,
+      1675
+    ]
+  },
+  {
+    "item": "200308",
+    "description": "Tela de nylon (malha 10 X 10 cm)",
+    "unit": "M²",
+    "price": 20,
+    "isCategory": false,
+    "rows": [
+      1677,
+      1678,
+      1679
+    ]
+  },
+  {
+    "item": "200400",
+    "description": "Cobertura:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1680
+    ]
+  },
+  {
+    "item": "200401",
+    "description": "Estrutura de aço para cobertura em arco, espaçamento entre arcos de 5,0 m, vão de 20,0 m, em aço  A 36, inclusive montagem",
+    "unit": "[object Object]",
+    "price": 223.2,
+    "isCategory": false,
+    "rows": [
+      1681,
+      1682
+    ]
+  },
+  {
+    "item": "200402",
+    "description": "Estrutura de aço para cobertura em arco, espaçamento entre arcos de 6,0 m, vão de 25,0 m, em aço  A 36, inclusive montagem",
+    "unit": "[object Object]",
+    "price": 238.37,
+    "isCategory": false,
+    "rows": [
+      1684,
+      1685
+    ]
+  },
+  {
+    "item": "200403",
+    "description": "Estrutura de aço para cobertura em arco, espaçamento entre arcos de 6,0 m, vão de 30,0 m, em aço  A 36, inclusive montagem",
+    "unit": "M²",
+    "price": 247.04,
+    "isCategory": false,
+    "rows": [
+      1687,
+      1688
+    ]
+  },
+  {
+    "item": "200404",
+    "description": "Cobertura em telhas de aço galvanizado, perfil ondulado, esp.  0,5 mm",
+    "unit": "M²",
+    "price": 97.05,
+    "isCategory": false,
+    "rows": [
+      1690,
+      1691
+    ]
+  },
+  {
+    "item": "200500",
+    "description": "Iluminação:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1693
+    ]
+  },
+  {
+    "item": "200501",
+    "description": "Iluminação de quadra descoberta.",
+    "unit": "UN",
+    "price": 15743.06,
+    "isCategory": false,
+    "rows": [
+      1694,
+      1695,
+      1696
+    ]
+  },
+  {
+    "item": "210000",
+    "description": "FOSSAS, FILTROS, CAIXAS E SUMIDOUROS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1697
+    ]
+  },
+  {
+    "item": "210100",
+    "description": "Execução fossas",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1698,
+      1699
+    ]
+  },
+  {
+    "item": "210101",
+    "description": "Fossa séptica C=3,00m execução in-loco volume útil 7,56m³ (154 contribuintes por turno)",
+    "unit": "UN",
+    "price": 12167.32,
+    "isCategory": false,
+    "rows": [
+      1701,
+      1702
+    ]
+  },
+  {
+    "item": "210102",
+    "description": "Fossa séptica C=3,80m execução in-loco volume útil 9,58m³ (226 contribuintes por turno)",
+    "unit": "UN",
+    "price": 14435.22,
+    "isCategory": false,
+    "rows": [
+      1703,
+      1704
+    ]
+  },
+  {
+    "item": "210103",
+    "description": "Fossa séptica C=5,40m execução in-loco volume útil 13,61m³ (298 contribuintes por turno)",
+    "unit": "UN",
+    "price": 18971.02,
+    "isCategory": false,
+    "rows": [
+      1705,
+      1706
+    ]
+  },
+  {
+    "item": "210104",
+    "description": "Fossa séptica C=4,80m execução in-loco volume útil 20,74m³ (514 contribuintes por turno)",
+    "unit": "UN",
+    "price": 21847.76,
+    "isCategory": false,
+    "rows": [
+      1707,
+      1708
+    ]
+  },
+  {
+    "item": "210105",
+    "description": "Fossa séptica C=5,80m execução in-loco volume útil 25,06m³ (622 contribuintes por turno)",
+    "unit": "UN",
+    "price": 25523.95,
+    "isCategory": false,
+    "rows": [
+      1709,
+      1710
+    ]
+  },
+  {
+    "item": "210106",
+    "description": "Fossa séptica C=6,40m execução in-loco volume útil 29,39m³ (730 contribuintes por turno)",
+    "unit": "UN",
+    "price": 27564.2,
+    "isCategory": false,
+    "rows": [
+      1711,
+      1712
+    ]
+  },
+  {
+    "item": "210200",
+    "description": "Execução filtro anaeróbio",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1713,
+      1714
+    ]
+  },
+  {
+    "item": "210201",
+    "description": "Filtro anaeróbio DN 1,50m H 2,00m",
+    "unit": "UN",
+    "price": 3076.18,
+    "isCategory": false,
+    "rows": [
+      1716,
+      1717
+    ]
+  },
+  {
+    "item": "210202",
+    "description": "Filtro anaeróbio DN 2,00m H 2,00m",
+    "unit": "UN",
+    "price": 6665.45,
+    "isCategory": false,
+    "rows": [
+      1718,
+      1719
+    ]
+  },
+  {
+    "item": "210203",
+    "description": "Filtro anaeróbico DN 2,00m H 1,50m",
+    "unit": "UN",
+    "price": 4430.7,
+    "isCategory": false,
+    "rows": [
+      1720,
+      1721
+    ]
+  },
+  {
+    "item": "210300",
+    "description": "Execução sumidouro",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1722,
+      1723
+    ]
+  },
+  {
+    "item": "210301",
+    "description": "Sumidouro (poço absorvente) DN 2,50m",
+    "unit": "M",
+    "price": 4643.29,
+    "isCategory": false,
+    "rows": [
+      1725,
+      1726
+    ]
+  },
+  {
+    "item": "210302",
+    "description": "Sumidouro (poço absorvente) DN 3,00m",
+    "unit": "M",
+    "price": 5499.48,
+    "isCategory": false,
+    "rows": [
+      1727,
+      1729
+    ]
+  },
+  {
+    "item": "230000",
+    "description": "LIMPEZA",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1730
+    ]
+  },
+  {
+    "item": "230100",
+    "description": "Limpeza:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1731
+    ]
+  },
+  {
+    "item": "230101",
+    "description": "Limpeza Geral da edificação",
+    "unit": "M²",
+    "price": 9.01,
+    "isCategory": false,
+    "rows": [
+      1732,
+      1733
+    ]
+  },
+  {
+    "item": "230102",
+    "description": "Raspagem, calafetação e aplicação de cera em piso de madeira",
+    "unit": "M²",
+    "price": 42.17,
+    "isCategory": false,
+    "rows": [
+      1735,
+      1736
+    ]
+  },
+  {
+    "item": "230200",
+    "description": "Transportes e retirada de entulho:",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1738,
+      1739,
+      1740
+    ]
+  },
+  {
+    "item": "230201",
+    "description": "Transporte e carga manual de material a granel (ou demolição) em caçamba",
+    "unit": "M³",
+    "price": 89.14,
+    "isCategory": false,
+    "rows": [
+      1742,
+      1743
+    ]
+  },
+  {
+    "item": "230202",
+    "description": "Transporte e carga manual de material de qualquer natureza em caminhão DMT < 5Km",
+    "unit": "M³ X KM",
+    "price": 2.63,
+    "isCategory": false,
+    "rows": [
+      1744,
+      1745
+    ]
+  },
+  {
+    "item": "230203",
+    "description": "Transporte e carga manual de material de qualquer natureza em caminhão DMT > 5Km",
+    "unit": "M³ X KM",
+    "price": 1.69,
+    "isCategory": false,
+    "rows": [
+      1746,
+      1747
+    ]
+  },
+  {
+    "item": "240000",
+    "description": "LEVANTAMENTOS, E PROJETOS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1748
+    ]
+  },
+  {
+    "item": "240100",
+    "description": "Levantamento planialtimétrico e cadastral, urbano, suburbano e rural",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1749,
+      1750
+    ]
+  },
+  {
+    "item": "240101",
+    "description": "Levantamento planialtimétrico e cadastral, urbano, suburbano e rural em terreno até 2.000 m²",
+    "unit": "UN",
+    "price": 1356.9,
+    "isCategory": false,
+    "rows": [
+      1751,
+      1752
+    ]
+  },
+  {
+    "item": "240102",
+    "description": "Levantamento planialtimétrico e cadastral, urbano, suburbano e rural em terreno de 2.001 a 10.000m²",
+    "unit": "UN",
+    "price": 3251.16,
+    "isCategory": false,
+    "rows": [
+      1753,
+      1754
+    ]
+  },
+  {
+    "item": "240200",
+    "description": "Projetos",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1756,
+      1757
+    ]
+  },
+  {
+    "item": "240201",
+    "description": "Projeto executivo de arquitetura (exclusive aprovação)",
+    "unit": "UN",
+    "price": 1491.73,
+    "isCategory": false,
+    "rows": [
+      1759,
+      1760
+    ]
+  },
+  {
+    "item": "240202",
+    "description": "Projeto executivo de instalações hidrosanitárias em formato A1",
+    "unit": "UN",
+    "price": 2412.19,
+    "isCategory": false,
+    "rows": [
+      1761,
+      1762
+    ]
+  },
+  {
+    "item": "240203",
+    "description": "Projeto executivo de instalações elétricas em formato A1",
+    "unit": "UN",
+    "price": 2494.55,
+    "isCategory": false,
+    "rows": [
+      1763,
+      1764
+    ]
+  },
+  {
+    "item": "240204",
+    "description": "Projeto executivo de SPDA,",
+    "unit": "UN",
+    "price": 1956.13,
+    "isCategory": false,
+    "rows": [
+      1765,
+      1766
+    ]
+  },
+  {
+    "item": "240205",
+    "description": "Projeto de Prevenção e Combate a Incêndio e Pânico, exclusive aprovação no CBMMG",
+    "unit": "UN",
+    "price": 2412.19,
+    "isCategory": false,
+    "rows": [
+      1767,
+      1768
+    ]
+  },
+  {
+    "item": "240206",
+    "description": "Projeto executivo e estrutural de estrutura de concreto",
+    "unit": "UN",
+    "price": 2157.52,
+    "isCategory": false,
+    "rows": [
+      1769,
+      1770
+    ]
+  },
+  {
+    "item": "240207",
+    "description": "Projeto executivo e estrutural de estrutura metálica",
+    "unit": "UN",
+    "price": 2899.19,
+    "isCategory": false,
+    "rows": [
+      1771,
+      1772
+    ]
+  },
+  {
+    "item": "240208",
+    "description": "Projeto executivo de cabeamento estruturado",
+    "unit": "UN",
+    "price": 2631.77,
+    "isCategory": false,
+    "rows": [
+      1773,
+      1774
+    ]
+  },
+  {
+    "item": "240209",
+    "description": "Projeto executivo de drenagem pluvial",
+    "unit": "UN",
+    "price": 2002.79,
+    "isCategory": false,
+    "rows": [
+      1775,
+      1776
+    ]
+  },
+  {
+    "item": "240211",
+    "description": "Projeto executivo de engradamento metálico",
+    "unit": "UN",
+    "price": 2003.97,
+    "isCategory": false,
+    "rows": [
+      1777,
+      1778
+    ]
+  },
+  {
+    "item": "240212",
+    "description": "Projeto executivo de ar condicionado /ventilação/climatização",
+    "unit": "UN",
+    "price": 2494.55,
+    "isCategory": false,
+    "rows": [
+      1779,
+      1780
+    ]
+  },
+  {
+    "item": "240213",
+    "description": "Levantamento de arquitetura/cadastro de dados técnicos \"in loco\" para  prédios tombados com aprovação junto ao órgão tombador, com desenvolvimento e detalhamento de gradil, fachada, esquadrias, acabamentos internos e elementos arquitetônicos, apresentados em formato A1, utilizando layers padrão da SEE.",
+    "unit": "UN",
+    "price": 2652.99,
+    "isCategory": false,
+    "rows": [
+      1781,
+      1782
+    ]
+  },
+  {
+    "item": "240214",
+    "description": "Levantamento de arquitetura/cadastro de dados técnicos \"in loco\" e desenvolvimento da arquitetura levantada A1 (EXCLUSIVE APROVAÇÃO), conforme padrão SEE. No caso do levantamento cadastral arquitetônico o mesmo deve apresentar rigorosamente as características físicas da edificação, constituindo-se da representação gráfica detalhada de todos os seus elementos.",
+    "unit": "UN",
+    "price": 1081.21,
+    "isCategory": false,
+    "rows": [
+      1784,
+      1785
+    ]
+  },
+  {
+    "item": "240215",
+    "description": "Aprovação projeto arquitetônico junto a Prefeituras municipais",
+    "unit": "UN",
+    "price": 931.43,
+    "isCategory": false,
+    "rows": [
+      1787,
+      1788
+    ]
+  },
+  {
+    "item": "240216",
+    "description": "Aprovação junto ao órgão tombador",
+    "unit": "UN",
+    "price": 1397.15,
+    "isCategory": false,
+    "rows": [
+      1790,
+      1791
+    ]
+  },
+  {
+    "item": "240217",
+    "description": "Aprovação do Projeto de Prevenção e Combate a Incêndio e Pânico junto ao CBMMG",
+    "unit": "UN",
+    "price": 1397.15,
+    "isCategory": false,
+    "rows": [
+      1793,
+      1794
+    ]
+  },
+  {
+    "item": "240300",
+    "description": "As built em formato A1 ou levantamento cadastral arquitetônico",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1796,
+      1797
+    ]
+  },
+  {
+    "item": "240301",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área até 10.000 m²",
+    "unit": "M2",
+    "price": 0.92,
+    "isCategory": false,
+    "rows": [
+      1799,
+      1800
+    ]
+  },
+  {
+    "item": "240302",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área de 10.001 A 20.000 m²",
+    "unit": "M2",
+    "price": 0.81,
+    "isCategory": false,
+    "rows": [
+      1801,
+      1802
+    ]
+  },
+  {
+    "item": "240303",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área de 20.001 a 40.000 m²",
+    "unit": "M2",
+    "price": 0.69,
+    "isCategory": false,
+    "rows": [
+      1803,
+      1804
+    ]
+  },
+  {
+    "item": "240304",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área de 40.001 a 60.000 m²",
+    "unit": "M2",
+    "price": 0.58,
+    "isCategory": false,
+    "rows": [
+      1805,
+      1806
+    ]
+  },
+  {
+    "item": "240305",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área de 60.001 a 80.000 m²",
+    "unit": "M2",
+    "price": 0.47,
+    "isCategory": false,
+    "rows": [
+      1807,
+      1808
+    ]
+  },
+  {
+    "item": "240306",
+    "description": "AS BUILT de projetos ou levantamento cadastral arquitetônico com área de 80.001 a 1.000.000 m²",
+    "unit": "M2",
+    "price": 0.36,
+    "isCategory": false,
+    "rows": [
+      1809,
+      1810
+    ]
+  },
+  {
+    "item": "240400",
+    "description": "Serviços técnicos profissionais para obtenção do AVCB (Auto de Vistoria do Corpo de Bombeiros) junto ao corpo de bombeiros",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1811,
+      1812
+    ]
+  },
+  {
+    "item": "240401",
+    "description": "Para edificações com área construída até 2000 m2",
+    "unit": "UN",
+    "price": 4567.84,
+    "isCategory": false,
+    "rows": [
+      1814,
+      1815
+    ]
+  },
+  {
+    "item": "240402",
+    "description": "Para edificações com área construída de 2001 à 5000 m2",
+    "unit": "UN",
+    "price": 6851.77,
+    "isCategory": false,
+    "rows": [
+      1816,
+      1817
+    ]
+  },
+  {
+    "item": "240403",
+    "description": "Para edificações com área construída de 5001 à 10000 m2",
+    "unit": "UN",
+    "price": 10277.67,
+    "isCategory": false,
+    "rows": [
+      1818,
+      1820
+    ]
+  },
+  {
+    "item": "250000",
+    "description": "DETECÇÃO, COMBATE E PREVENÇÃO A INCÊNDIO",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1821
+    ]
+  },
+  {
+    "item": "250100",
+    "description": "Abrigos",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1822,
+      1823
+    ]
+  },
+  {
+    "item": "250101",
+    "description": "Abrigo em chapa de aço carbono de sobrepor, pintado de vermelho nas dimensões (90x60x17)cm com uma porta com vidro transparente com a inscrição \"incêndio\", incluindo suporte basculante para mangueira - fornecimento e instalação, EXCLUSIVE mangueira, registro globo e acessórios",
+    "unit": "UN",
+    "price": 396.07,
+    "isCategory": false,
+    "rows": [
+      1825,
+      1826
+    ]
+  },
+  {
+    "item": "250102",
+    "description": "Abrigo em chapa de aço carbono de sobrepor, pintado de vermelho nas dimensões (90x60x17)cm com uma porta com vidro transparente com a inscrição \"incêndio\", incluindo suporte basculante para mangueira, mangueira tipo 1 (1 1/2\" 980 KPa) comprimento 15m, registro globo e acessórios, fornecimento e instalação",
+    "unit": "UN",
+    "price": 1298.38,
+    "isCategory": false,
+    "rows": [
+      1827,
+      1828
+    ]
+  },
+  {
+    "item": "250103",
+    "description": "Abrigo em chapa de aço carbono de sobrepor, pintado de vermelho nas dimensões (90x60x17)cm com uma porta com vidro transparente com a inscrição \"incêndio\", incluindo suporte basculante para mangueira, mangueira tipo 2 (1 1/2\" 1370KPa) comprimento 15m, registro globo e acessórios, fornecimento e instalação",
+    "unit": "UN",
+    "price": 1384.81,
+    "isCategory": false,
+    "rows": [
+      1829,
+      1830
+    ]
+  },
+  {
+    "item": "250104",
+    "description": "Abrigo em chapa de aço carbono de sobrepor, pintado de vermelho nas dimensões (75x30x25)cm com uma porta com vidro transparente com a inscrição \"incêndio\", para extintor, fornecimento e instalação, exclusive extintor",
+    "unit": "UN",
+    "price": 265.47,
+    "isCategory": false,
+    "rows": [
+      1831,
+      1832
+    ]
+  },
+  {
+    "item": "250200",
+    "description": "Acessórios",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1833
+    ]
+  },
+  {
+    "item": "250201",
+    "description": "Mangueira com união de engate rápido, tipo 1 (980KPa) DN= 1 1/2´ (38 mm) 15,00m",
+    "unit": "UN",
+    "price": 326.18,
+    "isCategory": false,
+    "rows": [
+      1834,
+      1835
+    ]
+  },
+  {
+    "item": "250202",
+    "description": "Mangueira com união de engate rápido, DN= 2 1/2´ (63 mm) 15,00m",
+    "unit": "UN",
+    "price": 503.92,
+    "isCategory": false,
+    "rows": [
+      1837,
+      1838
+    ]
+  },
+  {
+    "item": "250203",
+    "description": "Esguicho tipo agulheta, com engate rápido, diâmetro 38mm 1 1/2\"",
+    "unit": "UN",
+    "price": 111.51,
+    "isCategory": false,
+    "rows": [
+      1840,
+      1841
+    ]
+  },
+  {
+    "item": "250204",
+    "description": "Esguicho tipo agulheta, com engate rápido, diâmetro 63mm 2 1/2\"",
+    "unit": "UN",
+    "price": 176.3,
+    "isCategory": false,
+    "rows": [
+      1843,
+      1844
+    ]
+  },
+  {
+    "item": "250205",
+    "description": "Válvula globo angular de 45° em bronze ou latão, diâmetro 63mm (2 1/2\")",
+    "unit": "UN",
+    "price": 346.19,
+    "isCategory": false,
+    "rows": [
+      1846,
+      1847
+    ]
+  },
+  {
+    "item": "250206",
+    "description": "Adaptador de engate rápido em latão de 2 1/2´ x 1 1/2´",
+    "unit": "UN",
+    "price": 102.17,
+    "isCategory": false,
+    "rows": [
+      1849,
+      1850
+    ]
+  },
+  {
+    "item": "250207",
+    "description": "Adaptador de engate rápido em latão de 2 1/2´ x 2 1/2´",
+    "unit": "UN",
+    "price": 101.34,
+    "isCategory": false,
+    "rows": [
+      1852,
+      1853
+    ]
+  },
+  {
+    "item": "250210",
+    "description": "Chave dupla para conexão de engate rápido",
+    "unit": "UN",
+    "price": 16.28,
+    "isCategory": false,
+    "rows": [
+      1855,
+      1856
+    ]
+  },
+  {
+    "item": "250211",
+    "description": "Válvula de retenção vertical ou horizontal em bronze, DN= 1/2´",
+    "unit": "UN",
+    "price": 137.7,
+    "isCategory": false,
+    "rows": [
+      1858,
+      1859
+    ]
+  },
+  {
+    "item": "250212",
+    "description": "Válvula de retenção vertical ou horizontal em bronze, DN= 2 1/2´",
+    "unit": "UN",
+    "price": 676.99,
+    "isCategory": false,
+    "rows": [
+      1861,
+      1862
+    ]
+  },
+  {
+    "item": "250213",
+    "description": "Válvula de retenção vertical ou horizontal em bronze, DN= 1 1/2´",
+    "unit": "UN",
+    "price": 295.6,
+    "isCategory": false,
+    "rows": [
+      1864,
+      1865
+    ]
+  },
+  {
+    "item": "250214",
+    "description": "Mangueira com união de engate rápido, tipo 2 (1370KPa) DN= 1 1/2´ (38 mm) 15,00m",
+    "unit": "UN",
+    "price": 412.61,
+    "isCategory": false,
+    "rows": [
+      1867,
+      1868
+    ]
+  },
+  {
+    "item": "250215",
+    "description": "Esguicho jato regulável de 1 1/2\", para combate a incêndio -",
+    "unit": "UN",
+    "price": 438.91,
+    "isCategory": false,
+    "rows": [
+      1870,
+      1871
+    ]
+  },
+  {
+    "item": "250300",
+    "description": "Iluminação e sinalização de emergência",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1873
+    ]
+  },
+  {
+    "item": "250301",
+    "description": "Luminária autônoma de emergência - LED",
+    "unit": "UN",
+    "price": 37.3,
+    "isCategory": false,
+    "rows": [
+      1874,
+      1875
+    ]
+  },
+  {
+    "item": "250302",
+    "description": "Central de detecção e alarme de incêndio completa para 8 laços, 220 V/12 V",
+    "unit": "UN",
+    "price": 485.93,
+    "isCategory": false,
+    "rows": [
+      1877,
+      1878
+    ]
+  },
+  {
+    "item": "250303",
+    "description": "Detector óptico de fumaça com base - endereçável",
+    "unit": "UN",
+    "price": 152.29,
+    "isCategory": false,
+    "rows": [
+      1880,
+      1881
+    ]
+  },
+  {
+    "item": "250304",
+    "description": "Acionador manual quebra-vidro endereçável",
+    "unit": "UN",
+    "price": 68.84,
+    "isCategory": false,
+    "rows": [
+      1883,
+      1884
+    ]
+  },
+  {
+    "item": "250305",
+    "description": "Luminária de emergência autônoma, tipo led com dois faróis, potência total de 8w, fornecimento e instalação",
+    "unit": "UN",
+    "price": 159.42,
+    "isCategory": false,
+    "rows": [
+      1886,
+      1887
+    ]
+  },
+  {
+    "item": "250306",
+    "description": "Sirene de incêndio eletrônica",
+    "unit": "UN",
+    "price": 234.93,
+    "isCategory": false,
+    "rows": [
+      1889,
+      1890
+    ]
+  },
+  {
+    "item": "250307",
+    "description": "Cabo blindado para alarme e detecção de incêndio 3 x 1,5mm2",
+    "unit": "M",
+    "price": 26.09,
+    "isCategory": false,
+    "rows": [
+      1892,
+      1893
+    ]
+  },
+  {
+    "item": "250308",
+    "description": "Cabo blindado para alarme e detecção de incêndio 4 x 1,5mm2",
+    "unit": "M",
+    "price": 30.86,
+    "isCategory": false,
+    "rows": [
+      1895,
+      1896
+    ]
+  },
+  {
+    "item": "250400",
+    "description": "Placas fotoluminescentes",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1898,
+      1899
+    ]
+  },
+  {
+    "item": "250401",
+    "description": "Placa fotoluminescente de Orientação, salvamento e equipamentos - 380 X 190 mm",
+    "unit": "UN",
+    "price": 40.43,
+    "isCategory": false,
+    "rows": [
+      1901,
+      1902
+    ]
+  },
+  {
+    "item": "250402",
+    "description": "Placa fotoluminescente de Orientação, salvamento e equipamentos - 300 X 300 mm",
+    "unit": "UN",
+    "price": 21.36,
+    "isCategory": false,
+    "rows": [
+      1903,
+      1904
+    ]
+  },
+  {
+    "item": "250403",
+    "description": "Placa fotoluminescente de alerta (triangular) base de 300 mm",
+    "unit": "UN",
+    "price": 27.78,
+    "isCategory": false,
+    "rows": [
+      1905,
+      1906
+    ]
+  },
+  {
+    "item": "250404",
+    "description": "Placa fotoluminescente de proibição (circular) diâmetro de 300 mm",
+    "unit": "UN",
+    "price": 29.17,
+    "isCategory": false,
+    "rows": [
+      1907,
+      1908
+    ]
+  },
+  {
+    "item": "250405",
+    "description": "Placa de sinalização e orientação, fotoluminescente, retangular, 30 x 40 cm, TIPO M1 em PVC e=2,00mm",
+    "unit": "UN",
+    "price": 18.64,
+    "isCategory": false,
+    "rows": [
+      1909,
+      1910
+    ]
+  },
+  {
+    "item": "250500",
+    "description": "Chuveiros (sprinkler)",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1911
+    ]
+  },
+  {
+    "item": "250501",
+    "description": "Bico de sprinkler cromado pendente com rompimento da ampola a 68°C",
+    "unit": "UN",
+    "price": 159.28,
+    "isCategory": false,
+    "rows": [
+      1912,
+      1913
+    ]
+  },
+  {
+    "item": "250504",
+    "description": "Extintor de pó químico seco - capacidade de 12 kg",
+    "unit": "UN",
+    "price": 446.86,
+    "isCategory": false,
+    "rows": [
+      1915,
+      1916
+    ]
+  },
+  {
+    "item": "250505",
+    "description": "Extintor manual de água pressurizada - capacidade de 10 litros",
+    "unit": "UN",
+    "price": 234.86,
+    "isCategory": false,
+    "rows": [
+      1918,
+      1919
+    ]
+  },
+  {
+    "item": "250506",
+    "description": "Extintor manual de pó químico seco ABC - capacidade de 4 kg",
+    "unit": "UN",
+    "price": 173.74,
+    "isCategory": false,
+    "rows": [
+      1921,
+      1922
+    ]
+  },
+  {
+    "item": "250507",
+    "description": "Extintor manual de pó químico seco ABC - capacidade de 6 kg",
+    "unit": "UN",
+    "price": 200.36,
+    "isCategory": false,
+    "rows": [
+      1924,
+      1925
+    ]
+  },
+  {
+    "item": "250510",
+    "description": "Suporte para extintor de piso tipo tripé",
+    "unit": "UN",
+    "price": 40.6,
+    "isCategory": false,
+    "rows": [
+      1927,
+      1928
+    ]
+  },
+  {
+    "item": "250600",
+    "description": "Tubos e conexões em aço galvanizado",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1930,
+      1931
+    ]
+  },
+  {
+    "item": "250601",
+    "description": "Tubo aço galvanizado com costura, DN= 3/4´, inclusive conexões",
+    "unit": "M",
+    "price": 66.99,
+    "isCategory": false,
+    "rows": [
+      1933,
+      1934
+    ]
+  },
+  {
+    "item": "250602",
+    "description": "Tubo aço galvanizado com costura, DN= 1´, inclusive conexões",
+    "unit": "M",
+    "price": 93.94,
+    "isCategory": false,
+    "rows": [
+      1935,
+      1936
+    ]
+  },
+  {
+    "item": "250603",
+    "description": "Tubo aço galvanizado com costura, DN= 1 1/4´, inclusive conexões",
+    "unit": "M",
+    "price": 110.5,
+    "isCategory": false,
+    "rows": [
+      1937,
+      1938
+    ]
+  },
+  {
+    "item": "250604",
+    "description": "Tubo aço galvanizado com costura, DN= 1 1/2´, inclusive conexões",
+    "unit": "M",
+    "price": 129.89,
+    "isCategory": false,
+    "rows": [
+      1939,
+      1940
+    ]
+  },
+  {
+    "item": "250605",
+    "description": "Tubo aço galvanizado com costura, DN= 2´, inclusive conexões",
+    "unit": "M",
+    "price": 154.07,
+    "isCategory": false,
+    "rows": [
+      1941,
+      1942
+    ]
+  },
+  {
+    "item": "250606",
+    "description": "Tubo aço galvanizado com costura, DN= 2 1/2´, inclusive conexões",
+    "unit": "M",
+    "price": 189.99,
+    "isCategory": false,
+    "rows": [
+      1943,
+      1944
+    ]
+  },
+  {
+    "item": "250607",
+    "description": "Registro de gaveta acabamento bruto diâmetro 20mm (3/4\")",
+    "unit": "UN",
+    "price": 67.06,
+    "isCategory": false,
+    "rows": [
+      1945,
+      1946
+    ]
+  },
+  {
+    "item": "250608",
+    "description": "Registro de gaveta acabamento bruto diâmetro 25mm (1\")",
+    "unit": "UN",
+    "price": 97.78,
+    "isCategory": false,
+    "rows": [
+      1948,
+      1949
+    ]
+  },
+  {
+    "item": "250609",
+    "description": "Registro de gaveta acabamento bruto diâmetro 32 mm (1 1/4\")",
+    "unit": "UN",
+    "price": 123.84,
+    "isCategory": false,
+    "rows": [
+      1951,
+      1952
+    ]
+  },
+  {
+    "item": "250610",
+    "description": "Registro de gaveta acabamento bruto diâmetro 40mm (1 1/2\")",
+    "unit": "UN",
+    "price": 138.42,
+    "isCategory": false,
+    "rows": [
+      1954,
+      1955
+    ]
+  },
+  {
+    "item": "250611",
+    "description": "Registro de gaveta acabamento bruto diâmetro 50 mm (2\")",
+    "unit": "UN",
+    "price": 232.89,
+    "isCategory": false,
+    "rows": [
+      1957,
+      1958
+    ]
+  },
+  {
+    "item": "250612",
+    "description": "Registro de gaveta acabamento bruto Diâmetro 65 mm (2 1/2\")",
+    "unit": "UN",
+    "price": 456.12,
+    "isCategory": false,
+    "rows": [
+      1960,
+      1961
+    ]
+  },
+  {
+    "item": "250700",
+    "description": "Eletrobomba e acessórios",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1963
+    ]
+  },
+  {
+    "item": "250701",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 3 CV",
+    "unit": "UN",
+    "price": 2170.08,
+    "isCategory": false,
+    "rows": [
+      1964,
+      1965
+    ]
+  },
+  {
+    "item": "250702",
+    "description": "Quadro de comando para uma bomba de potência 3,0cv trifásica, em partida direta com acionamento manual/ automático e detecção de falta de fase",
+    "unit": "UN",
+    "price": 1122.17,
+    "isCategory": false,
+    "rows": [
+      1967,
+      1968
+    ]
+  },
+  {
+    "item": "250703",
+    "description": "Pressostato tipo Telemecanique modelo XML B004 A2S11, com escala de 3 a 58 Psi",
+    "unit": "UN",
+    "price": 2050.64,
+    "isCategory": false,
+    "rows": [
+      1970,
+      1971
+    ]
+  },
+  {
+    "item": "250704",
+    "description": "Cilindro de pressão ou mola pneumática de diâmetro 150mm, comprimento 1,20m com garras para fixação na parede",
+    "unit": "UN",
+    "price": 491.89,
+    "isCategory": false,
+    "rows": [
+      1973,
+      1974
+    ]
+  },
+  {
+    "item": "250705",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 5 CV",
+    "unit": "UN",
+    "price": 4456.4,
+    "isCategory": false,
+    "rows": [
+      1976,
+      1977
+    ]
+  },
+  {
+    "item": "250706",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 7,5 CV",
+    "unit": "UN",
+    "price": 6524.29,
+    "isCategory": false,
+    "rows": [
+      1979,
+      1980
+    ]
+  },
+  {
+    "item": "250707",
+    "description": "Conjunto elevatório motor-bomba (centrífuga) de 10 CV",
+    "unit": "UN",
+    "price": 8266.84,
+    "isCategory": false,
+    "rows": [
+      1982,
+      1983
+    ]
+  },
+  {
+    "item": "250708",
+    "description": "Hidrante de recalque completo em caixa de alvenaria",
+    "unit": "UN",
+    "price": 1119.1,
+    "isCategory": false,
+    "rows": [
+      1985,
+      1986
+    ]
+  },
+  {
+    "item": "250709",
+    "description": "Quadro de comando para uma bomba de potência 5,0cv trifásica, em partida direta com acionamento manual/ automático e detecção de falta de fase",
+    "unit": "UN",
+    "price": 1240.19,
+    "isCategory": false,
+    "rows": [
+      1988,
+      1989
+    ]
+  },
+  {
+    "item": "250710",
+    "description": "Quadro de comando para uma bomba de potência 7,5cv trifásica, em partida direta com acionamento manual/ automático e detecção de falta de fase",
+    "unit": "UN",
+    "price": 1464.25,
+    "isCategory": false,
+    "rows": [
+      1991,
+      1992
+    ]
+  },
+  {
+    "item": "250711",
+    "description": "Manômetro willy, mod. 2 1/2\", escala de leitura de 0 a 100 Psi",
+    "unit": "UN",
+    "price": 94.76,
+    "isCategory": false,
+    "rows": [
+      1994,
+      1995,
+      1996
+    ]
+  },
+  {
+    "item": "260000",
+    "description": "OUTROS",
+    "unit": "",
+    "price": 0,
+    "isCategory": true,
+    "rows": [
+      1997
+    ]
+  },
+  {
+    "item": "260001",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      1998,
+      1999
+    ]
+  },
+  {
+    "item": "260002",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      2000,
+      2001
+    ]
+  },
+  {
+    "item": "260003",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      2002,
+      2003
+    ]
+  },
+  {
+    "item": "260004",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      2004,
+      2005
+    ]
+  },
+  {
+    "item": "260005",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      2006,
+      2007
+    ]
+  },
+  {
+    "item": "260006",
+    "description": "",
+    "unit": "",
+    "price": 0,
+    "isCategory": false,
+    "rows": [
+      2008,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014
+    ]
+  }
+]

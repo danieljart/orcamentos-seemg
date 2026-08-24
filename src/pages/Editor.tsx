@@ -8,6 +8,8 @@ import { db } from '../services/db';
 import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
+import { loadCatalog, getTemplatePath, PRICE_BASES, DEFAULT_PRICE_BASE, getPriceBaseLabel } from '../lib/catalog';
+import type { PriceBase } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
 
@@ -111,6 +113,7 @@ export function Editor() {
   const [workbook, setWorkbook] = useState<Workbook | null>(null);
 
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [priceBase, setPriceBase] = useState<PriceBase>(DEFAULT_PRICE_BASE);
   const [searchTerm, setSearchTerm] = useState('');
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
@@ -275,8 +278,9 @@ export function Editor() {
         }
       }
       
-      fetch('/catalogo.json')
-        .then(res => res.json())
+      const currentBase = (wb.base_precos || '2025') as PriceBase;
+      setPriceBase(currentBase);
+      loadCatalog(currentBase)
         .then((data: CatalogItem[]) => {
           setCatalog(data);
 
@@ -746,7 +750,8 @@ export function Editor() {
     try {
       setIsExporting(true);
 
-      const response = await fetch('/template_copia.xlsx');
+      const templatePath = getTemplatePath(priceBase);
+      const response = await fetch(templatePath);
       const arrayBuffer = await response.arrayBuffer();
 
       const wb = new ExcelJS.Workbook();
@@ -1503,6 +1508,10 @@ export function Editor() {
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">ISS</span>
               <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate block">{workbook.iss || 0}%</span>
             </div>
+            <div className="overflow-hidden shrink-0">
+              <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Base</span>
+              <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate block">{priceBase}</span>
+            </div>
             <div className="overflow-hidden shrink-0 flex flex-col justify-center">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Status</span>
               <div className="h-5 flex items-center mt-0.5">
@@ -1927,13 +1936,43 @@ export function Editor() {
             
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const updated = await db.workbooks.update(workbook.id, headerForm);
-              if (updated) {
-                setWorkbook(updated);
-                saveIssForMunicipio(updated.municipio, updated.iss);
+              try {
+                const newBase = (headerForm.base_precos || priceBase) as PriceBase;
+                const { id: _id, created_at: _cat, updated_at: _uat, user_id: _uid, ...updatePayload } = headerForm as any;
+                const updated = await db.workbooks.update(workbook.id, updatePayload);
+                if (updated) {
+                  setWorkbook(updated);
+                  saveIssForMunicipio(updated.municipio, updated.iss);
+                }
+                // If price base changed, reload catalog and update item prices
+                if (newBase !== priceBase) {
+                  try {
+                    const newCatalogData = await loadCatalog(newBase);
+                    setCatalog(newCatalogData);
+                    setPriceBase(newBase);
+                    // Update prices of selected items (keep quantities, update prices from new catalog)
+                    setSelectedItems(prev => prev.map(item => {
+                      // Custom items keep their manual prices
+                      if (item.item.startsWith('2600') && item.customPrice !== undefined) return item;
+                      const newCatItem = newCatalogData.find(c => c.item === item.item);
+                      if (newCatItem) {
+                        return { ...item, price: newCatItem.price, description: newCatItem.description, unit: newCatItem.unit, extendedDescription: newCatItem.extendedDescription, rows: newCatItem.rows };
+                      }
+                      return item;
+                    }));
+                    showToast(`Base de preços alterada para ${getPriceBaseLabel(newBase)}. Preços atualizados!`, 'success');
+                  } catch (err) {
+                    console.error('Error loading new catalog:', err);
+                    showToast('Erro ao carregar nova base de preços.', 'error');
+                  }
+                } else {
+                  showToast("Dados atualizados com sucesso!", "success");
+                }
+                setIsHeaderEditModalOpen(false);
+              } catch (err: any) {
+                console.error('Error updating workbook header:', err);
+                showToast(`Erro ao salvar: ${err.message || 'Verifique os dados.'}`, "error");
               }
-              setIsHeaderEditModalOpen(false);
-              showToast("Dados atualizados com sucesso!", "success");
             }} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
@@ -1969,10 +2008,28 @@ export function Editor() {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviços da Planilha</label>
                   <input type="text" value={headerForm.servicos || ''} onChange={e => setHeaderForm({...headerForm, servicos: e.target.value})} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa ISS (%)</label>
-                  <input type="number" step="0.01" value={headerForm.iss || ''} onChange={e => setHeaderForm({...headerForm, iss: e.target.value})} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ISS (%)</label>
+                    <input type="number" step="0.01" value={headerForm.iss || ''} onChange={e => setHeaderForm({...headerForm, iss: e.target.value})} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Base</label>
+                    <select value={headerForm.base_precos || priceBase} onChange={e => setHeaderForm({...headerForm, base_precos: e.target.value})} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800">
+                      <option value="2026">2026</option>
+                      <option value="2025">2025</option>
+                    </select>
+                  </div>
                 </div>
+                
+                {(headerForm.base_precos || priceBase) !== priceBase && (
+                  <div className="lg:col-span-3">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 p-2 rounded border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
+                      <AlertTriangle size={14} className="shrink-0" />
+                      Alterar a base para {headerForm.base_precos} atualizará automaticamente os valores unitários dos itens ao salvar.
+                    </p>
+                  </div>
+                )}
                 
                 <div className="col-span-full border-t border-slate-100 dark:border-slate-700 mt-2 pt-4">
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Informações Opcionais Adicionais</h3>
