@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Sparkles, RefreshCw, Calculator, FileSpreadsheet, Check, X, ArrowRight } from 'lucide-react';
+import { Sparkles, RefreshCw, Calculator, FileSpreadsheet, X, ArrowRight } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;

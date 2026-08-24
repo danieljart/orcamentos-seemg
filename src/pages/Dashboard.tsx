@@ -10,7 +10,7 @@ import { Base2026AnnouncementModal } from '../components/Base2026AnnouncementMod
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
-import { loadCatalog, PRICE_BASES, DEFAULT_PRICE_BASE } from '../lib/catalog';
+import { loadCatalog, DEFAULT_PRICE_BASE } from '../lib/catalog';
 import type { PriceBase } from '../lib/catalog';
 import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

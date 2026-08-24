@@ -8,7 +8,7 @@ import { db } from '../services/db';
 import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
-import { loadCatalog, getTemplatePath, PRICE_BASES, DEFAULT_PRICE_BASE, getPriceBaseLabel } from '../lib/catalog';
+import { loadCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel } from '../lib/catalog';
 import type { PriceBase } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
