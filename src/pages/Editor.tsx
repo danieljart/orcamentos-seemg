@@ -1088,7 +1088,7 @@ export function Editor() {
     window.print();
   };
 
-  const getBdiRate = (iss: string) => {
+  const getBdiRate = (iss?: string) => {
     switch (iss) {
       case '2': return 0.2246;
       case '2.5': return 0.2279;
@@ -1110,7 +1110,7 @@ export function Editor() {
     return acc;
   }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
 
-  const bdiRate = getBdiRate(workbook.iss);
+  const bdiRate = getBdiRate(workbook?.iss);
   const bdiProjRate = 0.2926;
   const bdiObraAmount = totalObra * bdiRate;
   const bdiProjAmount = totalProj * bdiProjRate;
