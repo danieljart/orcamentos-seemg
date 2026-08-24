@@ -1088,6 +1088,35 @@ export function Editor() {
     window.print();
   };
 
+  const getBdiRate = (iss: string) => {
+    switch (iss) {
+      case '2': return 0.2246;
+      case '2.5': return 0.2279;
+      case '3': return 0.2312;
+      case '4': return 0.2377;
+      case '5': return 0.2443;
+      default: return 0.2443;
+    }
+  };
+
+  const { totalObra, totalProj, totalBudget } = selectedItems.reduce((acc, item) => {
+    const cost = getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price);
+    acc.totalBudget += cost;
+    if (item.item.startsWith('24')) {
+      acc.totalProj += cost;
+    } else {
+      acc.totalObra += cost;
+    }
+    return acc;
+  }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
+
+  const bdiRate = getBdiRate(workbook.iss);
+  const bdiProjRate = 0.2926;
+  const bdiObraAmount = totalObra * bdiRate;
+  const bdiProjAmount = totalProj * bdiProjRate;
+  const bdiAmount = bdiObraAmount + bdiProjAmount;
+  const grandTotal = totalBudget + bdiAmount;
+
   const saveToCloud = async () => {
     if (!workbook) return;
 
@@ -1114,6 +1143,7 @@ export function Editor() {
     setIsSaving(true);
     try {
       await db.versions.create(workbook.id, selectedItems);
+      await db.workbooks.update(workbook.id, { valor_total: Number(grandTotal.toFixed(2)) });
       setLastSavedItemsJson(JSON.stringify(selectedItems));
       showToast("Versão salva na nuvem com sucesso!", "success");
     } catch (e) {
@@ -1123,17 +1153,6 @@ export function Editor() {
       setIsSaving(false);
     }
   };
-
-  const { totalObra, totalProj, totalBudget } = selectedItems.reduce((acc, item) => {
-    const cost = getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price);
-    acc.totalBudget += cost;
-    if (item.item.startsWith('24')) {
-      acc.totalProj += cost;
-    } else {
-      acc.totalObra += cost;
-    }
-    return acc;
-  }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
 
   const renderTree = (nodes: TreeNode[], term: string, level: number = 0): ReactNode => {
     const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -1337,24 +1356,6 @@ export function Editor() {
   }, [selectedItems]);
 
   if (!workbook) return null;
-
-  const getBdiRate = (iss: string) => {
-    switch (iss) {
-      case '2': return 0.2246;
-      case '2.5': return 0.2279;
-      case '3': return 0.2312;
-      case '4': return 0.2377;
-      case '5': return 0.2443;
-      default: return 0.2443;
-    }
-  };
-  const bdiRate = getBdiRate(workbook.iss);
-  const bdiProjRate = 0.2926;
-  const bdiObraAmount = totalObra * bdiRate;
-  const bdiProjAmount = totalProj * bdiProjRate;
-  
-  const bdiAmount = bdiObraAmount + bdiProjAmount;
-  const grandTotal = totalBudget + bdiAmount;
 
   const isCloudSaveDisabled = isSaving || JSON.stringify(selectedItems) === lastSavedItemsJson;
 

@@ -15,7 +15,7 @@ export interface User {
 export interface Workbook {
   id: string;
   user_id: string;
-  usuario_nome?: string;
+  valor_total?: number;
   escola: string;
   cod_escola: string;
   municipio: string;
