@@ -1264,30 +1264,32 @@ export function Editor() {
                         <button onClick={() => removeOccurrence(setFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1" title="Remover"><Trash2 size={14}/></button>
                       )}
                     </div>
-                    <div className="grid grid-cols-12 gap-3 mt-4">
-                      <div className="col-span-8 sm:col-span-9">
-                        <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                          <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                          placeholder="Ex: 2*5 + 10"
-                          value={occ.memory}
-                          onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
-                        />
+                    <div className="flex flex-col gap-3 mt-4">
+                      <div className="flex gap-2 items-start">
+                        <div className="flex-1 min-w-0">
+                          <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                            <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                            placeholder="Ex: 2*5 + 10"
+                            value={occ.memory}
+                            onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
+                          />
+                        </div>
+                        <div className="w-20 sm:w-24 shrink-0">
+                          <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate text-right" title={`Qtd. (${node.unit})`}>Qtd. ({node.unit})</label>
+                          <input
+                            type="number"
+                            className="w-full px-2 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-semibold"
+                            placeholder="Qtd"
+                            value={occ.quantity}
+                            onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'quantity', e.target.value)}
+                          />
+                        </div>
                       </div>
-                      <div className="col-span-4 sm:col-span-3">
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate" title={`Qtd. (${node.unit})`}>Qtd. ({node.unit})</label>
-                        <input
-                          type="number"
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800"
-                          placeholder="Qtd"
-                          value={occ.quantity}
-                          onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'quantity', e.target.value)}
-                        />
-                      </div>
-                      <div className="col-span-12">
+                      <div>
                         <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção {idx + 1}</label>
                         <input
                           type="text"
@@ -1824,8 +1826,8 @@ export function Editor() {
                                     )}
                                   </div>
                                   <div className="flex flex-col gap-3">
-                                    <div className="grid grid-cols-12 gap-3 pr-6">
-                                      <div className="col-span-8 sm:col-span-9">
+                                    <div className="flex gap-2 items-start pr-6">
+                                      <div className="flex-1 min-w-0">
                                         <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                                           <Calculator size={12} className="text-emerald-600"/> Memória {idx + 1}
                                         </label>
@@ -1837,11 +1839,11 @@ export function Editor() {
                                           onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
                                         />
                                       </div>
-                                      <div className="col-span-4 sm:col-span-3">
-                                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate" title={`Qtd. (${item.customUnit || item.unit})`}>Qtd. ({item.customUnit || item.unit})</label>
+                                      <div className="w-18 sm:w-20 shrink-0">
+                                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate text-right" title={`Qtd. (${item.customUnit || item.unit})`}>Qtd. ({item.customUnit || item.unit})</label>
                                         <input
                                           type="number"
-                                          className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800"
+                                          className="w-full px-1.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-semibold"
                                           placeholder="Qtd"
                                           value={occ.quantity}
                                           onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
