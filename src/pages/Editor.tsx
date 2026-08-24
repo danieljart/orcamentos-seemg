@@ -1257,49 +1257,70 @@ export function Editor() {
                   </div>
                 )}
                 {formOccurrences.map((occ, idx) => (
-                  <div key={occ.id} className="relative bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700">
-                    <div className="absolute top-2 right-2 flex gap-1">
-                      <button onClick={() => duplicateOccurrence(setFormOccurrences, occ)} className="text-slate-400 hover:text-emerald-600 p-1" title="Duplicar"><Copy size={14}/></button>
-                      {formOccurrences.length > 1 && (
-                        <button onClick={() => removeOccurrence(setFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1" title="Remover"><Trash2 size={14}/></button>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-3 mt-4">
-                      <div className="flex gap-2 items-start">
-                        <div className="flex-1 min-w-0">
-                          <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                            <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo {idx + 1}
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                            placeholder="Ex: 2*5 + 10"
-                            value={occ.memory}
-                            onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
-                          />
-                        </div>
-                        <div className="w-20 sm:w-24 shrink-0">
-                          <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate text-right" title={`Qtd. (${node.unit})`}>Qtd. ({node.unit})</label>
-                          <input
-                            type="number"
-                            className="w-full px-2 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-semibold"
-                            placeholder="Qtd"
-                            value={occ.quantity}
-                            onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'quantity', e.target.value)}
-                          />
-                        </div>
+                  <div key={occ.id} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
+                    <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-700/60">
+                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                        Local #{idx + 1}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          type="button" 
+                          onClick={() => duplicateOccurrence(setFormOccurrences, occ)} 
+                          className="text-slate-400 hover:text-emerald-600 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700" 
+                          title="Duplicar Local"
+                        >
+                          <Copy size={13}/>
+                        </button>
+                        {formOccurrences.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => removeOccurrence(setFormOccurrences, occ.id)} 
+                            className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30" 
+                            title="Remover Local"
+                          >
+                            <Trash2 size={13}/>
+                          </button>
+                        )}
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção {idx + 1}</label>
+                    </div>
+                    
+                    <div className="grid grid-cols-[1fr_56px] gap-2 items-start">
+                      <div className="min-w-0">
+                        <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                          <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
+                        </label>
                         <input
                           type="text"
-                          list="locations-list"
                           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                          placeholder="Ex: Bloco A, Sala 3"
-                          value={occ.location}
-                          onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'location', e.target.value)}
+                          placeholder="Ex: 2*5 + 10"
+                          value={occ.memory}
+                          onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
                         />
                       </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 text-center truncate" title={`Qtd. (${node.unit})`}>
+                          Qtd
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full px-1 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-bold"
+                          placeholder="Qtd"
+                          value={occ.quantity}
+                          onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'quantity', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção</label>
+                      <input
+                        type="text"
+                        list="locations-list"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        placeholder="Ex: Bloco A, Sala 3"
+                        value={occ.location}
+                        onChange={e => updateOccurrence(formOccurrences, setFormOccurrences, occ.id, 'location', e.target.value)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -1818,49 +1839,70 @@ export function Editor() {
                             )}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                               {editFormOccurrences.map((occ, idx) => (
-                                <div key={occ.id} className="relative bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700">
-                                  <div className="absolute top-2 right-2 flex gap-1 z-10">
-                                    <button onClick={() => duplicateOccurrence(setEditFormOccurrences, occ)} className="text-slate-400 hover:text-emerald-600 p-1 bg-white dark:bg-slate-800 rounded" title="Duplicar"><Copy size={14}/></button>
-                                    {editFormOccurrences.length > 1 && (
-                                      <button onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} className="text-red-400 hover:text-red-600 p-1 bg-white dark:bg-slate-800 rounded" title="Remover"><Trash2 size={14}/></button>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-col gap-3">
-                                    <div className="flex gap-2 items-start pr-6">
-                                      <div className="flex-1 min-w-0">
-                                        <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                          <Calculator size={12} className="text-emerald-600"/> Memória {idx + 1}
-                                        </label>
-                                        <input
-                                          type="text"
-                                          className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                          placeholder="Ex: 2*5 + 10"
-                                          value={occ.memory}
-                                          onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
-                                        />
-                                      </div>
-                                      <div className="w-18 sm:w-20 shrink-0">
-                                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 truncate text-right" title={`Qtd. (${item.customUnit || item.unit})`}>Qtd. ({item.customUnit || item.unit})</label>
-                                        <input
-                                          type="number"
-                                          className="w-full px-1.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-semibold"
-                                          placeholder="Qtd"
-                                          value={occ.quantity}
-                                          onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
-                                        />
-                                      </div>
+                                <div key={occ.id} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
+                                  <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-700/60">
+                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                      Local #{idx + 1}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                      <button 
+                                        type="button" 
+                                        onClick={() => duplicateOccurrence(setEditFormOccurrences, occ)} 
+                                        className="text-slate-400 hover:text-emerald-600 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700" 
+                                        title="Duplicar Local"
+                                      >
+                                        <Copy size={13}/>
+                                      </button>
+                                      {editFormOccurrences.length > 1 && (
+                                        <button 
+                                          type="button" 
+                                          onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} 
+                                          className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30" 
+                                          title="Remover Local"
+                                        >
+                                          <Trash2 size={13}/>
+                                        </button>
+                                      )}
                                     </div>
-                                    <div>
-                                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção {idx + 1}</label>
+                                  </div>
+
+                                  <div className="grid grid-cols-[1fr_56px] gap-2 items-start">
+                                    <div className="min-w-0">
+                                      <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
+                                      </label>
                                       <input
                                         type="text"
-                                        list="locations-list"
                                         className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                        placeholder="Ex: Bloco A, Sala 3"
-                                        value={occ.location}
-                                        onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
+                                        placeholder="Ex: 2*5 + 10"
+                                        value={occ.memory}
+                                        onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
                                       />
                                     </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 text-center truncate" title={`Qtd. (${item.customUnit || item.unit})`}>
+                                        Qtd
+                                      </label>
+                                      <input
+                                        type="number"
+                                        className="w-full px-1 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-bold"
+                                        placeholder="Qtd"
+                                        value={occ.quantity}
+                                        onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção</label>
+                                    <input
+                                      type="text"
+                                      list="locations-list"
+                                      className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      placeholder="Ex: Bloco A, Sala 3"
+                                      value={occ.location}
+                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
+                                    />
                                   </div>
                                 </div>
                               ))}
