@@ -48,10 +48,10 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
         email: u.email || ''
       });
       setStats({
-        total: u.total_orcamentos || 0,
-        finalizados: u.orcamentos_finalizados || 0,
-        emRevisao: u.orcamentos_em_revisao || 0,
-        emAndamento: u.orcamentos_em_andamento || 0
+        total: u.total || 0,
+        finalizados: u.finalizado || 0,
+        emRevisao: u.revisao || 0,
+        emAndamento: u.andamento || 0
       });
       
       try {

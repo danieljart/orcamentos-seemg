@@ -6,15 +6,16 @@ export interface User {
   nome: string;
   crea: string;
   sre?: string;
-  total_orcamentos?: number;
-  orcamentos_finalizados?: number;
-  orcamentos_em_revisao?: number;
-  orcamentos_em_andamento?: number;
+  total?: number;
+  finalizado?: number;
+  revisao?: number;
+  andamento?: number;
 }
 
 export interface Workbook {
   id: string;
   user_id: string;
+  usuario_nome?: string;
   escola: string;
   cod_escola: string;
   municipio: string;
