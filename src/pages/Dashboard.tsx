@@ -6,6 +6,7 @@ import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
 import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
+import { Base2026AnnouncementModal } from '../components/Base2026AnnouncementModal';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
@@ -41,6 +42,7 @@ export function Dashboard() {
   const [isQuickEstimateOpen, setIsQuickEstimateOpen] = useState(false);
   const [pendingQuickItems, setPendingQuickItems] = useState<CartItem[] | null>(null);
   const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [isAccountSidebarOpen, setIsAccountSidebarOpen] = useState(false);
   const [selectedWorkbook, setSelectedWorkbook] = useState<Workbook | null>(null);
   const [workbookVersions, setWorkbookVersions] = useState<WorkbookVersion[]>([]);
@@ -82,7 +84,17 @@ export function Dashboard() {
     fetchUserProfile();
     loadData();
     checkPasskeyPrompt();
+    checkAnnouncementPrompt();
   }, []);
+
+  const checkAnnouncementPrompt = () => {
+    try {
+      const seen = localStorage.getItem('seen_base_2026_announcement');
+      if (seen !== 'true') {
+        setShowAnnouncement(true);
+      }
+    } catch (e) {}
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -1201,6 +1213,12 @@ export function Dashboard() {
           }
         }} />
       )}
+
+      {/* NOVIDADE 2026 ANNOUNCEMENT MODAL */}
+      <Base2026AnnouncementModal 
+        isOpen={showAnnouncement} 
+        onClose={() => setShowAnnouncement(false)} 
+      />
 
       {/* TOAST NOTIFICATION */}
       {toast && (
