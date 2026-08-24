@@ -19,6 +19,7 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
   const [hasPasskey, setHasPasskey] = useState(false);
   const [isCurrentDeviceRegistered, setIsCurrentDeviceRegistered] = useState(false);
   const [originalData, setOriginalData] = useState({ nome: '', crea: '', sre: '', email: '' });
+  const [stats, setStats] = useState({ total: 0, finalizados: 0, emRevisao: 0, emAndamento: 0 });
   
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -45,6 +46,12 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
         crea: u.crea || '',
         sre: u.sre || '',
         email: u.email || ''
+      });
+      setStats({
+        total: u.total_orcamentos || 0,
+        finalizados: u.orcamentos_finalizados || 0,
+        emRevisao: u.orcamentos_em_revisao || 0,
+        emAndamento: u.orcamentos_em_andamento || 0
       });
       
       try {
@@ -131,6 +138,30 @@ export function AccountSidebar({ isOpen, onClose, onLogout }: AccountSidebarProp
                 </div>
               </div>
             )}
+
+            {/* Resumo de Atividades do Usuário */}
+            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Meus Orçamentos</span>
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full">
+                  Total: {stats.total}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Andamento</span>
+                  <span className="text-base font-black text-sky-600 dark:text-sky-400">{stats.emAndamento}</span>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Revisão</span>
+                  <span className="text-base font-black text-amber-600 dark:text-amber-400">{stats.emRevisao}</span>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Finalizados</span>
+                  <span className="text-base font-black text-indigo-600 dark:text-indigo-400">{stats.finalizados}</span>
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-4">
               <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">

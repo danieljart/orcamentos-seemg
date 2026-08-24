@@ -6,6 +6,10 @@ export interface User {
   nome: string;
   crea: string;
   sre?: string;
+  total_orcamentos?: number;
+  orcamentos_finalizados?: number;
+  orcamentos_em_revisao?: number;
+  orcamentos_em_andamento?: number;
 }
 
 export interface Workbook {
