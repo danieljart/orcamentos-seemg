@@ -49,6 +49,7 @@ export function Dashboard() {
   const [currentDraftItems, setCurrentDraftItems] = useState<any[]>([]);
   const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
   const [editingVersionName, setEditingVersionName] = useState<string>('');
+  const [versionToDelete, setVersionToDelete] = useState<{ id: string; name: string } | null>(null);
   const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
   const [catalogDescMap, setCatalogDescMap] = useState<Map<string, string>>(new Map());
 
@@ -579,19 +580,18 @@ export function Dashboard() {
     }
   };
 
-  const handleDeleteVersion = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (window.confirm("Tem certeza que deseja excluir esta versão permanentemente?")) {
-      try {
-        await db.versions.delete(id);
-        setWorkbookVersions(prev => prev.filter(v => v.id !== id));
-        showToast("Versão excluída com sucesso!", "success");
-        loadData();
-      } catch (err) {
-        console.error(err);
-        showToast("Erro ao excluir versão", "error");
-      }
+  const handleConfirmDeleteVersion = async () => {
+    if (!versionToDelete) return;
+    const { id } = versionToDelete;
+    try {
+      await db.versions.delete(id);
+      setWorkbookVersions(prev => prev.filter(v => v.id !== id));
+      setVersionToDelete(null);
+      showToast("Versão excluída com sucesso!", "success");
+      loadData();
+    } catch (err) {
+      console.error("Erro ao excluir versão:", err);
+      showToast("Erro ao excluir versão", "error");
     }
   };
 
@@ -1186,7 +1186,7 @@ export function Dashboard() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    handleDeleteVersion(e, v.id);
+                                    setVersionToDelete({ id: v.id, name: v.name || 'Versão Salva' });
                                   }}
                                   className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 z-10"
                                   title="Excluir versão"
@@ -1216,6 +1216,48 @@ export function Dashboard() {
                   <p className="text-slate-500 dark:text-slate-400 text-sm">Nenhuma versão salva na nuvem ainda.</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE VERSÃO */}
+      {versionToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-[70] p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-600 mb-3">
+              <div className="p-2 bg-red-100 dark:bg-red-950/50 rounded-full">
+                <Trash2 size={22} className="text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">Excluir Versão?</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">{versionToDelete.name}</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+              Tem certeza que deseja excluir esta versão permanentemente? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVersionToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConfirmDeleteVersion();
+                }}
+                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm"
+              >
+                Sim, Excluir
+              </button>
             </div>
           </div>
         </div>
