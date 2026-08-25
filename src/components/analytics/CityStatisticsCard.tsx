@@ -54,19 +54,19 @@ export function CityStatisticsCard({
         <div className="border-b border-slate-100 dark:border-slate-700 mb-3 mt-1" />
 
         {isLoading ? (
-          <div className="space-y-2 animate-pulse py-1">
+          <div className="space-y-2 py-1">
             <div className="flex items-center gap-2 w-full">
-              <div className="h-2 bg-emerald-200 dark:bg-emerald-800/40 rounded-sm w-1/2" />
-              <div className="h-2 bg-teal-200 dark:bg-teal-800/40 rounded-sm w-1/4" />
-              <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-sm w-1/4" />
+              <div className="h-2 skeleton-shimmer rounded-sm w-1/2" />
+              <div className="h-2 skeleton-shimmer rounded-sm w-1/4" />
+              <div className="h-2 skeleton-shimmer rounded-sm w-1/4" />
             </div>
-            <div className="flex gap-4">
-              <div className="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded" />
-              <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="flex gap-4 mt-1">
+              <div className="h-3 w-28 skeleton-shimmer rounded" />
+              <div className="h-3 w-20 skeleton-shimmer rounded" />
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 w-full animate-in fade-in duration-300">
+          <div className="flex items-center gap-2 w-full animate-card-fade">
             {cities.map((city, idx) => (
               <div
                 key={city.name}

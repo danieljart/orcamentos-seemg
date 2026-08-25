@@ -846,39 +846,39 @@ export function Dashboard() {
             Array.from({ length: 3 }).map((_, i) => (
               <div 
                 key={i} 
-                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3 relative animate-pulse"
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3 relative"
               >
                 {/* Header Skeleton */}
                 <div className="flex justify-between items-center w-full">
-                  <div className="h-6 w-12 rounded-full bg-slate-200 dark:bg-slate-700" />
+                  <div className="h-6 w-12 rounded-full skeleton-shimmer border border-slate-200/60 dark:border-slate-700/60" />
                   <div className="flex gap-1.5 items-center">
-                    <div className="h-6 w-24 rounded-full bg-sky-100 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800" />
-                    <div className="h-6 w-11 rounded-full bg-violet-100 dark:bg-violet-950/50 border border-violet-200 dark:border-violet-800" />
-                    <div className="h-6 w-20 rounded-full bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 hidden sm:block" />
+                    <div className="h-6 w-24 rounded-full skeleton-shimmer bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/50 dark:border-sky-800/40" />
+                    <div className="h-6 w-11 rounded-full skeleton-shimmer bg-violet-50/70 dark:bg-violet-950/30 border border-violet-200/50 dark:border-violet-800/40" />
+                    <div className="h-6 w-20 rounded-full skeleton-shimmer bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/40 hidden sm:block" />
                     <div className="flex items-center gap-1 ml-1">
-                      <div className="h-6 w-6 rounded-full bg-slate-200 dark:bg-slate-700" />
-                      <div className="h-6 w-6 rounded-full bg-slate-200 dark:bg-slate-700" />
+                      <div className="h-6 w-6 rounded-full skeleton-shimmer border border-slate-200/40 dark:border-slate-700/40" />
+                      <div className="h-6 w-6 rounded-full skeleton-shimmer border border-slate-200/40 dark:border-slate-700/40" />
                     </div>
                   </div>
                 </div>
                 
                 {/* Title Skeleton */}
                 <div className="py-0.5">
-                  <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-md w-3/5" />
+                  <div className="h-6 skeleton-shimmer rounded-md w-3/5" />
                 </div>
                 
                 {/* Footer Skeleton */}
                 <div className="flex items-center justify-between mt-auto w-full gap-1">
                   <div className="flex-1 text-left">
-                    <div className="h-6 bg-emerald-100/90 dark:bg-emerald-950/50 rounded-md w-24" />
+                    <div className="h-6 bg-emerald-50/80 dark:bg-emerald-950/40 skeleton-shimmer rounded-md w-24 border border-emerald-200/30 dark:border-emerald-800/30" />
                   </div>
                   <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
                   <div className="flex-1 flex justify-center text-center">
-                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16" />
+                    <div className="h-4 skeleton-shimmer rounded w-16" />
                   </div>
                   <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
                   <div className="flex-1 flex justify-end shrink-0 min-w-0">
-                    <div className="h-6 w-24 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+                    <div className="h-6 w-24 rounded-full skeleton-shimmer border border-slate-200/60 dark:border-slate-700/60" />
                   </div>
                 </div>
               </div>
@@ -890,7 +890,7 @@ export function Dashboard() {
             <div 
               key={wb.id} 
               onClick={() => handleOpenVersions(wb)}
-              style={{ animationDelay: `${Math.min(index * 45, 300)}ms` }}
+              style={{ animationDelay: `${index * 30}ms` }}
               className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative animate-card-fade"
             >
               <div className="flex justify-between items-center w-full">
