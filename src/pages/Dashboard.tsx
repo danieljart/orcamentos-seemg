@@ -581,12 +581,15 @@ export function Dashboard() {
 
   const handleDeleteVersion = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm("Tem certeza que deseja excluir esta versão permanentemente?")) {
+    e.preventDefault();
+    if (window.confirm("Tem certeza que deseja excluir esta versão permanentemente?")) {
       try {
         await db.versions.delete(id);
         setWorkbookVersions(prev => prev.filter(v => v.id !== id));
-        showToast("Versão excluída", "success");
+        showToast("Versão excluída com sucesso!", "success");
+        loadData();
       } catch (err) {
+        console.error(err);
         showToast("Erro ao excluir versão", "error");
       }
     }
@@ -1164,20 +1167,30 @@ export function Dashboard() {
                           </div>
                           <div className="flex flex-col md:items-end justify-center gap-2">
                              <div className="flex items-center justify-end gap-2 w-full">
-                               <button 
-                                 onClick={(e) => handleEditVersion(e, v)}
-                                 className="text-slate-400 hover:text-indigo-600 transition-colors p-1"
-                                 title="Renomear versão"
-                               >
-                                 <Edit2 size={16} />
-                               </button>
-                               <button 
-                                 onClick={(e) => handleDeleteVersion(e, v.id)}
-                                 className="text-slate-400 hover:text-red-600 transition-colors p-1"
-                                 title="Excluir versão"
-                               >
-                                 <Trash2 size={16} />
-                               </button>
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    handleEditVersion(e, v);
+                                  }}
+                                  className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 z-10"
+                                  title="Renomear versão"
+                                >
+                                  <Edit2 size={16} />
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    handleDeleteVersion(e, v.id);
+                                  }}
+                                  className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 z-10"
+                                  title="Excluir versão"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
                                <div className="text-slate-300 group-hover:text-emerald-600 transition-colors hidden md:block ml-1">
                                  <LogOut className="rotate-180" size={18} />
                                </div>
