@@ -922,7 +922,7 @@ export function Dashboard() {
                 <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                 
                 <div className="flex-1 flex justify-end shrink-0 min-w-0">
-                  <span className="text-[10px] sm:text-xs bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 truncate max-w-full">
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-full whitespace-nowrap">
                     {wb.sre?.replace(/^SRE\s+/i, '')}
                   </span>
                 </div>
