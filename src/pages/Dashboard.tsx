@@ -863,21 +863,25 @@ export function Dashboard() {
               className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
             >
               <div className="flex justify-between items-start">
-                <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 px-2 py-1 rounded">
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                   {wb.cod_escola || 'S/ COD'}
                 </span>
-                <div className="flex gap-2 items-center">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
-                    wb.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700' :
-                    wb.status === 'Em revisão' ? 'bg-amber-100 text-amber-700' :
-                    'bg-sky-100 text-sky-700'
+                <div className="flex gap-1.5 items-center">
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                    wb.status === 'Finalizado' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' :
+                    wb.status === 'Em revisão' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' :
+                    'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
                   }`}>
                     {wb.status || 'Em andamento'}
                   </span>
-                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 whitespace-nowrap">
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                    wb.base_precos === '2026'
+                      ? 'bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800'
+                      : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                  }`}>
                     {wb.base_precos || '2025'}
                   </span>
-                  <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded hidden sm:inline-block">
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 whitespace-nowrap hidden sm:inline-block">
                     {new Date(wb.created_at).toLocaleDateString('pt-BR')}
                   </span>
                   

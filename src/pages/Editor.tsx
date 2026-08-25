@@ -1539,10 +1539,10 @@ export function Editor() {
             <div className="overflow-hidden shrink-0 flex flex-col justify-center">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Status</span>
               <div className="h-5 flex items-center mt-0.5">
-                <span className={`text-[10px] font-bold uppercase px-2 h-full flex items-center justify-center rounded-full truncate ${
-                  workbook.status === 'Finalizado' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
-                  workbook.status === 'Em revisão' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
-                  'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border truncate ${
+                  workbook.status === 'Finalizado' ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800' :
+                  workbook.status === 'Em revisão' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800' :
+                  'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
                 }`}>
                   {workbook.status || 'Em andamento'}
                 </span>
