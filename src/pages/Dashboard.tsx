@@ -865,43 +865,45 @@ export function Dashboard() {
               onClick={() => handleOpenVersions(wb)}
               className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
             >
-              <div className="flex justify-between items-start">
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+              <div className="flex justify-between items-center w-full">
+                <span className="inline-flex items-center justify-center h-6 text-[10px] font-bold uppercase px-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                   {wb.cod_escola || 'S/ COD'}
                 </span>
                 <div className="flex gap-1.5 items-center">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                  <span className={`inline-flex items-center justify-center h-6 text-[10px] font-bold uppercase px-2 rounded-full border whitespace-nowrap ${
                     wb.status === 'Finalizado' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' :
                     wb.status === 'Em revisão' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' :
                     'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
                   }`}>
                     {wb.status || 'Em andamento'}
                   </span>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                  <span className={`inline-flex items-center justify-center h-6 text-[10px] font-bold uppercase px-2 rounded-full border whitespace-nowrap ${
                     wb.base_precos === '2026'
                       ? 'bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800'
                       : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
                   }`}>
                     {wb.base_precos || '2025'}
                   </span>
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 whitespace-nowrap hidden sm:inline-block">
+                  <span className="inline-flex items-center justify-center h-6 text-[10px] font-bold uppercase px-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 whitespace-nowrap hidden sm:inline-flex">
                     {new Date(wb.created_at).toLocaleDateString('pt-BR')}
                   </span>
                   
-                  <div className="flex gap-0.5 ml-1">
+                  <div className="flex items-center gap-0.5 ml-1">
                     <button 
+                      type="button"
                       onClick={(e) => handleClone(wb, e)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                      className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-full transition-colors"
                       title="Clonar Planilha"
                     >
-                      <Copy size={16} />
+                      <Copy size={14} />
                     </button>
                     <button 
+                      type="button"
                       onClick={(e) => handleDelete(wb.id, e)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full transition-colors"
                       title="Excluir Planilha"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
