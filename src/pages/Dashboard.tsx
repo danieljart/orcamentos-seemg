@@ -761,6 +761,7 @@ export function Dashboard() {
             cities={cityData} 
             periodFilter={periodFilter}
             setPeriodFilter={setPeriodFilter}
+            isLoading={isLoading}
           />
         </div>
 
@@ -843,27 +844,48 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3 animate-pulse">
-                <div className="flex justify-between items-start">
-                  <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                  <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-20"></div>
+              <div 
+                key={i} 
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3 relative animate-pulse min-h-[142px]"
+              >
+                {/* Header Skeleton */}
+                <div className="flex justify-between items-center w-full">
+                  <div className="h-6 w-14 rounded-full bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-700" />
+                  <div className="flex gap-1.5 items-center">
+                    <div className="h-6 w-24 rounded-full bg-sky-100/70 dark:bg-sky-950/40 border border-sky-200/50 dark:border-sky-800/40" />
+                    <div className="h-6 w-12 rounded-full bg-violet-100/70 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-800/40" />
+                    <div className="h-6 w-20 rounded-full bg-emerald-100/70 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/40 hidden sm:block" />
+                    <div className="flex items-center gap-0.5 ml-1">
+                      <div className="h-6 w-6 rounded-full bg-slate-200/80 dark:bg-slate-700/80" />
+                      <div className="h-6 w-6 rounded-full bg-slate-200/80 dark:bg-slate-700/80" />
+                    </div>
+                  </div>
                 </div>
-                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
-                <div className="h-8 bg-emerald-100 rounded w-1/3"></div>
-                <div className="flex justify-between items-center mt-2">
-                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24"></div>
-                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-12"></div>
+                
+                {/* Title Skeleton */}
+                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-lg w-3/5 my-0.5" />
+                
+                {/* Footer Skeleton */}
+                <div className="flex items-center justify-between mt-auto w-full gap-1">
+                  <div className="h-6 bg-emerald-100/80 dark:bg-emerald-950/50 rounded-md w-28" />
+                  <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16 mx-auto hidden sm:block" />
+                  <div className="w-px h-4 sm:h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+                  <div className="flex-1 flex justify-end">
+                    <div className="h-6 w-24 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+                  </div>
                 </div>
               </div>
             ))
-          ) : filteredWorkbooks.map(wb => {
+          ) : filteredWorkbooks.map((wb, index) => {
             const wbAnalytics = analyticsData.find(a => a.id === wb.id);
             const totalValue = wbAnalytics ? wbAnalytics.total : 0;
             return (
             <div 
               key={wb.id} 
               onClick={() => handleOpenVersions(wb)}
-              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative"
+              style={{ animationDelay: `${Math.min(index * 40, 250)}ms` }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-emerald-300 group flex flex-col gap-3 relative animate-in fade-in zoom-in-[0.98] duration-300 fill-mode-both"
             >
               <div className="flex justify-between items-center w-full">
                 <span className="inline-flex items-center justify-center h-6 text-[10px] font-bold uppercase px-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
@@ -935,13 +957,13 @@ export function Dashboard() {
             </div>
             );
           })}
-          {filteredWorkbooks.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
+          {!isLoading && filteredWorkbooks.length === 0 && (
+            <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400 animate-in fade-in duration-300">
               Nenhum orçamento encontrado.
             </div>
-            )}
-          </div>
-        </main>
+          )}
+        </div>
+      </main>
         
         <footer className="p-3 mt-auto text-center text-[10px] text-slate-400 dark:text-slate-500 flex flex-col items-center gap-1">
           <div className="flex justify-center items-center gap-2 mb-1">

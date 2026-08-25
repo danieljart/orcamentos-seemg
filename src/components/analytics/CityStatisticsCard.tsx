@@ -7,12 +7,14 @@ export function CityStatisticsCard({
   totalBalance, 
   cities,
   periodFilter,
-  setPeriodFilter
+  setPeriodFilter,
+  isLoading
 }: { 
   totalBalance: number; 
   cities: { name: string; percentage: number; value: number; color: string }[];
   periodFilter: string;
   setPeriodFilter: (val: string) => void;
+  isLoading?: boolean;
 }) {
   const colors = ['bg-emerald-600', 'bg-emerald-400', 'bg-teal-500', 'bg-slate-400', 'bg-indigo-400'];
 
@@ -21,9 +23,13 @@ export function CityStatisticsCard({
       <CardHeader className="pb-2 pt-4 px-6 flex flex-row items-start justify-between">
         <div>
           <CardTitle className="text-lg font-bold text-emerald-900 dark:text-emerald-100 mb-1">Total em Orçamentos</CardTitle>
-          <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalBalance)}
-          </div>
+          {isLoading ? (
+            <div className="h-8 w-44 bg-slate-200 dark:bg-slate-700 rounded-md animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-black text-slate-800 dark:text-slate-200 animate-in fade-in duration-200">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalBalance)}
+            </div>
+          )}
         </div>
         <div className="mt-1">
           <Select value={periodFilter} onValueChange={setPeriodFilter}>
@@ -47,32 +53,45 @@ export function CityStatisticsCard({
       <CardContent className="px-6 pb-4 pt-0">
         <div className="border-b border-slate-100 dark:border-slate-700 mb-3 mt-1" />
 
-        {/* Segmented Progress Bar */}
-        <div className="flex items-center gap-2 w-full">
-          {cities.map((city, idx) => (
-            <div
-              key={city.name}
-              className="space-y-2"
-              style={{ width: `${Math.max(city.percentage, 2)}%` }}
-              title={`${city.name}: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(city.value)}`}
-            >
-              <div className={cn(colors[idx % colors.length], 'h-2 w-full overflow-hidden rounded-sm transition-all')} />
-
-              <div className="flex flex-col items-start flex-1">
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate w-full" title={city.name}>{city.name}</span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-baseline gap-1.5 truncate w-full">
-                  {city.percentage.toFixed(1)}%
-                  <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 truncate">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(city.value)}
-                  </span>
-                </span>
-              </div>
+        {isLoading ? (
+          <div className="space-y-2 animate-pulse py-1">
+            <div className="flex items-center gap-2 w-full">
+              <div className="h-2 bg-emerald-200 dark:bg-emerald-800/40 rounded-sm w-1/2" />
+              <div className="h-2 bg-teal-200 dark:bg-teal-800/40 rounded-sm w-1/4" />
+              <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-sm w-1/4" />
             </div>
-          ))}
-          {cities.length === 0 && (
-             <div className="text-sm text-slate-400">Nenhum dado de município.</div>
-          )}
-        </div>
+            <div className="flex gap-4">
+              <div className="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded" />
+              <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 w-full animate-in fade-in duration-300">
+            {cities.map((city, idx) => (
+              <div
+                key={city.name}
+                className="space-y-2"
+                style={{ width: `${Math.max(city.percentage, 2)}%` }}
+                title={`${city.name}: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(city.value)}`}
+              >
+                <div className={cn(colors[idx % colors.length], 'h-2 w-full overflow-hidden rounded-sm transition-all')} />
+
+                <div className="flex flex-col items-start flex-1">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate w-full" title={city.name}>{city.name}</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-baseline gap-1.5 truncate w-full">
+                    {city.percentage.toFixed(1)}%
+                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 truncate">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(city.value)}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            ))}
+            {cities.length === 0 && (
+               <div className="text-sm text-slate-400">Nenhum dado de município.</div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
