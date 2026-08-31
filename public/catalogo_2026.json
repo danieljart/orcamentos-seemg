@@ -45,7 +45,7 @@
   {
     "item": "010004",
     "description": "Limpeza do terreno, raspagem, capina e queima manual",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 1.66,
     "isCategory": false,
     "rows": [
@@ -299,7 +299,7 @@
   {
     "item": "020003",
     "description": "Demolição de alvenaria de elevação em tijolo comum ou elemento vazado, incluindo o revestimento.",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 129.49,
     "isCategory": false,
     "rows": [
@@ -321,7 +321,7 @@
   {
     "item": "020005",
     "description": "Demolição de concreto simples, manual, inclusive afastamento",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 358.77,
     "isCategory": false,
     "rows": [
@@ -332,7 +332,7 @@
   {
     "item": "020006",
     "description": "Demolição mecânica de concreto armado",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 305.22,
     "isCategory": false,
     "rows": [
@@ -760,7 +760,7 @@
   {
     "item": "030001",
     "description": "Aterro Compactado manual, com soquete",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 84.9,
     "isCategory": false,
     "rows": [
@@ -771,7 +771,7 @@
   {
     "item": "030002",
     "description": "Escavação  manual de vala em solo de 1ª e 2ª categoria, profundidade em até 2,00m",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 84.9,
     "isCategory": false,
     "rows": [
@@ -782,7 +782,7 @@
   {
     "item": "030003",
     "description": "Escavação  manual em campo aberto em solo exceto rocha com profundidade em até 2,00m",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 49.03,
     "isCategory": false,
     "rows": [
@@ -793,7 +793,7 @@
   {
     "item": "030004",
     "description": "Regularização de fundo de vala com apiloamento com maço de 30kg",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 28.62,
     "isCategory": false,
     "rows": [
@@ -804,7 +804,7 @@
   {
     "item": "030005",
     "description": "Reaterro manual de vala apiloado",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 84.9,
     "isCategory": false,
     "rows": [
@@ -815,7 +815,7 @@
   {
     "item": "030006",
     "description": "Reaterro Compactado mecanizado empregando compactador de placa vibratória, em camadas de 20 a 40 cm.",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 57.69,
     "isCategory": false,
     "rows": [
@@ -826,7 +826,7 @@
   {
     "item": "030007",
     "description": "Escavação manual de tubulão a céu aberto",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 415.78,
     "isCategory": false,
     "rows": [
@@ -848,7 +848,7 @@
   {
     "item": "030009",
     "description": "Regularização e compactação de terreno c/ placa vibratória, em camadas de 20 a 40cm de espessura",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 6.1,
     "isCategory": false,
     "rows": [
@@ -859,7 +859,7 @@
   {
     "item": "030010",
     "description": "Escavação mecanizada em campo aberto, profundidade até 2,00m, solo de 1ª categoria",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 7.93,
     "isCategory": false,
     "rows": [
@@ -892,7 +892,7 @@
   {
     "item": "040002",
     "description": "Fôrma de madeira para fundação, com tábuas e sarrafos, 3 aproveitamentos e desforma",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 83.88,
     "isCategory": false,
     "rows": [
@@ -903,7 +903,7 @@
   {
     "item": "040003",
     "description": "Concreto armado para fundação (incluindo fornecimento, transporte, lançamento, forma e desforma)",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 2325.78,
     "isCategory": false,
     "rows": [
@@ -925,7 +925,7 @@
   {
     "item": "040005",
     "description": "Contrapiso não estrutural impermeabilizado, E=5 cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 68.94,
     "isCategory": false,
     "rows": [
@@ -1153,7 +1153,7 @@
   {
     "item": "050002",
     "description": "Fornecimento, transporte, execução de Fôrma de chapa compensada plastificada, e=12mm, 3 aproveitamentos, inclusive desforma para vigas, pilares e lajes maciças.",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 81.57,
     "isCategory": false,
     "rows": [
@@ -1164,7 +1164,7 @@
   {
     "item": "050003",
     "description": "Fornecimento, transporte, execução de Fôrma  de madeira maciça, 3 aproveitamentos, inclusive desforma para VIGAS",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 114.82,
     "isCategory": false,
     "rows": [
@@ -1175,7 +1175,7 @@
   {
     "item": "050004",
     "description": "Fornecimento, transporte, execução de Fôrma  de madeira maciça, 3 aproveitamentos, inclusive desforma para PILARES",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 82.38,
     "isCategory": false,
     "rows": [
@@ -1186,7 +1186,7 @@
   {
     "item": "050005",
     "description": "Concreto armado (incluindo fornecimento, transporte, lançamento, forma e desforma)",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 3200.53,
     "isCategory": false,
     "rows": [
@@ -1197,7 +1197,7 @@
   {
     "item": "050006",
     "description": "Concreto estrutural virado no local, consistência para vibração, brita 1 e 2, FCK 20 MPA e lançamento em estrutura",
-    "unit": "[object Object]",
+    "unit": "M³",
     "price": 832.31,
     "isCategory": false,
     "rows": [
@@ -1219,7 +1219,7 @@
   {
     "item": "050008",
     "description": "laje pré-moldada unidirecional com enchimento em poliestireno expandido (EPS), inclusive concreto estrutural, usinado bombeado com Fck de 20mpa, e=12cm (capeamento 5 cm) sobrecarga mínima 100 Kgf / m²",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 282.54,
     "isCategory": false,
     "rows": [
@@ -1230,7 +1230,7 @@
   {
     "item": "050009",
     "description": "laje pré-moldada unidirecional com enchimento em poliestireno expandido (EPS), inclusive concreto estrutural, usinado bombeado com Fck de 20mpa, e=12cm (capeamento 5 cm) sobrecarga mínima 300 Kgf / m²",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 305.03,
     "isCategory": false,
     "rows": [
@@ -1295,7 +1295,7 @@
   {
     "item": "060101",
     "description": "Alvenaria de vedação com tijolo cerâmico furado 9x19x29cm, espessura da parede 9cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:2:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 62.11,
     "isCategory": false,
     "rows": [
@@ -1306,7 +1306,7 @@
   {
     "item": "060102",
     "description": "Alvenaria de vedação com tijolo cerâmico furado 14x19x29cm, espessura da parede 14cm, juntas de 10mm com argamassa mista de cimento cal hidratada e areia sem peneirar traço 1:2:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 76.18,
     "isCategory": false,
     "rows": [
@@ -1317,7 +1317,7 @@
   {
     "item": "060103",
     "description": "Alvenaria de vedação com tijolo cerâmico furado 19 x 19 x 29 cm, espessura da parede 19 cm, juntas de 10 mm, assentado com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:2:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 99.39,
     "isCategory": false,
     "rows": [
@@ -1328,7 +1328,7 @@
   {
     "item": "060104",
     "description": "Alvenaria de vedação com tijolo cerâmico laminado 5,5x11x23,5cm, espessura da parede 10cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:1:6",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 155.44,
     "isCategory": false,
     "rows": [
@@ -1339,7 +1339,7 @@
   {
     "item": "060105",
     "description": "Alvenaria de vedação com bloco de concreto, 9x19x39 cm, espessura da parede 9 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,5:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 75.42,
     "isCategory": false,
     "rows": [
@@ -1350,7 +1350,7 @@
   {
     "item": "060106",
     "description": "Alvenaria de vedação com bloco de concreto, 19x19x39 cm, espessura da parede 19 cm, juntas de 10mm com argamassa mista de cimento, cal e areia sem peneirar traço 1:0,5:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 94.56,
     "isCategory": false,
     "rows": [
@@ -1361,7 +1361,7 @@
   {
     "item": "060107",
     "description": "Alvenaria de vedação com bloco de concreto, 14x19x39 cm, espessura da parede 14 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,5:8",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 81.72,
     "isCategory": false,
     "rows": [
@@ -1372,7 +1372,7 @@
   {
     "item": "060108",
     "description": "Alvenaria estrutural com bloco de concreto, 19x19x39 cm, aparente espessura da parede 19 cm, juntas de 10mm com argamassa mista de cimento, cal hidratada e areia sem peneirar traço 1:0,25:3",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 109.34,
     "isCategory": false,
     "rows": [
@@ -1448,7 +1448,7 @@
   {
     "item": "070104",
     "description": "Cerâmica Francesa, inclinação 35% (m²=área de projeção do telhado x 1,08)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 106.53,
     "isCategory": false,
     "rows": [
@@ -1459,7 +1459,7 @@
   {
     "item": "070105",
     "description": "Cerâmica Colonial, inclinação 35% (m²= área de projeção do telhado x 1,08)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 137.79,
     "isCategory": false,
     "rows": [
@@ -1470,7 +1470,7 @@
   {
     "item": "070106",
     "description": "Cerâmica romana, inclinação 35% (m² = área de projeção do telhado x 1,08)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 73.39,
     "isCategory": false,
     "rows": [
@@ -1799,7 +1799,7 @@
   {
     "item": "070601",
     "description": "Estrutura de madeira tesourada p/ telha cerâmica ou de concreto, vão de até 7,00m",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 386.59,
     "isCategory": false,
     "rows": [
@@ -1810,7 +1810,7 @@
   {
     "item": "070602",
     "description": "Estrutura de madeira tesourada p/ telha cerâmica ou de concreto, vão de 7,01 a 10,00m",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 556.11,
     "isCategory": false,
     "rows": [
@@ -1843,7 +1843,7 @@
   {
     "item": "070605",
     "description": "Estrutura de madeira para telha de fibrocimento, plástico ou metálica todas onduladas, ancorada em laje ou parede.",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 75.98,
     "isCategory": false,
     "rows": [
@@ -1865,7 +1865,7 @@
   {
     "item": "070608",
     "description": "Mão de obra e acessórios para montagem de estrutura de madeira para telha cerâmica ou telha de concreto (no caso de reaproveitamento da madeira do telhado demolido)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 94.11,
     "isCategory": false,
     "rows": [
@@ -1876,7 +1876,7 @@
   {
     "item": "070609",
     "description": "Mão de obra e acessórios para montagem de estrutura de madeira para telha de fibrocimento, plástico ou metálica todas onduladas, ancorada em laje ou parede (no caso de reaproveitamento da madeira do telhado demolido)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 18.09,
     "isCategory": false,
     "rows": [
@@ -1887,7 +1887,7 @@
   {
     "item": "070610",
     "description": "Fornecimento, fabricação, transporte e montagem de estrutura metálica para telhado sobre laje para telhas cerâmicas, inclusive tratamento anticorrosivo com aplicação de zarcão em duas demãos e pintura esmalte em duas demãos.",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 342.67,
     "isCategory": false,
     "rows": [
@@ -1909,7 +1909,7 @@
   {
     "item": "070612",
     "description": "Fornecimento, fabricação, transporte e montagem de estrutura metálica sobre lajes para telha ondulada de fibrocimento, metálica, plástica ou termoacústica",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 50.35,
     "isCategory": false,
     "rows": [
@@ -1920,7 +1920,7 @@
   {
     "item": "070613",
     "description": "Empena de madeira (régua)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 209.83,
     "isCategory": false,
     "rows": [
@@ -1931,7 +1931,7 @@
   {
     "item": "070614",
     "description": "Fechamento de empena com quadro em perfil, cantoneira 2\" x 2\", soldado, e tela fio 12 malha 1/2\".",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 237.09,
     "isCategory": false,
     "rows": [
@@ -1952,7 +1952,7 @@
   {
     "item": "070701",
     "description": "Forro com tábua de pinho de 10x1cm ou pinus, fixada em sarrafos de 10x2,5cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 168.06,
     "isCategory": false,
     "rows": [
@@ -1963,7 +1963,7 @@
   {
     "item": "070703",
     "description": "Forro de PVC em painéis lineares encaixados entre si e fixados em estrutura de aço (Metalon), dimensões 200x6000 mm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 79.81,
     "isCategory": false,
     "rows": [
@@ -1985,7 +1985,7 @@
   {
     "item": "070705",
     "description": "Forro de gesso acartonado  fixo monolítico,  suspensos por pendurais de arame galvanizado nº 18 painel, e=12,5 mm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 84.23,
     "isCategory": false,
     "rows": [
@@ -5208,7 +5208,7 @@
   {
     "item": "120101",
     "description": "Porta metálica, tipo de abrir, com uma (1) folha, em chapa galvanizada lambril, modelo quadrado, fornecimento e assentamento, EXCLUSIVE fechadura, targeta e dobradiça",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 511.7,
     "isCategory": false,
     "rows": [
@@ -5219,7 +5219,7 @@
   {
     "item": "120102",
     "description": "Porta/portão metálico, tipo de correr, com uma ou duas folhas, em chapa galvanizada lambril, modelo ondulada, inclusive fornecimento, assentamento, perfis para marco, EXCLUSIVE fechadura e roldanas",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 583.99,
     "isCategory": false,
     "rows": [
@@ -5230,7 +5230,7 @@
   {
     "item": "120103",
     "description": "Janela de ferro completa, colocação e acabamento de correr",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 817.82,
     "isCategory": false,
     "rows": [
@@ -5241,7 +5241,7 @@
   {
     "item": "120104",
     "description": "Janela de ferro completa, colocação e acabamento basculante",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 746.89,
     "isCategory": false,
     "rows": [
@@ -5252,7 +5252,7 @@
   {
     "item": "120105",
     "description": "Grade de proteção de ferro (colocação e acabamento)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 503.76,
     "isCategory": false,
     "rows": [
@@ -5383,7 +5383,7 @@
   {
     "item": "120301",
     "description": "Fixação de grade de proteção (inclui apenas o serviço de fixação-só  M.O)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 175.88,
     "isCategory": false,
     "rows": [
@@ -5807,7 +5807,7 @@
   {
     "item": "150101",
     "description": "Taco de madeira ipê ou similar, assentado c/ argamassa de cimento e areia peneirada traço 1:4, inclusive desbastamento da superfície de base",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 423.39,
     "isCategory": false,
     "rows": [
@@ -5818,7 +5818,7 @@
   {
     "item": "150102",
     "description": "Tábua corrida (Assoalho) de madeira ipê ou similar , largura 10 ou 20cm, fixada sobre barrotes trapezoidais de madeira 5x3x2cm com espaçamento de 35cm, assentado em argamassa de cimento e areia sem peneirar traço 1:5)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 487.12,
     "isCategory": false,
     "rows": [
@@ -5829,7 +5829,7 @@
   {
     "item": "150103",
     "description": "Ardósia em placas 30x30cm e=1cm, assentado com argamassa pré-fabricada de cimento colante, inclusive rejunte com juntas de 5mm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 81.98,
     "isCategory": false,
     "rows": [
@@ -5840,7 +5840,7 @@
   {
     "item": "150104",
     "description": "Revestimento com cerâmica aplicado em piso, acabamento esmaltado, ambiente interno ou externo, padrão extra, cor clara, dimensão da peça até 2.025cm², CLASSE 5 ou LE, assentamento com argamassa industrializada, inclusive rejuntamento",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 87.7,
     "isCategory": false,
     "rows": [
@@ -5851,7 +5851,7 @@
   {
     "item": "150105",
     "description": "Ladrilho hidráulico, assentado com argamassa pré-fabricada de cimento colante",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 92.84,
     "isCategory": false,
     "rows": [
@@ -5862,7 +5862,7 @@
   {
     "item": "150106",
     "description": "Piso em concreto Fck mínimo de 13,5 Mpa, controle tipo \"C\", incluindo preparo de caixa e=8cm, revestimento rústico",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 101.55,
     "isCategory": false,
     "rows": [
@@ -5873,7 +5873,7 @@
   {
     "item": "150107",
     "description": "Piso em granilite (marmorite) cimento comum em quadros em de 1,0x 1,0 m",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 130.66,
     "isCategory": false,
     "rows": [
@@ -5895,7 +5895,7 @@
   {
     "item": "150111",
     "description": "Piso cimentado com argamassa de cimento e areia sem peneirar, traço 1:3, e=2,5cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 68.97,
     "isCategory": false,
     "rows": [
@@ -6047,7 +6047,7 @@
   {
     "item": "150301",
     "description": "Lastro de concreto (contrapiso) não estrutural impermeabilizado, E=6 cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 68.94,
     "isCategory": false,
     "rows": [
@@ -6090,7 +6090,7 @@
   {
     "item": "150402",
     "description": "Pavimentação intertravada em peças pré-moldadas de concreto sobre colchão de areia de e=6,0cm (e=8,0 cm, Fck das pçs. De concreto = 35 Mpa)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 112.4,
     "isCategory": false,
     "rows": [
@@ -6101,7 +6101,7 @@
   {
     "item": "150403",
     "description": "Pavimentação intertravada em peças pré-moldadas de concreto sobre colchão de areia de e=6,0cm (EXCETO FORNECIMENTO DAS PEÇAS PRÉ-MOLDADAS)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 14.81,
     "isCategory": false,
     "rows": [
@@ -6112,7 +6112,7 @@
   {
     "item": "150404",
     "description": "Grama esmeralda em placas",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 38.09,
     "isCategory": false,
     "rows": [
@@ -6123,7 +6123,7 @@
   {
     "item": "150405",
     "description": "Passeio de concreto e= 8 cm, Fck 15 Mpa, c/ preparo p/ terreno, incluindo preparo de caixa, sem revestimento com argamassa de cimento e areia",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 85.81,
     "isCategory": false,
     "rows": [
@@ -6212,7 +6212,7 @@
   {
     "item": "160101",
     "description": "Cristal comum liso, colocado em caixilho com ou sem baguetes, duas demãos de massa  e=4mm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 209.93,
     "isCategory": false,
     "rows": [
@@ -6223,7 +6223,7 @@
   {
     "item": "160102",
     "description": "Comum fantasia , colocado em caixilho com ou sem baguetes, duas demãos de massa e=4mm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 300.29,
     "isCategory": false,
     "rows": [
@@ -6277,7 +6277,7 @@
   {
     "item": "170101",
     "description": "Caiação em parede com 03 demãos",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 20.85,
     "isCategory": false,
     "rows": [
@@ -6288,7 +6288,7 @@
   {
     "item": "170102",
     "description": "Látex PVA em parede (2 demãos), com fundo preparador / selador",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 25.91,
     "isCategory": false,
     "rows": [
@@ -6299,7 +6299,7 @@
   {
     "item": "170103",
     "description": "Tinta acrílica em parede, sem emassamento (duas demãos)",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 25.8,
     "isCategory": false,
     "rows": [
@@ -6310,7 +6310,7 @@
   {
     "item": "170104",
     "description": "Barrado à óleo interno e externo duas demãos, sem emassamento , inclusive selador",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 29.35,
     "isCategory": false,
     "rows": [
@@ -6321,7 +6321,7 @@
   {
     "item": "170105",
     "description": "Esmalte em esquadrias de ferro com duas demãos e uma demão de zarcão",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 36.6,
     "isCategory": false,
     "rows": [
@@ -6343,7 +6343,7 @@
   {
     "item": "170107",
     "description": "Óleo ou esmalte em esquadrias de madeira com duas demãos, sem massa corrida, com fundo nivelador p/ madeira",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 37.18,
     "isCategory": false,
     "rows": [
@@ -6354,7 +6354,7 @@
   {
     "item": "170108",
     "description": "Verniz em esquadrias de madeira com duas demãos",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 26.14,
     "isCategory": false,
     "rows": [
@@ -6376,7 +6376,7 @@
   {
     "item": "170110",
     "description": "Emassamento de parede interna com massa corrida à base de PVA com duas demãos, para pintura látex",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 21.97,
     "isCategory": false,
     "rows": [
@@ -6387,7 +6387,7 @@
   {
     "item": "170111",
     "description": "Emassamento de parede interna ou externa com massa corrida com duas demãos, p/ pintura óleo",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 25.75,
     "isCategory": false,
     "rows": [
@@ -6408,7 +6408,7 @@
   {
     "item": "170201",
     "description": "Verniz acrílico, 2 demãos; sobre alvenaria ou concreto",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 20.29,
     "isCategory": false,
     "rows": [
@@ -6419,7 +6419,7 @@
   {
     "item": "170202",
     "description": "Pintura com tinta acrílica em piso de concreto 2 demãos aplicado com rolo de lã, acabamento liso exceto quadra",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 14.11,
     "isCategory": false,
     "rows": [
@@ -6506,7 +6506,7 @@
   {
     "item": "180105",
     "description": "Prateleira de ardósia e=2 cm apoiada em alvenaria ou embutida na parede",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 323.42,
     "isCategory": false,
     "rows": [
@@ -6517,7 +6517,7 @@
   {
     "item": "180106",
     "description": "Prateleira de ardósia e=2 cm, apoiada em  console de metalon 20x30 cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 361.04,
     "isCategory": false,
     "rows": [
@@ -6550,7 +6550,7 @@
   {
     "item": "180109",
     "description": "Soleira ou peitoril de ardósia e=2cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 314.59,
     "isCategory": false,
     "rows": [
@@ -6582,7 +6582,7 @@
   {
     "item": "180201",
     "description": "Bancada p/ lavatório em ardósia e= 3cm e L = 55cm em console de metalon",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 396.22,
     "isCategory": false,
     "rows": [
@@ -7138,7 +7138,7 @@
   {
     "item": "200102",
     "description": "Regularização de fundo de vala com apiloamento com maço de 30kg",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 28.62,
     "isCategory": false,
     "rows": [
@@ -7149,7 +7149,7 @@
   {
     "item": "200103",
     "description": "Lastro de concreto (contrapiso) não estrutural impermeabilizado, E=6 cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 68.94,
     "isCategory": false,
     "rows": [
@@ -7160,7 +7160,7 @@
   {
     "item": "200104",
     "description": "Piso cimentado com argamassa de cimento e areia sem peneirar, traço 1:4, e=2,5cm",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 68.97,
     "isCategory": false,
     "rows": [
@@ -7171,7 +7171,7 @@
   {
     "item": "200105",
     "description": "Pintura com tinta a base epóxi em piso de quadra esportiva concreto 2 demãos",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 28.71,
     "isCategory": false,
     "rows": [
@@ -7346,7 +7346,7 @@
   {
     "item": "200401",
     "description": "Estrutura de aço para cobertura em arco, espaçamento entre arcos de 5,0 m, vão de 20,0 m, em aço  A 36, inclusive montagem",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 223.2,
     "isCategory": false,
     "rows": [
@@ -7357,7 +7357,7 @@
   {
     "item": "200402",
     "description": "Estrutura de aço para cobertura em arco, espaçamento entre arcos de 6,0 m, vão de 25,0 m, em aço  A 36, inclusive montagem",
-    "unit": "[object Object]",
+    "unit": "M²",
     "price": 238.37,
     "isCategory": false,
     "rows": [

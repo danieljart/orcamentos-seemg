@@ -639,63 +639,92 @@ export function Editor() {
       }
 
       const itemMap = new Map<string, SelectedItem>();
+      let currentItemCode: string | null = null;
+      let currentTotalQty = '';
 
       ws.eachRow((row) => {
-        const itemCodeCell = row.getCell(1).value;
-        if (itemCodeCell) {
-          const itemCode = itemCodeCell.toString().trim();
+        const colB = String(row.getCell(2).value || '').toUpperCase();
+        const colC = String(row.getCell(3).value || '').toUpperCase();
+        if ((colB + ' ' + colC).includes('TOTAL CUSTO =') || (colB + ' ' + colC).includes('TOTAL GERAL =') || (colB + ' ' + colC).includes('VALIDAÇÃO')) {
+          currentItemCode = null;
+          return;
+        }
+
+        const colACell = row.getCell(1).value;
+        const colA = colACell ? colACell.toString().trim() : '';
+        const isItemCode = /^\d{6}$/.test(colA) && !colA.endsWith('00');
+        const isCustom = colA.startsWith('2600');
+
+        let occMemory = row.getCell(7).value?.toString().trim() || '';
+        let occQtyVal = row.getCell(8).value;
+        if (occQtyVal && typeof occQtyVal === 'object' && 'result' in occQtyVal) {
+          occQtyVal = (occQtyVal as any).result;
+        }
+        let occQty = (occQtyVal !== null && occQtyVal !== undefined && occQtyVal !== '') ? String(occQtyVal).trim() : '';
+        const occLocation = row.getCell(9).value?.toString().trim() || '';
+
+        if (isItemCode || isCustom) {
+          currentItemCode = colA;
           let qty = row.getCell(4).value;
           if (qty && typeof qty === 'object' && 'result' in qty) {
-             qty = (qty as any).result;
+            qty = (qty as any).result;
           }
-          if (qty !== null && qty !== undefined && qty !== '') {
-            const memory = row.getCell(7).value?.toString() || '';
-            const location = row.getCell(8).value?.toString() || '';
-            
-            const isCustom = itemCode.startsWith('2600');
-            const lookupCode = isCustom ? '260001' : itemCode;
-            const catItem = catalog.find(c => c.item === lookupCode);
-            
-            if (catItem) {
-               let customData = null;
-               if (isCustom) {
-                 const customTitle = row.getCell(2).value;
-                 let titleStr = '';
-                 if (customTitle && typeof customTitle === 'object' && 'richText' in customTitle) {
-                   titleStr = (customTitle as any).richText.map((rt: any) => rt.text).join('');
-                 } else if (customTitle) {
-                   titleStr = customTitle.toString();
-                 }
-                 const customUnit = row.getCell(3).value?.toString() || '';
-                 const customPrice = parseFloat(row.getCell(5).value?.toString() || '0');
-                 customData = { code: itemCode, title: titleStr, unit: customUnit, price: customPrice };
-               }
-               
-               const occ = {
-                 id: Math.random().toString(36).substring(2, 11),
-                 quantity: qty.toString(),
-                 memory,
-                 location
-               };
+          currentTotalQty = (qty !== null && qty !== undefined && qty !== '') ? String(qty).trim() : '';
 
-               if (itemMap.has(itemCode)) {
-                 itemMap.get(itemCode)!.occurrences.push(occ);
-               } else {
-                 itemMap.set(itemCode, {
-                   ...catItem,
-                   item: itemCode,
-                   occurrences: [occ],
-                   ...(isCustom && customData && {
-                     customCode: customData.code,
-                     customTitle: customData.title,
-                     customDescription: customData.title,
-                     customUnit: customData.unit,
-                     customPrice: customData.price
-                   })
-                 });
-               }
+          const lookupCode = isCustom ? '260001' : currentItemCode;
+          const catItem = catalog.find(c => c.item === lookupCode);
+
+          if (catItem && (currentTotalQty || occQty || occMemory || occLocation)) {
+            let customData = null;
+            if (isCustom) {
+              const customTitle = row.getCell(2).value;
+              let titleStr = '';
+              if (customTitle && typeof customTitle === 'object' && 'richText' in customTitle) {
+                titleStr = (customTitle as any).richText.map((rt: any) => rt.text).join('');
+              } else if (customTitle) {
+                titleStr = customTitle.toString();
+              }
+              const customUnit = row.getCell(3).value?.toString() || '';
+              const customPrice = parseFloat(row.getCell(5).value?.toString() || '0');
+              customData = { code: currentItemCode, title: titleStr, unit: customUnit, price: customPrice };
+            }
+
+            const occ = {
+              id: Math.random().toString(36).substring(2, 11),
+              quantity: occQty || currentTotalQty || '1',
+              memory: occMemory,
+              location: occLocation
+            };
+
+            if (itemMap.has(currentItemCode)) {
+              itemMap.get(currentItemCode)!.occurrences.push(occ);
+            } else {
+              itemMap.set(currentItemCode, {
+                ...catItem,
+                item: currentItemCode,
+                occurrences: [occ],
+                ...(isCustom && customData && {
+                  customCode: customData.code,
+                  customTitle: customData.title,
+                  customDescription: customData.title,
+                  customUnit: customData.unit,
+                  customPrice: customData.price
+                })
+              });
             }
           }
+        } else if (currentItemCode && (occMemory || occQty || occLocation)) {
+          if (itemMap.has(currentItemCode)) {
+            const occ = {
+              id: Math.random().toString(36).substring(2, 11),
+              quantity: occQty || '1',
+              memory: occMemory,
+              location: occLocation
+            };
+            itemMap.get(currentItemCode)!.occurrences.push(occ);
+          }
+        } else if (colA && !isItemCode && !isCustom) {
+          currentItemCode = null;
         }
       });
       
@@ -750,50 +779,94 @@ export function Editor() {
     try {
       setIsExporting(true);
 
+      const is2026 = priceBase === '2026';
       const templatePath = getTemplatePath(priceBase);
       const response = await fetch(templatePath);
       const arrayBuffer = await response.arrayBuffer();
 
-      const wb = new ExcelJS.Workbook();
-      await wb.xlsx.load(arrayBuffer);
+      const srcWb = new ExcelJS.Workbook();
+      await srcWb.xlsx.load(arrayBuffer);
       
-      const worksheet = wb.getWorksheet("Plan1");
-      if (!worksheet) {
+      const srcWs = srcWb.getWorksheet("Plan1");
+      if (!srcWs) {
         throw new Error("Aba 'Plan1' não encontrada no template.");
       }
 
-      worksheet.getCell('A2').value = `ESCOLA ESTADUAL: ${workbook.escola || ''}`;
-      worksheet.getCell('C2').value = `COD ESCOLA: ${workbook.cod_escola || ''}`;
-      worksheet.getCell('G2').value = workbook.sre;
-      worksheet.getCell('A3').value = `MUNICÍPIO: ${workbook.municipio || ''}`;
-      worksheet.getCell('D3').value = workbook.iss ? parseFloat(workbook.iss) / 100 : 0.05;
-      worksheet.getCell('F3').value = workbook.servicos;
+      // 1. Fill Header
+      srcWs.getCell('A2').value = `ESCOLA ESTADUAL: ${workbook.escola || ''}`;
+      srcWs.getCell('C2').value = `COD ESCOLA: ${workbook.cod_escola || ''}`;
+      srcWs.getCell('G2').value = workbook.sre || '';
+      srcWs.getCell('A3').value = `MUNICÍPIO: ${workbook.municipio || ''}`;
+      srcWs.getCell('D3').value = workbook.iss ? parseFloat(workbook.iss) / 100 : 0.05;
+      srcWs.getCell('F3').value = workbook.servicos || '';
 
-      worksheet.getCell('A2034').value = `Técnico responsável pela elaboração da planilha: ${workbook.engenheiro ? workbook.engenheiro.toUpperCase() : ''}`;
-      worksheet.getCell('E2034').value = `CREA: ${workbook.crea ? workbook.crea : ''}`;
-      
+      // Dates & Revision
       const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
       const d = workbook.data_elaboracao ? new Date(`${workbook.data_elaboracao}T00:00:00`) : new Date();
-      
       const monthStr = monthNames[d.getMonth()];
       const yearStr = String(d.getFullYear()).slice(-2);
-      
-      const cell = worksheet.getCell('I2033');
-      cell.value = `REV ${String(workbook.rev || '1').padStart(2, '0')}\n${monthStr}/${yearStr}`;
-      cell.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
-      
-      if (workbook.data_elaboracao) {
-        worksheet.getCell('I2034').value = d.toLocaleDateString('pt-BR');
-      } else {
-        worksheet.getCell('I2034').value = '';
+      const formattedDate = workbook.data_elaboracao ? d.toLocaleDateString('pt-BR') : '';
+
+      // Locate key footer / summary rows dynamically from template
+      let rowTech = 0;
+      let rowRev = 0;
+      let rowTotalCusto = 0;
+      let rowBdiProj = 0;
+      let rowBdiObra = 0;
+      let rowTotalGeral = 0;
+
+      srcWs.eachRow((row, r) => {
+        const colA = String(row.getCell(1).value || '').toUpperCase();
+        const colB = String(row.getCell(2).value || '').toUpperCase();
+        const colC = String(row.getCell(3).value || '').toUpperCase();
+        const colD = String(row.getCell(4).value || '').toUpperCase();
+        const colH = String(row.getCell(8).value || '').toUpperCase();
+
+        if (colA.includes('TÉCNICO RESPONSÁVEL') || colA.includes('NOME DO TÉCNICO')) rowTech = r;
+        if (colA.includes('QUANDO DA CELEBRAÇÃO') || colH.includes('REV 0') || colH.includes('REV 1')) rowRev = r;
+        if ((colB + ' ' + colC).includes('TOTAL CUSTO =')) rowTotalCusto = r;
+        if (colD.includes('BDI PROJETO')) rowBdiProj = r;
+        if (colD.includes('BDI OBRA')) rowBdiObra = r;
+        if (colC.includes('TOTAL GERAL =')) rowTotalGeral = r;
+      });
+
+      // Fill Technical responsibility fields
+      if (rowTech > 0) {
+        if (is2026) {
+          srcWs.getCell(`A${rowTech}`).value = `Nome do técnico responsável pela elaboração da planilha: ${workbook.engenheiro ? workbook.engenheiro.toUpperCase() : ''}`;
+          srcWs.getCell(`E${rowTech}`).value = `CREA/CAU/CFT: ${workbook.crea || ''}`;
+          srcWs.getCell(`H${rowTech}`).value = `Data da elaboração:`;
+          srcWs.getCell(`I${rowTech}`).value = formattedDate;
+        } else {
+          srcWs.getCell(`A${rowTech}`).value = `Técnico responsável pela elaboração da planilha: ${workbook.engenheiro ? workbook.engenheiro.toUpperCase() : ''}`;
+          srcWs.getCell(`E${rowTech}`).value = `CREA: ${workbook.crea || ''}`;
+          srcWs.getCell(`H${rowTech}`).value = `Data da elaboração:`;
+          srcWs.getCell(`I${rowTech}`).value = formattedDate;
+        }
       }
 
-      selectedItems.forEach(item => {
-        const totalQty = getItemTotalQuantity(item);
-        const validRows: number[] = [];
+      // Fill Revision block
+      if (rowRev > 0) {
+        if (is2026) {
+          srcWs.getCell(`I${rowRev}`).value = `REV ${String(workbook.rev || '0').padStart(2, '0')}  ${monthStr}/${yearStr}`;
+        } else {
+          const revCell = srcWs.getCell(`I${rowRev}`);
+          revCell.value = `REV ${String(workbook.rev || '1').padStart(2, '0')}\n${monthStr}/${yearStr}`;
+          revCell.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
+        }
+      }
 
-        if (item.item.startsWith('2600') && item.rows.length > 0) {
-          const mainRow = worksheet.getRow(item.rows[0]);
+      // 2. Fill Item Occurrences, Quantities, and Custom Items
+      selectedItems.forEach(item => {
+        const isCustom = item.item.startsWith('2600');
+        const lookupCode = isCustom ? '260001' : item.item;
+        const catItem = catalog.find(c => c.item === lookupCode);
+        const targetRows = catItem ? catItem.rows : item.rows;
+
+        const totalQty = getItemTotalQuantity(item);
+
+        if (isCustom && targetRows.length > 0) {
+          const mainRow = srcWs.getRow(targetRows[0]);
           if (item.customCode) mainRow.getCell(1).value = item.customCode;
           
           let richText = [];
@@ -815,259 +888,289 @@ export function Editor() {
         }
 
         item.occurrences?.forEach((occ, idx) => {
-          if (idx < item.rows.length) {
-            const row = worksheet.getRow(item.rows[idx]);
+          if (idx < targetRows.length) {
+            const row = srcWs.getRow(targetRows[idx]);
             const occQtd = Number(evaluateMath(occ.quantity)) || 0;
             if (occ.memory) {
-              // Normalize ",3" → "0,3" for display in the spreadsheet
               const normalizedMemory = occ.memory.replace(/(^|[^0-9]),(\d)/g, '$10,$2');
               row.getCell(7).value = normalizedMemory;
             }
             if (occQtd > 0) {
               row.getCell(8).value = occQtd;
-              validRows.push(item.rows[idx]);
             }
             if (occ.location) row.getCell(9).value = occ.location;
             row.commit();
           }
         });
 
-        if (totalQty > 0) {
-            worksheet.getRow(item.rows[0]).getCell(4).value = totalQty;
+        if (totalQty > 0 && targetRows.length > 0) {
+          srcWs.getRow(targetRows[0]).getCell(4).value = totalQty;
         }
       });
 
-      const selectedItemCodes = new Set(selectedItems.map(i => i.item));
-      const activeCategories = new Set<string>();
+      // 3. Determine Whitelist of Rows to Keep
+      const rowsToKeep = new Set<number>();
+      for (let r = 1; r <= 5; r++) rowsToKeep.add(r);
+      for (let r = rowTotalCusto; r <= srcWs.rowCount; r++) rowsToKeep.add(r);
+
+      const activeCategoryCodes = new Set<string>();
+      const categoryItemRowsMap = new Map<string, number[]>();
 
       selectedItems.forEach(item => {
+        const isCustom = item.item.startsWith('2600');
+        const lookupCode = isCustom ? '260001' : item.item;
+        const catItem = catalog.find(c => c.item === lookupCode);
+        const targetRows = catItem ? catItem.rows : item.rows;
+
+        targetRows.forEach(r => rowsToKeep.add(r));
         catalog.forEach(cat => {
           if (cat.isCategory) {
             const prefix = cat.item.replace(/(00)+$/, '');
             if (item.item.startsWith(prefix)) {
-              activeCategories.add(cat.item);
+              activeCategoryCodes.add(cat.item);
+              cat.rows.forEach(r => rowsToKeep.add(r));
+              if (cat.item.endsWith('0000')) {
+                if (!categoryItemRowsMap.has(cat.item)) categoryItemRowsMap.set(cat.item, []);
+                targetRows.forEach(r => categoryItemRowsMap.get(cat.item)!.push(r));
+              }
             }
           }
         });
       });
 
-      const rowsToDelete = new Set<number>();
-      const activeSubtotalRows = new Set<number>();
+      // Match category subtotal rows
+      const categorySubtotalRowMap = new Map<string, number>();
+      let currentCatCode = '';
+      for (let r = 6; r < rowTotalCusto; r++) {
+        const colA = String(srcWs.getRow(r).getCell(1).value || '').trim();
+        if (colA && /^\d{2}0000$/.test(colA)) currentCatCode = colA;
+        const colC = String(srcWs.getRow(r).getCell(3).value || '').toUpperCase();
+        if (colC.includes('SUB-TOT') || colC.includes('SUB-TOTAL')) {
+          if (activeCategoryCodes.has(currentCatCode)) {
+            rowsToKeep.add(r);
+            categorySubtotalRowMap.set(currentCatCode, r);
+          }
+        }
+      }
 
-      catalog.forEach(catItem => {
-        const isSelected = selectedItemCodes.has(catItem.item);
-        const isCategory = catItem.isCategory;
-        const isActiveCategory = activeCategories.has(catItem.item);
+      const sortedKeptRows = Array.from(rowsToKeep).sort((a, b) => a - b);
+      const rowOldToNew = new Map<number, number>();
+      sortedKeptRows.forEach((oldR, idx) => {
+        rowOldToNew.set(oldR, idx + 1);
+      });
 
-        if ((!isCategory && !isSelected) || (isCategory && !isActiveCategory)) {
-          let lastRowIdx = 0;
-          catItem.rows.forEach(r => {
-            const row = worksheet.getRow(r);
-            if (row.getCell(3).text && row.getCell(3).text.includes('SUB-TOT')) return;
-            rowsToDelete.add(r);
-            if (!isCategory) {
-              row.getCell(4).value = null;
-            }
-            lastRowIdx = r;
+      // 4. Create Clean Destination Workbook
+      const destWb = new ExcelJS.Workbook();
+      const destWs = destWb.addWorksheet("Plan1", {
+        views: srcWs.views,
+        properties: srcWs.properties,
+        pageSetup: srcWs.pageSetup
+      });
+
+      // Copy column widths and properties, ensuring Column I is wide enough for single line date
+      for (let c = 1; c <= 15; c++) {
+        const col = srcWs.getColumn(c);
+        if (col && col.width) {
+          destWs.getColumn(c).width = c === 9 ? Math.max(col.width, 16) : col.width;
+        }
+      }
+
+      // Copy images / media from template (e.g. SEEMG / Minas Gerais coat of arms in A1)
+      const srcMedia = (srcWb as any).media;
+      const wsImages = srcWs.getImages ? srcWs.getImages() : [];
+      if (srcMedia && srcMedia.length > 0 && wsImages.length > 0) {
+        const mediaIdMap = new Map<number, number>();
+        srcMedia.forEach((m: any, oldId: number) => {
+          const newId = destWb.addImage({
+            buffer: m.buffer,
+            extension: m.extension,
           });
+          mediaIdMap.set(oldId, newId);
+        });
 
-          if (!isCategory && lastRowIdx > 0) {
-            const nextRow = worksheet.getRow(lastRowIdx + 1);
-            const col1 = nextRow.getCell(1).text;
-            const col2 = nextRow.getCell(2).text;
-            const col3 = nextRow.getCell(3).text;
-            
-            if (!col1 && !col2 && (!col3 || !col3.includes('SUB-TOT'))) {
-               rowsToDelete.add(lastRowIdx + 1);
+        const placed = new Set<string>();
+        wsImages.forEach((img: any) => {
+          const key = `${img.imageId}_${img.range?.tl?.col}_${img.range?.tl?.row}`;
+          if (placed.has(key)) return;
+          placed.add(key);
+
+          const newImageId = mediaIdMap.get(img.imageId) ?? 0;
+          if (img.range) {
+            if (img.range.ext) {
+              destWs.addImage(newImageId, {
+                tl: { col: img.range.tl?.col ?? 0, row: img.range.tl?.row ?? 0 },
+                ext: { width: img.range.ext.width || 81, height: img.range.ext.height || 66 },
+                editAs: img.range.editAs || 'oneCell'
+              } as any);
+            } else if (img.range.br) {
+              destWs.addImage(newImageId, {
+                tl: { col: img.range.tl?.col ?? 0, row: img.range.tl?.row ?? 0 },
+                br: { col: img.range.br?.col ?? 1, row: img.range.br?.row ?? 1 },
+                editAs: img.range.editAs || 'oneCell'
+              } as any);
+            } else {
+              destWs.addImage(newImageId, {
+                tl: { col: 0, row: 0 },
+                ext: { width: 81, height: 66 },
+                editAs: 'oneCell'
+              } as any);
+            }
+          }
+        });
+      }
+
+      // Formula adjuster helper
+      const adjustFormula = (formula: string) => {
+        return formula.replace(/(\$?[A-Z]+\$?\d+):(\$?[A-Z]+\$?\d+)|(\$?[A-Z]+\$?\d+)/g, (_, rangeStart, rangeEnd, singleCell) => {
+          if (singleCell) {
+            const parts = singleCell.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+            if (!parts) return singleCell;
+            const [, col, dol, rStr] = parts;
+            const r = parseInt(rStr, 10);
+            if (!rowOldToNew.has(r)) return '0';
+            return `${col}${dol}${rowOldToNew.get(r)}`;
+          } else {
+            const parts1 = rangeStart.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+            const r1 = parseInt(parts1[3], 10);
+            const parts2 = rangeEnd.match(/(\$?[A-Z]+)(\$?)(\d+)/);
+            const r2 = parseInt(parts2[3], 10);
+            const newR1 = rowOldToNew.get(r1) || 1;
+            const newR2 = rowOldToNew.get(r2) || newR1;
+            return `${parts1[1]}${parts1[2]}${newR1}:${parts2[1]}${parts2[2]}${newR2}`;
+          }
+        });
+      };
+
+      // Save all cell styles before merging to preserve borders perfectly
+      const savedStyles = new Map<string, any>();
+      sortedKeptRows.forEach((oldR, idx) => {
+        const oldRow = srcWs.getRow(oldR);
+        for (let c = 1; c <= 12; c++) {
+          const oldCell = oldRow.getCell(c);
+          if (oldCell.style) {
+            savedStyles.set(`${idx + 1},${c}`, JSON.parse(JSON.stringify(oldCell.style)));
+          }
+        }
+      });
+
+      // Copy kept rows with cell values and updated formulas
+      sortedKeptRows.forEach((oldR, idx) => {
+        const newR = idx + 1;
+        const oldRow = srcWs.getRow(oldR);
+        const newRow = destWs.getRow(newR);
+
+        if (oldRow.height) newRow.height = oldRow.height;
+
+        for (let c = 1; c <= 12; c++) {
+          const oldCell = oldRow.getCell(c);
+          const newCell = newRow.getCell(c);
+
+          if (oldCell.formula && typeof oldCell.formula === 'string') {
+            const currentVal = oldCell.value as any;
+            newCell.value = {
+              ...currentVal,
+              formula: adjustFormula(oldCell.formula)
+            };
+          } else if (oldCell.value !== null && oldCell.value !== undefined) {
+            newCell.value = oldCell.value;
+          }
+        }
+        newRow.commit();
+      });
+
+      // Re-apply cell merges accurately
+      const originalMerges = srcWs.model.merges ? [...srcWs.model.merges] : [];
+      originalMerges.forEach(rangeStr => {
+        const parts = rangeStr.split(':');
+        if (parts.length === 2) {
+          const startMatch = parts[0].match(/([A-Z]+)(\d+)/);
+          const endMatch = parts[1].match(/([A-Z]+)(\d+)/);
+          if (startMatch && endMatch) {
+            const c1 = startMatch[1];
+            const r1 = parseInt(startMatch[2], 10);
+            const c2 = endMatch[1];
+            const r2 = parseInt(endMatch[2], 10);
+
+            if (rowOldToNew.has(r1) && rowOldToNew.has(r2)) {
+              const newR1 = rowOldToNew.get(r1)!;
+              const newR2 = rowOldToNew.get(r2)!;
+              if (newR1 <= newR2 && !(newR1 === newR2 && c1 === c2)) {
+                try {
+                  destWs.mergeCells(`${c1}${newR1}:${c2}${newR2}`);
+                } catch (e) {}
+              }
             }
           }
         }
       });
 
-      // Fix SUB-TOT visibility and formulas
-      let currentCategoryStart = 6;
-      for (let r = 6; r < 3000; r++) {
-         const row = worksheet.getRow(r);
-         const col1 = row.getCell(1).text;
-         if (col1 && col1.endsWith('0000')) {
-             currentCategoryStart = r;
-         }
-         
-         const col3 = row.getCell(3).text;
-         if (col3 && col3.includes('SUB-TOT')) {
-             const catCode = worksheet.getRow(currentCategoryStart).getCell(1).text;
-             if (!activeCategories.has(catCode)) {
-                 rowsToDelete.add(r);
-             } else {
-                 activeSubtotalRows.add(r);
-             }
-         }
-      }
-
-      const deletedRowsAsc = Array.from(rowsToDelete).sort((a, b) => a - b);
-      
-      const newSubtotalRows = Array.from(activeSubtotalRows).map(r => {
-         let shift = 0;
-         for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
-         return r - shift;
-      });
-
-      // Find Total Custo row
-      let rowTotalCusto = 0;
-      worksheet.eachRow((row, r) => {
-         const colB = row.getCell(2).text || '';
-         const colC = row.getCell(3).text || '';
-         const text = (colB + ' ' + colC).toUpperCase();
-         if (text.includes('TOTAL CUSTO =')) rowTotalCusto = r;
-      });
-
-      const adjustFormula = (formula: string) => {
-        return formula.replace(/(\$?[A-Z]+\$?\d+):(\$?[A-Z]+\$?\d+)|(\$?[A-Z]+\$?\d+)/g, (_, rangeStart, rangeEnd, singleCell) => {
-            if (singleCell) {
-                const parts = singleCell.match(/(\$?[A-Z]+)(\$?)(\d+)/);
-                if(!parts) return singleCell;
-                const [, col, dol, rStr] = parts;
-                const r = parseInt(rStr, 10);
-                // When a referenced cell is deleted (like the Projeto subtotal), replace it with 0
-                // This keeps BDI formulas mathematically correct (e.g., =(Total-0)*Perc )
-                if (deletedRowsAsc.includes(r)) return '0';
-                let shift = 0;
-                for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
-                return `${col}${dol}${r - shift}`;
-            } else {
-                const parts1 = rangeStart.match(/(\$?[A-Z]+)(\$?)(\d+)/);
-                const r1 = parseInt(parts1[3], 10);
-                let shift1 = 0;
-                for (const del of deletedRowsAsc) { if (del < r1) shift1++; else break; }
-                
-                const parts2 = rangeEnd.match(/(\$?[A-Z]+)(\$?)(\d+)/);
-                const r2 = parseInt(parts2[3], 10);
-                let shift2 = 0;
-                for (const del of deletedRowsAsc) { if (del <= r2) shift2++; else break; }
-                
-                return `${parts1[1]}${parts1[2]}${r1 - shift1}:${parts2[1]}${parts2[2]}${r2 - shift2}`;
-            }
-        });
-      };
-
-      worksheet.eachRow({ includeEmpty: true }, (row) => {
-        row.eachCell({ includeEmpty: true }, (cell) => {
-           if (cell.formula && typeof cell.formula === 'string') {
-              const currentVal = cell.value as any;
-              cell.value = {
-                 ...currentVal,
-                 formula: adjustFormula(cell.formula)
-              };
-           }
-        });
-      });
-
-      // PERFECT BYPASS FOR EXCELJS MERGE AND STYLE BUGS
-      // exceljs corrupts merges on spliceRows, and its mergeCells() destroys cell borders.
-      // 1. Save all cell styles
-      // 2. Unmerge everything safely
-      // 3. Splice rows
-      // 4. Re-merge shifted coordinates
-      // 5. Restore all styles to undo border destruction
-      const originalMerges = (worksheet as any).model.merges ? [...(worksheet as any).model.merges] : [];
-      
-      const savedStyles = new Map<string, any>();
-      worksheet.eachRow({ includeEmpty: true }, (row, r) => {
-          row.eachCell({ includeEmpty: true }, (cell, c) => {
-              if (cell.style) {
-                  savedStyles.set(`${r},${c}`, JSON.parse(JSON.stringify(cell.style)));
-              }
-          });
-      });
-
-      originalMerges.forEach(rangeStr => {
-          try { worksheet.unMergeCells(rangeStr); } catch (e) {}
-      });
-
-      // Delete the rows from bottom to top in contiguous blocks
-      const blocks: {start: number, count: number}[] = [];
-      if (deletedRowsAsc.length > 0) {
-          let currentBlock = {start: deletedRowsAsc[0], count: 1};
-          for (let i = 1; i < deletedRowsAsc.length; i++) {
-             if (deletedRowsAsc[i] === currentBlock.start + currentBlock.count) {
-                 currentBlock.count++;
-             } else {
-                 blocks.push(currentBlock);
-                 currentBlock = {start: deletedRowsAsc[i], count: 1};
-             }
-          }
-          blocks.push(currentBlock);
-      }
-      
-      blocks.reverse().forEach(b => {
-          worksheet.spliceRows(b.start, b.count);
-      });
-      
-      // Calculate and re-apply merges perfectly
-      const shiftRow = (r: number) => {
-          let shift = 0;
-          for (const del of deletedRowsAsc) { if (del < r) shift++; else break; }
-          return r - shift;
-      };
-      const shiftRowEnd = (r: number) => {
-          let shift = 0;
-          for (const del of deletedRowsAsc) { if (del <= r) shift++; else break; }
-          return r - shift;
-      };
-
-      originalMerges.forEach(rangeStr => {
-          const parts = rangeStr.split(':');
-          if (parts.length === 2) {
-              const startMatch = parts[0].match(/([A-Z]+)(\d+)/);
-              const endMatch = parts[1].match(/([A-Z]+)(\d+)/);
-              if (startMatch && endMatch) {
-                  const r1 = parseInt(startMatch[2], 10);
-                  const r2 = parseInt(endMatch[2], 10);
-                  
-                  let allDeleted = true;
-                  for (let r = r1; r <= r2; r++) {
-                      if (!deletedRowsAsc.includes(r)) { allDeleted = false; break; }
-                  }
-                  if (allDeleted) return;
-
-                  const newR1 = shiftRow(r1);
-                  const newR2 = shiftRowEnd(r2);
-                  
-                  // Avoid invalid 1x1 merges
-                  if (newR1 <= newR2 && !(newR1 === newR2 && startMatch[1] === endMatch[1])) {
-                      try { worksheet.mergeCells(`${startMatch[1]}${newR1}:${endMatch[1]}${newR2}`); } catch(e) {}
-                  }
-              }
-          }
-      });
-      
-      // RESTORE ALL CELL STYLES! This completely undoes the destructive styling of exceljs mergeCells
+      // Restore cell styles after merges to prevent border and outline corruption
       savedStyles.forEach((style, key) => {
-          const [oldRStr, oldCStr] = key.split(',');
-          const oldR = parseInt(oldRStr, 10);
-          const c = parseInt(oldCStr, 10);
-          
-          if (deletedRowsAsc.includes(oldR)) return;
-          
-          const newR = shiftRow(oldR);
-          const cell = worksheet.getRow(newR).getCell(c);
-          cell.style = style;
+        const [rStr, cStr] = key.split(',');
+        const r = parseInt(rStr, 10);
+        const c = parseInt(cStr, 10);
+        const cell = destWs.getRow(r).getCell(c);
+        cell.style = style;
       });
-      
-      // Rewrite Grand Total formula
-      if (rowTotalCusto > 0) {
-         let shift = 0;
-         for (const del of deletedRowsAsc) { if (del < rowTotalCusto) shift++; else break; }
-         const newRowTotalCusto = rowTotalCusto - shift;
-         
-         const newGrandTotalFormula = newSubtotalRows.length > 0 
-              ? newSubtotalRows.map(r => `F${r}`).join('+')
-              : '0';
-              
-         worksheet.getRow(newRowTotalCusto).getCell(6).value = { formula: newGrandTotalFormula };
+
+      // Ensure Date cell in Column I doesn't wrap and aligns cleanly
+      const newRowTech = rowOldToNew.get(rowTech);
+      if (newRowTech) {
+        const dateCell = destWs.getRow(newRowTech).getCell(9);
+        dateCell.alignment = { wrapText: false, horizontal: 'center', vertical: 'middle' };
       }
 
-      const buffer = await wb.xlsx.writeBuffer();
+      // Reconstruct Category Subtotal formulas to include all active items
+      categorySubtotalRowMap.forEach((oldSubtotalR, catCode) => {
+        const newSubtotalR = rowOldToNew.get(oldSubtotalR);
+        const itemRows = categoryItemRowsMap.get(catCode) || [];
+        if (itemRows.length > 0 && newSubtotalR) {
+          const newFirstItemR = Math.min(...itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean));
+          const newLastItemR = Math.max(...itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean));
+          destWs.getRow(newSubtotalR).getCell(6).value = { formula: `SUM(F${newFirstItemR}:F${newLastItemR})` };
+        }
+      });
+
+      // Grand Total & Summary formulas
+      const newRowTotalCusto = rowOldToNew.get(rowTotalCusto);
+      const newRowTotalGeral = rowOldToNew.get(rowTotalGeral);
+      const newSubtotalRows = Array.from(categorySubtotalRowMap.values()).map(r => rowOldToNew.get(r)).filter(Boolean);
+
+      if (newRowTotalCusto) {
+        const newTotalCustoFormula = newSubtotalRows.length > 0
+          ? newSubtotalRows.map(r => `F${r}`).join('+')
+          : '0';
+        destWs.getRow(newRowTotalCusto).getCell(6).value = { formula: newTotalCustoFormula };
+      }
+
+      // BDI formulas
+      const hasCat24 = activeCategoryCodes.has('240000');
+      const cat24SubtotalRow = categorySubtotalRowMap.get('240000');
+      const newCat24SubtotalR = cat24SubtotalRow ? rowOldToNew.get(cat24SubtotalRow) : null;
+
+      const newRowBdiProj = rowOldToNew.get(rowBdiProj);
+      const newRowBdiObra = rowOldToNew.get(rowBdiObra);
+
+      if (newRowBdiProj) {
+        const projRef = hasCat24 && newCat24SubtotalR ? `F${newCat24SubtotalR}` : '0';
+        destWs.getRow(newRowBdiProj).getCell(6).value = { formula: `${projRef}*C${newRowBdiProj}` };
+      }
+
+      if (newRowBdiObra && newRowTotalCusto) {
+        const projRef = hasCat24 && newCat24SubtotalR ? `F${newCat24SubtotalR}` : '0';
+        destWs.getRow(newRowBdiObra).getCell(6).value = { formula: `(F${newRowTotalCusto}-${projRef})*C${newRowBdiObra}` };
+      }
+
+      if (newRowTotalGeral && newRowTotalCusto && newRowBdiObra) {
+        destWs.getRow(newRowTotalGeral).getCell(6).value = { formula: `SUM(F${newRowTotalCusto}:F${newRowBdiObra})` };
+      }
+
+      // Set Header ANALISADO cell (F4) dynamically pointing to shifted TOTAL GERAL row
+      if (newRowTotalGeral) {
+        destWs.getCell('F4').value = { formula: `F${newRowTotalGeral}` };
+      }
+
+      const buffer = await destWb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
       const escolaName = (workbook.escola || '').trim().toUpperCase();
@@ -1392,39 +1495,73 @@ export function Editor() {
 
       {/* MODAL DE CONFIRMAÇÃO DE SAÍDA */}
       {showCloseConfirm && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6">
-              <div className="flex items-center gap-3 text-amber-600 mb-4">
-                <AlertTriangle size={24} />
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Alterações não salvas</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+            onClick={() => setShowCloseConfirm(false)}
+          />
+          <div 
+            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowCloseConfirm(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Fechar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-start gap-4 mb-4">
+              <div className="p-3 rounded-xl shrink-0 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="w-6 h-6" />
               </div>
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                Você tem alterações que não foram salvas na nuvem. Deseja salvar antes de sair?
+              <div className="pt-0.5 pr-6">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Alterações não salvas
+                </h3>
+                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate max-w-[280px]">
+                  {workbook?.escola || 'Orçamento'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6 space-y-2">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Você possui modificações que ainda não foram salvas na nuvem. O que deseja fazer antes de sair?
               </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowCloseConfirm(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 rounded-lg font-medium transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="px-4 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg font-medium transition-colors"
-                >
-                  Sair sem Salvar
-                </button>
-                <button
-                  onClick={async () => {
-                    await saveToCloud();
-                    navigate('/dashboard');
-                  }}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors shadow-sm"
-                >
-                  Salvar e Sair
-                </button>
-              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                Ao clicar em "Sair sem Salvar", as alterações recentes desta sessão serão descartadas.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCloseConfirm(false)}
+                className="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl transition-colors"
+              >
+                Sair sem Salvar
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await saveToCloud();
+                  navigate('/dashboard');
+                }}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-lg shadow-emerald-600/25"
+              >
+                Salvar e Sair
+              </button>
             </div>
           </div>
         </div>

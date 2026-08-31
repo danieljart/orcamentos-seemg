@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check, Sparkles } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
@@ -15,6 +15,7 @@ import type { PriceBase } from '../lib/catalog';
 import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 const evaluateMath = (expr: any): string => {
   if (!expr && expr !== 0) return '';
@@ -50,6 +51,10 @@ export function Dashboard() {
   const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
   const [editingVersionName, setEditingVersionName] = useState<string>('');
   const [versionToDelete, setVersionToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [workbookToDelete, setWorkbookToDelete] = useState<Workbook | null>(null);
+  const [isDeletingWorkbook, setIsDeletingWorkbook] = useState(false);
+  const [workbookToClone, setWorkbookToClone] = useState<Workbook | null>(null);
+  const [isCloningWorkbook, setIsCloningWorkbook] = useState(false);
   const [catalogMap, setCatalogMap] = useState<Map<string, number>>(new Map());
   const [catalogDescMap, setCatalogDescMap] = useState<Map<string, string>>(new Map());
 
@@ -90,7 +95,7 @@ export function Dashboard() {
 
   const checkAnnouncementPrompt = () => {
     try {
-      const seen = localStorage.getItem('seen_base_2026_announcement');
+      const seen = localStorage.getItem('seen_updates_v2026');
       if (seen !== 'true') {
         setShowAnnouncement(true);
       }
@@ -476,24 +481,55 @@ export function Dashboard() {
       saveIssForMunicipio(municipio, iss);
 
       const importedItems: any[] = [];
+      let currentItemCode: string | null = null;
+      let currentTotalQty = '';
+
       ws.eachRow((row) => {
-        const itemCodeCell = row.getCell(1).value;
-        if (itemCodeCell) {
-          const itemCode = itemCodeCell.toString().trim();
+        const colB = String(row.getCell(2).value || '').toUpperCase();
+        const colC = String(row.getCell(3).value || '').toUpperCase();
+        if ((colB + ' ' + colC).includes('TOTAL CUSTO =') || (colB + ' ' + colC).includes('TOTAL GERAL =') || (colB + ' ' + colC).includes('VALIDAÇÃO')) {
+          currentItemCode = null;
+          return;
+        }
+
+        const colACell = row.getCell(1).value;
+        const colA = colACell ? colACell.toString().trim() : '';
+        const isItemCode = /^\d{6}$/.test(colA) && !colA.endsWith('00');
+        const isCustom = colA.startsWith('2600');
+
+        let occMemory = row.getCell(7).value?.toString().trim() || '';
+        let occQtyVal = row.getCell(8).value;
+        if (occQtyVal && typeof occQtyVal === 'object' && 'result' in occQtyVal) {
+          occQtyVal = (occQtyVal as any).result;
+        }
+        let occQty = (occQtyVal !== null && occQtyVal !== undefined && occQtyVal !== '') ? String(occQtyVal).trim() : '';
+        const occLocation = row.getCell(9).value?.toString().trim() || '';
+
+        if (isItemCode || isCustom) {
+          currentItemCode = colA;
           let qty = row.getCell(4).value;
           if (qty && typeof qty === 'object' && 'result' in qty) {
-             qty = (qty as any).result;
+            qty = (qty as any).result;
           }
-          if (qty !== null && qty !== undefined && qty !== '') {
-            const memory = row.getCell(7).value?.toString() || '';
-            const location = row.getCell(8).value?.toString() || '';
+          currentTotalQty = (qty !== null && qty !== undefined && qty !== '') ? String(qty).trim() : '';
+
+          if (currentTotalQty || occQty || occMemory || occLocation) {
             importedItems.push({
-              item_code: itemCode,
-              quantity: qty.toString(),
-              memory,
-              location
+              item_code: currentItemCode,
+              quantity: occQty || currentTotalQty || '1',
+              memory: occMemory,
+              location: occLocation
             });
           }
+        } else if (currentItemCode && (occMemory || occQty || occLocation)) {
+          importedItems.push({
+            item_code: currentItemCode,
+            quantity: occQty || '1',
+            memory: occMemory,
+            location: occLocation
+          });
+        } else if (colA && !isItemCode && !isCustom) {
+          currentItemCode = null;
         }
       });
 
@@ -512,53 +548,69 @@ export function Dashboard() {
     }
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Tem certeza que deseja excluir este orçamento?")) {
-      await db.workbooks.delete(id);
+  const handleDelete = (wb: Workbook, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setWorkbookToDelete(wb);
+  };
+
+  const handleConfirmDeleteWorkbook = async () => {
+    if (!workbookToDelete) return;
+    try {
+      setIsDeletingWorkbook(true);
+      await db.workbooks.delete(workbookToDelete.id);
+      showToast("Orçamento excluído com sucesso!", "success");
+      setWorkbookToDelete(null);
+      if (selectedWorkbook?.id === workbookToDelete.id) {
+        setIsVersionsModalOpen(false);
+        setSelectedWorkbook(null);
+      }
       loadData();
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao excluir o orçamento.", "error");
+    } finally {
+      setIsDeletingWorkbook(false);
     }
   };
 
-  const handleClone = async (wb: Workbook, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm(`Deseja criar uma cópia do orçamento "${wb.escola}"?`)) {
-      try {
-        // Criar o novo workbook
-        const newWb = await db.workbooks.create({
-          user_id: wb.user_id,
-          escola: wb.escola + " - Cópia",
-          municipio: wb.municipio,
-          sre: wb.sre,
-          cod_escola: wb.cod_escola,
-          iss: wb.iss,
-          servicos: wb.servicos,
-          base_precos: wb.base_precos || '2025'
-        });
+  const handleClone = (wb: Workbook, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setWorkbookToClone(wb);
+  };
 
-        // Copiar os itens da última versão do workbook original
-        const originalVersions = await db.versions.list(wb.id);
-        if (originalVersions.length > 0) {
-          const latestVersion = originalVersions[0]; // array sorted by created_at DESC
-          const itemsToCopy = JSON.parse(latestVersion.items_json);
-          
-          if (itemsToCopy && itemsToCopy.length > 0) {
-            // A própria create cria uma versão V1
-            await db.versions.create(newWb.id, itemsToCopy);
-            
-            // Mas precisamos garantir que os itens também são salvos no draft atual (se a app carregar isso)
-            // No caso do nosso app, a `Editor.tsx` carrega o workbook, e se não tem state local, puxa as versões.
-            // Apenas criar a version já deve bastar para o Editor carregar.
-            // Para ser robusto, não tem draft, o draft está na versão.
-          }
+  const handleConfirmCloneWorkbook = async () => {
+    if (!workbookToClone) return;
+    try {
+      setIsCloningWorkbook(true);
+      const wb = workbookToClone;
+      const newWb = await db.workbooks.create({
+        user_id: wb.user_id,
+        escola: wb.escola + " - Cópia",
+        municipio: wb.municipio,
+        sre: wb.sre,
+        cod_escola: wb.cod_escola,
+        iss: wb.iss,
+        servicos: wb.servicos,
+        base_precos: wb.base_precos || '2026'
+      });
+
+      const originalVersions = await db.versions.list(wb.id);
+      if (originalVersions.length > 0) {
+        const latestVersion = originalVersions[0];
+        const itemsToCopy = JSON.parse(latestVersion.items_json);
+        if (itemsToCopy && itemsToCopy.length > 0) {
+          await db.versions.create(newWb.id, itemsToCopy);
         }
-        
-        showToast("Orçamento clonado com sucesso!", "success");
-        loadData();
-      } catch (error) {
-        console.error(error);
-        showToast("Erro ao clonar o orçamento.", "error");
       }
+
+      showToast("Orçamento clonado com sucesso!", "success");
+      setWorkbookToClone(null);
+      loadData();
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao clonar o orçamento.", "error");
+    } finally {
+      setIsCloningWorkbook(false);
     }
   };
 
@@ -723,7 +775,15 @@ export function Dashboard() {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowAnnouncement(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700/60 hover:bg-emerald-600/80 border border-emerald-600/50 text-emerald-100 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+                title="Ver novidades e atualizações"
+              >
+                <Sparkles size={14} className="text-amber-300 animate-pulse" />
+                <span>Novidades</span>
+              </button>
               <div className="bg-emerald-900/40 border border-emerald-700/50 rounded-xl">
                 <ThemeToggle />
               </div>
@@ -742,7 +802,14 @@ export function Dashboard() {
               <LogOut size={18} /> Sair
             </button>
           </div>
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-1">
+            <button 
+              onClick={() => setShowAnnouncement(true)}
+              className="p-2 text-amber-300 hover:text-white transition-colors cursor-pointer"
+              title="Ver novidades e atualizações"
+            >
+              <Sparkles size={20} className="animate-pulse" />
+            </button>
             <button
               onClick={() => setIsAccountSidebarOpen(true)}
               className="p-2 -mr-2 text-emerald-100 hover:text-white transition-colors"
@@ -927,7 +994,7 @@ export function Dashboard() {
                     </button>
                     <button 
                       type="button"
-                      onClick={(e) => handleDelete(wb.id, e)}
+                      onClick={(e) => handleDelete(wb, e)}
                       className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full transition-colors"
                       title="Excluir Planilha"
                     >
@@ -1093,7 +1160,7 @@ export function Dashboard() {
                 <button 
                   onClick={(e) => {
                     setIsVersionsModalOpen(false);
-                    if(selectedWorkbook) handleDelete(selectedWorkbook.id, e);
+                    if(selectedWorkbook) handleDelete(selectedWorkbook, e);
                   }} 
                   className="flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
                 >
@@ -1250,46 +1317,44 @@ export function Dashboard() {
       )}
 
       {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE VERSÃO */}
-      {versionToDelete && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-[70] p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-red-600 mb-3">
-              <div className="p-2 bg-red-100 dark:bg-red-950/50 rounded-full">
-                <Trash2 size={22} className="text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">Excluir Versão?</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">{versionToDelete.name}</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-              Tem certeza que deseja excluir esta versão permanentemente? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setVersionToDelete(null);
-                }}
-                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleConfirmDeleteVersion();
-                }}
-                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm"
-              >
-                Sim, Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!versionToDelete}
+        title="Excluir Versão?"
+        message="Tem certeza que deseja excluir esta versão permanentemente? Esta ação não pode ser desfeita."
+        itemHighlight={versionToDelete?.name}
+        variant="danger"
+        confirmText="Sim, Excluir"
+        onConfirm={handleConfirmDeleteVersion}
+        onClose={() => setVersionToDelete(null)}
+      />
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE ORÇAMENTO */}
+      <ConfirmModal
+        isOpen={!!workbookToDelete}
+        title="Excluir Orçamento?"
+        message="Tem certeza que deseja excluir este orçamento permanentemente? Todos os itens, versões e dados associados serão apagados."
+        itemHighlight={workbookToDelete?.escola}
+        description={workbookToDelete ? `Código: ${workbookToDelete.cod_escola || 'S/ COD'} • Município: ${workbookToDelete.municipio}` : undefined}
+        variant="danger"
+        confirmText="Sim, Excluir"
+        isLoading={isDeletingWorkbook}
+        onConfirm={handleConfirmDeleteWorkbook}
+        onClose={() => setWorkbookToDelete(null)}
+      />
+
+      {/* MODAL DE CONFIRMAÇÃO DE CLONAGEM DE ORÇAMENTO */}
+      <ConfirmModal
+        isOpen={!!workbookToClone}
+        title="Duplicar Orçamento?"
+        message="Deseja criar uma cópia completa deste orçamento com todas as memórias de cálculo e configurações?"
+        itemHighlight={workbookToClone?.escola}
+        description={workbookToClone ? `O novo orçamento será criado com o nome "${workbookToClone.escola} - Cópia".` : undefined}
+        variant="info"
+        confirmText="Duplicar Orçamento"
+        isLoading={isCloningWorkbook}
+        onConfirm={handleConfirmCloneWorkbook}
+        onClose={() => setWorkbookToClone(null)}
+      />
 
       {/* QUICK ESTIMATE MODAL */}
       {isQuickEstimateOpen && (
