@@ -12,6 +12,7 @@ import { loadCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel } f
 import type { PriceBase } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { PrintableSpreadsheet } from '../components/PrintableSpreadsheet';
 
 interface CatalogItem {
   item: string;
@@ -1486,7 +1487,7 @@ export function Editor() {
   const isCloudSaveDisabled = isSaving || JSON.stringify(selectedItems) === lastSavedItemsJson;
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-100 dark:bg-slate-800/50 flex flex-col">
+    <div className="h-screen overflow-hidden bg-slate-100 dark:bg-slate-800/50 flex flex-col print:h-auto print:overflow-visible print:bg-white">
       <datalist id="locations-list">
         {uniqueLocations.map(loc => (
           <option key={loc} value={loc} />
@@ -1631,7 +1632,7 @@ export function Editor() {
         </div>
       </header>
 
-      <main className="container mx-auto h-full flex flex-col gap-3 p-3 pb-20 md:pb-3 print:block print:p-0 flex-1 min-h-0 overflow-hidden">
+      <main className="container mx-auto h-full flex flex-col gap-3 p-3 pb-20 md:pb-3 print:hidden flex-1 min-h-0 overflow-hidden">
         
         {/* Dados da Obra Info (FULL WIDTH) */}
         <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/50 rounded-lg px-3 h-[52px] shadow-sm flex flex-col justify-center relative group print:hidden shrink-0">
@@ -2072,6 +2073,13 @@ export function Editor() {
           </div>
         </div>
       </main>
+ 
+      {/* ESPELHO OFICIAL PARA IMPRESSÃO EM PDF */}
+      <PrintableSpreadsheet 
+        workbook={workbook} 
+        selectedItems={selectedItems} 
+        catalog={catalog} 
+      />
 
       {/* MOBILE DOCK */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-emerald-800 p-2 flex justify-between items-center gap-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)] print:hidden pb-safe">
