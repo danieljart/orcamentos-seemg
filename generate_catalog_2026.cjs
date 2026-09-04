@@ -27,26 +27,34 @@ async function generateCatalog2026() {
     process.exit(1);
   }
 
-  const catalog = [];
-  let currentItemRows = null;
+  // 1. Identify all boundary rows (item codes and subtotals)
+  const boundaries = [];
+  for (let r = 6; r <= worksheet.rowCount; r++) {
+    const row = worksheet.getRow(r);
+    const col1 = row.getCell(1).value;
+    const col3 = row.getCell(3).value;
 
-  worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber <= 5) return; // Skip header rows
+    const itemCode = col1 ? col1.toString().trim() : '';
+    const isItem = /^\d{6}$/.test(itemCode);
+    const isSubtotal = col3 && String(col3).toUpperCase().includes('SUB-TOT');
 
-    const itemCodeCell = row.getCell(1).value;
-    if (!itemCodeCell) {
-      // This is a continuation row (extended description)
-      if (currentItemRows) {
-        currentItemRows.push(rowNumber);
-      }
-      return;
+    if (isItem || isSubtotal) {
+      boundaries.push({
+        row: r,
+        code: isItem ? itemCode : 'SUBTOTAL'
+      });
     }
+  }
 
-    const itemCode = itemCodeCell.toString().trim();
-    if (!/^\d{6}$/.test(itemCode)) return;
+  const catalog = [];
 
-    // If we had a previous item being tracked, finalize its rows
-    // (rows are finalized when we encounter the next item)
+  for (let i = 0; i < boundaries.length; i++) {
+    const curr = boundaries[i];
+    if (curr.code === 'SUBTOTAL') continue;
+
+    const rowNumber = curr.row;
+    const nextRowNumber = (i + 1 < boundaries.length) ? boundaries[i + 1].row : rowNumber + 1;
+    const row = worksheet.getRow(rowNumber);
 
     const descCell = row.getCell(2).value;
     let description = '';
@@ -73,73 +81,48 @@ async function generateCatalog2026() {
       }
     }
 
-    // Determine if this is a category
-    const isCategory = itemCode.endsWith('0000') || 
-      (itemCode.endsWith('00') && !itemCode.endsWith('0000') && unit === '');
+    const isCategory = curr.code.endsWith('0000') || 
+      (curr.code.endsWith('00') && !curr.code.endsWith('0000') && unit === '');
 
-    currentItemRows = [rowNumber];
+    let itemRows = [];
+    let extDesc = '';
 
-    catalog.push({
-      item: itemCode,
+    if (isCategory) {
+      itemRows = [rowNumber];
+    } else {
+      for (let r = rowNumber; r < nextRowNumber; r++) {
+        itemRows.push(r);
+        if (r > rowNumber) {
+          const rCell = worksheet.getRow(r).getCell(2).value;
+          if (rCell) {
+            let t = '';
+            if (typeof rCell === 'object' && rCell.richText) {
+              t = rCell.richText.map(rt => rt.text).join('');
+            } else {
+              t = rCell.toString();
+            }
+            if (t.trim()) {
+              extDesc += t.trim() + '\n';
+            }
+          }
+        }
+      }
+    }
+
+    const itemObj = {
+      item: curr.code,
       description: description.trim(),
       unit,
       price: isCategory ? 0 : price,
       isCategory,
-      rows: currentItemRows
-    });
-  });
+      rows: itemRows
+    };
 
-  // Now add extended descriptions by reading continuation rows
-  for (const item of catalog) {
-    if (!item.isCategory && item.rows.length === 1) {
-      // Look at subsequent rows for extended description
-      const startRow = item.rows[0];
-      const extraRows = [];
-      for (let r = startRow + 1; r <= worksheet.rowCount; r++) {
-        const row = worksheet.getRow(r);
-        const col1 = row.getCell(1).value;
-        if (col1) break; // Next item found
-        
-        const col2 = row.getCell(2).value;
-        if (col2) {
-          let text = '';
-          if (typeof col2 === 'object' && col2.richText) {
-            text = col2.richText.map(rt => rt.text).join('');
-          } else {
-            text = col2.toString();
-          }
-          if (text.trim()) {
-            extraRows.push(r);
-          }
-        } else {
-          // Empty row = end of extended description
-          extraRows.push(r);
-          break;
-        }
-      }
-      
-      if (extraRows.length > 0) {
-        item.rows = [item.rows[0], ...extraRows];
-        
-        // Build extended description
-        let extDesc = '';
-        for (let i = 1; i < item.rows.length; i++) {
-          const row = worksheet.getRow(item.rows[i]);
-          const descVal = row.getCell(2).value;
-          if (descVal) {
-            if (typeof descVal === 'object' && descVal.richText) {
-              extDesc += descVal.richText.map(rt => rt.text).join('') + '\n';
-            } else {
-              extDesc += descVal.toString() + '\n';
-            }
-          }
-        }
-        
-        if (extDesc.trim().length > 0) {
-          item.extendedDescription = extDesc.trim();
-        }
-      }
+    if (extDesc.trim().length > 0) {
+      itemObj.extendedDescription = extDesc.trim();
     }
+
+    catalog.push(itemObj);
   }
 
   const outputPath = path.resolve(__dirname, 'public', 'catalogo_2026.json');
@@ -150,25 +133,12 @@ async function generateCatalog2026() {
   console.log(`Generated ${outputPath}`);
   console.log(`  Items: ${itemCount}, Categories: ${catCount}, Total: ${catalog.length}`);
   
-  // Compare with 2025
-  const catalog2025Path = path.resolve(__dirname, 'public', 'catalogo.json');
-  if (fs.existsSync(catalog2025Path)) {
-    const catalog2025 = JSON.parse(fs.readFileSync(catalog2025Path, 'utf8'));
-    const items2025 = catalog2025.filter(c => !c.isCategory).length;
-    console.log(`  2025 catalog had ${items2025} items`);
-    
-    // Show some price comparisons
-    console.log('\n  Sample price comparisons (2025 -> 2026):');
-    const sampled = ['010001', '010002', '020101', '030101'];
-    for (const code of sampled) {
-      const old = catalog2025.find(c => c.item === code);
-      const neu = catalog.find(c => c.item === code);
-      if (old && neu) {
-        const diff = ((neu.price - old.price) / old.price * 100).toFixed(1);
-        console.log(`    ${code}: R$${old.price.toFixed(2)} -> R$${neu.price.toFixed(2)} (${diff}%)`);
-      }
-    }
-  }
+  const rowDist = {};
+  catalog.filter(c => !c.isCategory).forEach(x => {
+    const len = x.rows ? x.rows.length : 0;
+    rowDist[len] = (rowDist[len] || 0) + 1;
+  });
+  console.log('  Row length distribution in 2026:', rowDist);
 }
 
 generateCatalog2026().catch(console.error);

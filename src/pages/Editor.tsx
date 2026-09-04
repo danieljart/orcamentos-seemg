@@ -13,6 +13,8 @@ import type { PriceBase } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { PrintableSpreadsheet } from '../components/PrintableSpreadsheet';
+import { toJpeg } from 'html-to-image';
+import jsPDF from 'jspdf';
 
 interface CatalogItem {
   item: string;
@@ -133,6 +135,7 @@ export function Editor() {
   const [selectedItemsForCopy, setSelectedItemsForCopy] = useState<Set<string>>(new Set());
 
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form states for inline editing
@@ -858,11 +861,13 @@ export function Editor() {
       }
 
       // 2. Fill Item Occurrences, Quantities, and Custom Items
+      const extraOccurrencesMap = new Map<number, SelectedItemOccurrence[]>();
+
       selectedItems.forEach(item => {
         const isCustom = item.item.startsWith('2600');
         const lookupCode = isCustom ? '260001' : item.item;
         const catItem = catalog.find(c => c.item === lookupCode);
-        const targetRows = catItem ? catItem.rows : item.rows;
+        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : item.rows;
 
         const totalQty = getItemTotalQuantity(item);
 
@@ -904,6 +909,12 @@ export function Editor() {
           }
         });
 
+        // If there are more occurrences than allocated rows, store extras to emit new rows
+        if (item.occurrences && item.occurrences.length > targetRows.length && targetRows.length > 0) {
+          const lastRow = targetRows[targetRows.length - 1];
+          extraOccurrencesMap.set(lastRow, item.occurrences.slice(targetRows.length));
+        }
+
         if (totalQty > 0 && targetRows.length > 0) {
           srcWs.getRow(targetRows[0]).getCell(4).value = totalQty;
         }
@@ -921,7 +932,7 @@ export function Editor() {
         const isCustom = item.item.startsWith('2600');
         const lookupCode = isCustom ? '260001' : item.item;
         const catItem = catalog.find(c => c.item === lookupCode);
-        const targetRows = catItem ? catItem.rows : item.rows;
+        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : item.rows;
 
         targetRows.forEach(r => rowsToKeep.add(r));
         catalog.forEach(cat => {
@@ -955,13 +966,41 @@ export function Editor() {
       }
 
       const sortedKeptRows = Array.from(rowsToKeep).sort((a, b) => a - b);
+      
+      // Destination row plan (handles extra occurrences seamlessly)
+      interface DestRowPlanItem {
+        type: 'src' | 'extra';
+        oldR?: number;
+        newR: number;
+        sampleOldR?: number;
+        extraOcc?: SelectedItemOccurrence;
+      }
+      const destRowPlan: DestRowPlanItem[] = [];
       const rowOldToNew = new Map<number, number>();
-      sortedKeptRows.forEach((oldR, idx) => {
-        rowOldToNew.set(oldR, idx + 1);
+      let nextDestRow = 1;
+
+      sortedKeptRows.forEach(oldR => {
+        rowOldToNew.set(oldR, nextDestRow);
+        destRowPlan.push({ type: 'src', oldR, newR: nextDestRow });
+        nextDestRow++;
+
+        if (extraOccurrencesMap.has(oldR)) {
+          const extras = extraOccurrencesMap.get(oldR)!;
+          extras.forEach(extraOcc => {
+            destRowPlan.push({
+              type: 'extra',
+              sampleOldR: oldR,
+              extraOcc,
+              newR: nextDestRow
+            });
+            nextDestRow++;
+          });
+        }
       });
 
-      // 4. Create Clean Destination Workbook
+      // 4. Create Clean Destination Workbook with Automatic Recalculation enabled
       const destWb = new ExcelJS.Workbook();
+      destWb.calcProperties.fullCalcOnLoad = true;
       const destWs = destWb.addWorksheet("Plan1", {
         views: srcWs.views,
         properties: srcWs.properties,
@@ -1042,39 +1081,54 @@ export function Editor() {
         });
       };
 
-      // Save all cell styles before merging to preserve borders perfectly
-      const savedStyles = new Map<string, any>();
-      sortedKeptRows.forEach((oldR, idx) => {
+      // Save cell styles per row to preserve borders perfectly
+      const savedStyles = new Map<number, any[]>();
+      sortedKeptRows.forEach(oldR => {
         const oldRow = srcWs.getRow(oldR);
+        const colStyles: any[] = [];
         for (let c = 1; c <= 12; c++) {
           const oldCell = oldRow.getCell(c);
-          if (oldCell.style) {
-            savedStyles.set(`${idx + 1},${c}`, JSON.parse(JSON.stringify(oldCell.style)));
-          }
+          colStyles[c] = oldCell.style ? JSON.parse(JSON.stringify(oldCell.style)) : null;
         }
+        savedStyles.set(oldR, colStyles);
       });
 
-      // Copy kept rows with cell values and updated formulas
-      sortedKeptRows.forEach((oldR, idx) => {
-        const newR = idx + 1;
-        const oldRow = srcWs.getRow(oldR);
-        const newRow = destWs.getRow(newR);
+      // Populate destWs rows from plan
+      destRowPlan.forEach(plan => {
+        const newRow = destWs.getRow(plan.newR);
+        if (plan.type === 'src' && plan.oldR) {
+          const oldRow = srcWs.getRow(plan.oldR);
+          if (oldRow.height) newRow.height = oldRow.height;
+          for (let c = 1; c <= 12; c++) {
+            const oldCell = oldRow.getCell(c);
+            const newCell = newRow.getCell(c);
 
-        if (oldRow.height) newRow.height = oldRow.height;
-
-        for (let c = 1; c <= 12; c++) {
-          const oldCell = oldRow.getCell(c);
-          const newCell = newRow.getCell(c);
-
-          if (oldCell.formula && typeof oldCell.formula === 'string') {
-            const currentVal = oldCell.value as any;
-            newCell.value = {
-              ...currentVal,
-              formula: adjustFormula(oldCell.formula)
-            };
-          } else if (oldCell.value !== null && oldCell.value !== undefined) {
-            newCell.value = oldCell.value;
+            if (oldCell.formula && typeof oldCell.formula === 'string') {
+              const currentVal = oldCell.value as any;
+              newCell.value = {
+                ...currentVal,
+                formula: adjustFormula(oldCell.formula),
+                result: oldCell.result !== undefined ? oldCell.result : undefined
+              };
+            } else if (oldCell.value !== null && oldCell.value !== undefined) {
+              newCell.value = oldCell.value;
+            }
           }
+        } else if (plan.type === 'extra' && plan.sampleOldR && plan.extraOcc) {
+          const sampleRow = srcWs.getRow(plan.sampleOldR);
+          newRow.height = sampleRow.height || 20;
+          const styles = savedStyles.get(plan.sampleOldR);
+          for (let c = 1; c <= 12; c++) {
+            if (styles && styles[c]) {
+              newRow.getCell(c).style = JSON.parse(JSON.stringify(styles[c]));
+            }
+          }
+          const occQtd = Number(evaluateMath(plan.extraOcc.quantity)) || 0;
+          if (plan.extraOcc.memory) {
+            newRow.getCell(7).value = plan.extraOcc.memory.replace(/(^|[^0-9]),(\d)/g, '$10,$2');
+          }
+          if (occQtd > 0) newRow.getCell(8).value = occQtd;
+          if (plan.extraOcc.location) newRow.getCell(9).value = plan.extraOcc.location;
         }
         newRow.commit();
       });
@@ -1106,12 +1160,16 @@ export function Editor() {
       });
 
       // Restore cell styles after merges to prevent border and outline corruption
-      savedStyles.forEach((style, key) => {
-        const [rStr, cStr] = key.split(',');
-        const r = parseInt(rStr, 10);
-        const c = parseInt(cStr, 10);
-        const cell = destWs.getRow(r).getCell(c);
-        cell.style = style;
+      sortedKeptRows.forEach(oldR => {
+        const newR = rowOldToNew.get(oldR);
+        const styles = savedStyles.get(oldR);
+        if (newR && styles) {
+          for (let c = 1; c <= 12; c++) {
+            if (styles[c]) {
+              destWs.getRow(newR).getCell(c).style = styles[c];
+            }
+          }
+        }
       });
 
       // Ensure Date cell in Column I doesn't wrap and aligns cleanly
@@ -1121,18 +1179,60 @@ export function Editor() {
         dateCell.alignment = { wrapText: false, horizontal: 'center', vertical: 'middle' };
       }
 
-      // Reconstruct Category Subtotal formulas to include all active items
+      // Reconstruct Category Subtotal formulas with explicit results
+      let totalCustoSum = 0;
+      const subtotalResults = new Map<string, number>();
+
       categorySubtotalRowMap.forEach((oldSubtotalR, catCode) => {
         const newSubtotalR = rowOldToNew.get(oldSubtotalR);
         const itemRows = categoryItemRowsMap.get(catCode) || [];
         if (itemRows.length > 0 && newSubtotalR) {
-          const newFirstItemR = Math.min(...itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean));
-          const newLastItemR = Math.max(...itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean));
-          destWs.getRow(newSubtotalR).getCell(6).value = { formula: `SUM(F${newFirstItemR}:F${newLastItemR})` };
+          const newRowsForCat = itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean);
+          const newFirstItemR = Math.min(...newRowsForCat);
+          const newLastItemR = Math.max(...newRowsForCat);
+
+          let catSum = 0;
+          selectedItems.forEach(it => {
+            if (it.item.startsWith(catCode.slice(0, 2))) {
+              const qty = getItemTotalQuantity(it);
+              const pr = it.customPrice !== undefined ? it.customPrice : it.price;
+              catSum += (qty * pr);
+            }
+          });
+          catSum = Math.round(catSum * 100) / 100;
+          totalCustoSum += catSum;
+          subtotalResults.set(catCode, catSum);
+
+          destWs.getRow(newSubtotalR).getCell(6).value = {
+            formula: `SUM(F${newFirstItemR}:F${newLastItemR})`,
+            result: catSum
+          };
         }
       });
 
-      // Grand Total & Summary formulas
+      totalCustoSum = Math.round(totalCustoSum * 100) / 100;
+
+      // Item total formulas with explicit results (Col F: D * E)
+      selectedItems.forEach(it => {
+        const isCustom = it.item.startsWith('2600');
+        const lookupCode = isCustom ? '260001' : it.item;
+        const catItem = catalog.find(c => c.item === lookupCode);
+        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : it.rows;
+        if (targetRows.length > 0) {
+          const newMainR = rowOldToNew.get(targetRows[0]);
+          if (newMainR) {
+            const qty = getItemTotalQuantity(it);
+            const pr = it.customPrice !== undefined ? it.customPrice : it.price;
+            const itemTot = Math.round(qty * pr * 100) / 100;
+            destWs.getRow(newMainR).getCell(6).value = {
+              formula: `D${newMainR}*E${newMainR}`,
+              result: itemTot
+            };
+          }
+        }
+      });
+
+      // Grand Total & Summary formulas with explicit results
       const newRowTotalCusto = rowOldToNew.get(rowTotalCusto);
       const newRowTotalGeral = rowOldToNew.get(rowTotalGeral);
       const newSubtotalRows = Array.from(categorySubtotalRowMap.values()).map(r => rowOldToNew.get(r)).filter(Boolean);
@@ -1141,34 +1241,81 @@ export function Editor() {
         const newTotalCustoFormula = newSubtotalRows.length > 0
           ? newSubtotalRows.map(r => `F${r}`).join('+')
           : '0';
-        destWs.getRow(newRowTotalCusto).getCell(6).value = { formula: newTotalCustoFormula };
+        destWs.getRow(newRowTotalCusto).getCell(6).value = {
+          formula: newTotalCustoFormula,
+          result: totalCustoSum
+        };
       }
 
-      // BDI formulas
+      // BDI formulas & results
       const hasCat24 = activeCategoryCodes.has('240000');
       const cat24SubtotalRow = categorySubtotalRowMap.get('240000');
       const newCat24SubtotalR = cat24SubtotalRow ? rowOldToNew.get(cat24SubtotalRow) : null;
+      const cat24Total = subtotalResults.get('240000') || 0;
 
       const newRowBdiProj = rowOldToNew.get(rowBdiProj);
       const newRowBdiObra = rowOldToNew.get(rowBdiObra);
 
+      const issVal = workbook.iss ? parseFloat(workbook.iss) : 5;
+
+      // BDI Obra varies with municipal ISS:
+      // 2026: 2% -> 22.78%, 2.5% -> 23.10%, 3% -> 23.42%, 4% -> 24.08%, 5% -> 24.74%
+      // 2025: 2% -> 22.47%, 2.5% -> 22.79%, 3% -> 23.12%, 4% -> 23.77%, 5% -> 24.43%
+      const bdiObraPct = is2026
+        ? (issVal === 2 ? 0.2278 : issVal === 2.5 ? 0.2310 : issVal === 3 ? 0.2342 : issVal === 4 ? 0.2408 : 0.2474)
+        : (issVal === 2 ? 0.2247 : issVal === 2.5 ? 0.2279 : issVal === 3 ? 0.2312 : issVal === 4 ? 0.2377 : 0.2443);
+
+      // BDI Projeto has fixed rate: 29.58% in 2026, 29.26% in 2025
+      const bdiProjPct = is2026 ? 0.2958 : 0.2926;
+
+      let bdiProjVal = 0;
       if (newRowBdiProj) {
+        const projFormula = is2026
+          ? 'IF(+D3=2%,29.58%,IF(D3=3%,29.58%,IF(D3=4%,29.58%,IF(D3=5%,29.58%,0))))'
+          : 'IF(+D3=2%,29.26%,IF(D3=3%,29.26%,IF(D3=4%,29.26%,IF(D3=5%,29.26%,0))))';
+        destWs.getRow(newRowBdiProj).getCell(3).value = {
+          formula: projFormula,
+          result: bdiProjPct
+        };
         const projRef = hasCat24 && newCat24SubtotalR ? `F${newCat24SubtotalR}` : '0';
-        destWs.getRow(newRowBdiProj).getCell(6).value = { formula: `${projRef}*C${newRowBdiProj}` };
+        bdiProjVal = Math.round(cat24Total * bdiProjPct * 100) / 100;
+        destWs.getRow(newRowBdiProj).getCell(6).value = {
+          formula: `${projRef}*C${newRowBdiProj}`,
+          result: bdiProjVal
+        };
       }
 
+      let bdiObraVal = 0;
       if (newRowBdiObra && newRowTotalCusto) {
+        const obraFormula = is2026
+          ? 'IF(+D3=2%,22.78%,IF(D3=3%,23.42%,IF(D3=4%,24.08%,IF(D3=5%,24.74%,0))))'
+          : 'IF(+D3=2%,22.47%,IF(D3=3%,23.12%,IF(D3=4%,23.77%,IF(D3=5%,24.43%,0))))';
+        destWs.getRow(newRowBdiObra).getCell(3).value = {
+          formula: obraFormula,
+          result: bdiObraPct
+        };
         const projRef = hasCat24 && newCat24SubtotalR ? `F${newCat24SubtotalR}` : '0';
-        destWs.getRow(newRowBdiObra).getCell(6).value = { formula: `(F${newRowTotalCusto}-${projRef})*C${newRowBdiObra}` };
+        bdiObraVal = Math.round((totalCustoSum - cat24Total) * bdiObraPct * 100) / 100;
+        destWs.getRow(newRowBdiObra).getCell(6).value = {
+          formula: `(F${newRowTotalCusto}-${projRef})*C${newRowBdiObra}`,
+          result: bdiObraVal
+        };
       }
 
+      const totalGeralVal = Math.round((totalCustoSum + bdiProjVal + bdiObraVal) * 100) / 100;
       if (newRowTotalGeral && newRowTotalCusto && newRowBdiObra) {
-        destWs.getRow(newRowTotalGeral).getCell(6).value = { formula: `SUM(F${newRowTotalCusto}:F${newRowBdiObra})` };
+        destWs.getRow(newRowTotalGeral).getCell(6).value = {
+          formula: `SUM(F${newRowTotalCusto}:F${newRowBdiObra})`,
+          result: totalGeralVal
+        };
       }
 
       // Set Header ANALISADO cell (F4) dynamically pointing to shifted TOTAL GERAL row
       if (newRowTotalGeral) {
-        destWs.getCell('F4').value = { formula: `F${newRowTotalGeral}` };
+        destWs.getCell('F4').value = {
+          formula: `F${newRowTotalGeral}`,
+          result: totalGeralVal
+        };
       }
 
       const buffer = await destWb.xlsx.writeBuffer();
@@ -1188,18 +1335,103 @@ export function Editor() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleExportPdf = async () => {
+    if (!workbook || selectedItems.length === 0 || isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      const element = document.getElementById('printable-spreadsheet-export');
+      if (!element) {
+        showToast("Elemento para exportação não encontrado.", "error");
+        return;
+      }
+
+      const escolaName = (workbook.escola || '').trim().toUpperCase();
+      const servicosName = (workbook.servicos || '').trim().toUpperCase();
+      const fileName = servicosName 
+        ? `PLANILHA DE SERVIÇOS - ${escolaName} - ${servicosName}.pdf`
+        : `PLANILHA DE SERVIÇOS - ${escolaName}.pdf`;
+
+      // Temporarily reveal element on top for screenshot capture
+      element.style.display = 'block';
+      element.style.position = 'fixed';
+      element.style.left = '0px';
+      element.style.top = '0px';
+      element.style.width = '1100px';
+      element.style.zIndex = '999999';
+      element.style.backgroundColor = '#ffffff';
+
+      // Wait for browser to lay out and paint
+      await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 80)));
+
+      let dataUrl = '';
+      try {
+        dataUrl = await toJpeg(element, {
+          quality: 0.90,
+          pixelRatio: 1.5,
+          backgroundColor: '#ffffff'
+        });
+      } finally {
+        element.style.display = 'none';
+      }
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = 297;
+      const pageHeight = 210;
+      const margin = 5; // mm
+      const printableWidth = pageWidth - (margin * 2); // 287mm
+      const pageContentHeight = pageHeight - (margin * 2); // 200mm
+
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise(resolve => {
+        img.onload = resolve;
+      });
+
+      const imgHeightInMm = (img.height * printableWidth) / img.width;
+
+      if (imgHeightInMm <= pageContentHeight) {
+        // Fits on single page
+        pdf.addImage(dataUrl, 'JPEG', margin, margin, printableWidth, imgHeightInMm);
+      } else {
+        // Multi-page handling
+        let heightLeft = imgHeightInMm;
+        let position = margin;
+
+        pdf.addImage(dataUrl, 'JPEG', margin, position, printableWidth, imgHeightInMm);
+        heightLeft -= pageContentHeight;
+
+        while (heightLeft > 0) {
+          position = margin - (imgHeightInMm - heightLeft);
+          pdf.addPage();
+          pdf.addImage(dataUrl, 'JPEG', margin, position, printableWidth, imgHeightInMm);
+          heightLeft -= pageContentHeight;
+        }
+      }
+
+      pdf.save(fileName);
+      showToast("PDF baixado com sucesso!", "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao gerar PDF. Verifique o console.", "error");
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
+  const is2026Base = priceBase === '2026';
   const getBdiRate = (iss?: string) => {
     switch (iss) {
-      case '2': return 0.2246;
-      case '2.5': return 0.2279;
-      case '3': return 0.2312;
-      case '4': return 0.2377;
-      case '5': return 0.2443;
-      default: return 0.2443;
+      case '2': return is2026Base ? 0.2278 : 0.2246;
+      case '2.5': return is2026Base ? 0.2310 : 0.2279;
+      case '3': return is2026Base ? 0.2342 : 0.2312;
+      case '4': return is2026Base ? 0.2408 : 0.2377;
+      case '5': return is2026Base ? 0.2474 : 0.2443;
+      default: return is2026Base ? 0.2474 : 0.2443;
     }
   };
 
@@ -1215,7 +1447,7 @@ export function Editor() {
   }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
 
   const bdiRate = getBdiRate(workbook?.iss);
-  const bdiProjRate = 0.2926;
+  const bdiProjRate = is2026Base ? 0.2958 : 0.2926;
   const bdiObraAmount = totalObra * bdiRate;
   const bdiProjAmount = totalProj * bdiProjRate;
   const bdiAmount = bdiObraAmount + bdiProjAmount;
@@ -1595,13 +1827,13 @@ export function Editor() {
                 <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcelCandidate} />
               </label>
               <button
-                onClick={handlePrint}
-                disabled={selectedItems.length === 0}
+                onClick={handleExportPdf}
+                disabled={selectedItems.length === 0 || isExportingPdf}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95"
-                title="Imprimir ou Salvar PDF"
+                title="Baixar PDF Oficial"
               >
-                <Printer size={18} />
-                <span className="hidden sm:inline">PDF</span>
+                {isExportingPdf ? <Loader2 className="animate-spin" size={18} /> : <Printer size={18} />}
+                <span className="hidden sm:inline">{isExportingPdf ? "Gerando..." : "PDF"}</span>
               </button>
               <button
                 onClick={handleExportExcel}
@@ -1760,7 +1992,7 @@ export function Editor() {
                 {totalProj > 0 && (
                   <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
                     <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400">
-                      BDI PROJ (29.26%)
+                      BDI PROJ ({(bdiProjRate * 100).toFixed(2)}%)
                     </span>
                     <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200">{bdiProjAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                   </div>
@@ -2074,22 +2306,32 @@ export function Editor() {
         </div>
       </main>
  
-      {/* ESPELHO OFICIAL PARA IMPRESSÃO EM PDF */}
-      <PrintableSpreadsheet 
-        workbook={workbook} 
-        selectedItems={selectedItems} 
-        catalog={catalog} 
-      />
+      {/* ESPELHO OFICIAL PARA EXPORTAÇÃO EM PDF */}
+      <div 
+        id="printable-spreadsheet-export"
+        style={{
+          display: 'none',
+          backgroundColor: '#ffffff',
+          color: '#000000',
+          padding: '8px'
+        }}
+      >
+        <PrintableSpreadsheet 
+          workbook={workbook} 
+          selectedItems={selectedItems} 
+          catalog={catalog} 
+        />
+      </div>
 
       {/* MOBILE DOCK */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-emerald-800 p-2 flex justify-between items-center gap-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)] print:hidden pb-safe">
         <button
-          onClick={handlePrint}
-          disabled={selectedItems.length === 0}
+          onClick={handleExportPdf}
+          disabled={selectedItems.length === 0 || isExportingPdf}
           className="flex-1 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white h-12 rounded-lg transition-all active:scale-95 shadow-sm"
-          title="Imprimir ou Salvar PDF"
+          title="Baixar PDF Oficial"
         >
-          <Printer size={22} />
+          {isExportingPdf ? <Loader2 className="animate-spin" size={22} /> : <Printer size={22} />}
         </button>
         <button
           onClick={handleExportExcel}

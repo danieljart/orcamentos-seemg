@@ -95,7 +95,7 @@ export function Dashboard() {
 
   const checkAnnouncementPrompt = () => {
     try {
-      const seen = localStorage.getItem('seen_updates_v2026');
+      const seen = localStorage.getItem('seen_updates_v2026_recalc');
       if (seen !== 'true') {
         setShowAnnouncement(true);
       }

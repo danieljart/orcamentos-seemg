@@ -118,6 +118,12 @@ body {
   }
 }
 
+#printable-spreadsheet-export,
+#printable-spreadsheet-export * {
+  border-color: #000000 !important;
+  box-sizing: border-box !important;
+}
+
 @media print {
   @page {
     size: A4 landscape;
