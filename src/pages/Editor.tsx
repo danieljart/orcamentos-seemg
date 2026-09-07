@@ -42,25 +42,11 @@ interface SelectedItem extends CatalogItem {
   customPrice?: number;
 }
 
+import { evaluateMath } from '../lib/math';
+
 interface TreeNode extends CatalogItem {
   children: TreeNode[];
 }
-
-const evaluateMath = (expr: any): string => {
-  if (!expr && expr !== 0) return '';
-  try {
-    let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
-    if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
-      return '';
-    }
-    const result = new Function(`return ${sanitized}`)();
-    return Number.isFinite(result) ? String(Number(result.toFixed(2))) : '';
-  } catch (e) {
-    return '';
-  }
-};
-
-// Removed unused getMathFormula
 
 const getItemTotalQuantity = (item: SelectedItem): number => {
   if (!item.occurrences) return 0;
@@ -1628,7 +1614,7 @@ export function Editor() {
                         <input
                           type="text"
                           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                          placeholder="Ex: 2*5 + 10"
+                          placeholder="Ex: 2*5, 3^2, raiz(16)"
                           value={occ.memory}
                           onChange={e => handleOccurrenceMathChange(formOccurrences, setFormOccurrences, occ.id, e.target.value)}
                         />
@@ -2244,7 +2230,7 @@ export function Editor() {
                                       <input
                                         type="text"
                                         className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                        placeholder="Ex: 2*5 + 10"
+                                        placeholder="Ex: 2*5, 3^2, raiz(16)"
                                         value={occ.memory}
                                         onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
                                       />

@@ -16,20 +16,7 @@ import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { ConfirmModal } from '../components/ConfirmModal';
-
-const evaluateMath = (expr: any): string => {
-  if (!expr && expr !== 0) return '';
-  try {
-    let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
-    if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
-      return '';
-    }
-    const result = new Function(`return ${sanitized}`)();
-    return Number.isFinite(result) ? String(Number(result.toFixed(2))) : '';
-  } catch (e) {
-    return '';
-  }
-};
+import { evaluateMath } from '../lib/math';
 
 export function Dashboard() {
   const [workbooks, setWorkbooks] = useState<Workbook[]>([]);
@@ -95,7 +82,7 @@ export function Dashboard() {
 
   const checkAnnouncementPrompt = () => {
     try {
-      const seen = localStorage.getItem('seen_updates_v2026_recalc');
+      const seen = localStorage.getItem('seen_updates_v2026_math');
       if (seen !== 'true') {
         setShowAnnouncement(true);
       }

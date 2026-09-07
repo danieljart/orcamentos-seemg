@@ -1,5 +1,6 @@
 import { useMemo, Fragment } from 'react';
 import type { Workbook } from '../services/db';
+import { evaluateMath } from '../lib/math';
 
 interface SelectedItemOccurrence {
   id: string;
@@ -36,18 +37,6 @@ interface Props {
   selectedItems: SelectedItem[];
   catalog: CatalogItem[];
 }
-
-const evaluateMath = (expr: any): string => {
-  if (!expr && expr !== 0) return '';
-  try {
-    let sanitized = String(expr).replace(/,/g, '.').replace(/x/g, '*');
-    if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) return '';
-    const result = new Function(`return ${sanitized}`)();
-    return Number.isFinite(result) ? String(Number(result.toFixed(2))) : '';
-  } catch (e) {
-    return '';
-  }
-};
 
 const getItemTotalQuantity = (item: SelectedItem) => {
   if (!item.occurrences) return 0;
