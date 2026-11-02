@@ -64,50 +64,37 @@ body {
     scrollbar-width: none;  /* Firefox */
   }
 
-  /* Fades the top and bottom edges of a scroll area so cut-off content reads
-     as "there is more", compensating for the hidden scrollbar above. The two
-     lengths are driven from useFadeScroll and track the scroll position, so
-     each edge reaches full strength once there is content past it and falls
-     back to 0 at the ends — the first and last items are never dimmed. A mask
-     is used rather than an overlay gradient so it works over any background,
-     light or dark, without having to match the panel colour. */
-  @property --fade-top {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 0px;
-  }
-  @property --fade-bottom {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 0px;
-  }
-
-  .fade-scroll {
-    --fade-top: 0px;
-    --fade-bottom: 0px;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--fade-top),
-      #000 calc(100% - var(--fade-bottom)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--fade-top),
-      #000 calc(100% - var(--fade-bottom)),
-      transparent 100%
-    );
-  }
-
-  @media print {
-    .fade-scroll {
-      -webkit-mask-image: none;
-      mask-image: none;
+  /* A scrollbar that stays visible and can be dragged, for the list of services
+     already in the budget. The rest of the app hides its scrollbars
+     (.custom-scrollbar), but a long budget is easier to move through by pulling
+     a handle than by turning the mouse wheel. */
+  /* Chromium and Safari are styled through the ::-webkit-scrollbar rules below;
+     setting scrollbar-width or scrollbar-color there would make them ignore
+     those rules, so the standard properties are kept for Firefox only. */
+  @supports not selector(::-webkit-scrollbar) {
+    .budget-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: #10b981 rgba(148, 163, 184, 0.25);
     }
   }
-
+  .budget-scroll::-webkit-scrollbar {
+    width: 11px;
+  }
+  .budget-scroll::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 9999px;
+  }
+  .budget-scroll::-webkit-scrollbar-thumb {
+    background: #10b981;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    min-height: 48px;
+  }
+  .budget-scroll::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+    background-clip: padding-box;
+  }
   @keyframes seamlessFadeIn {
     0% {
       opacity: 0;

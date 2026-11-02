@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, ChevronDown } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -9,9 +9,10 @@ import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { ShareModal } from '../components/ShareModal';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
-import { loadCatalog, loadSetopCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel, isSetopCode, BASE_FILTERS } from '../lib/catalog';
-import type { PriceBase, CatalogSource, BaseFilter } from '../lib/catalog';
+import { loadCatalog, loadExternalCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel, isExternalCode, BASE_OPTIONS, ALL_BASES } from '../lib/catalog';
+import type { PriceBase, CatalogSource, BaseId } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { PrintableSpreadsheet } from '../components/PrintableSpreadsheet';
 import { toJpeg } from 'html-to-image';
@@ -34,9 +35,9 @@ interface CatalogItem {
 /**
  * True for an item the SEE template has no row of its own for, which therefore
  * has to be written into the "OUTROS" block on export: the hand-written custom
- * items (260001_…) and everything taken from the SETOP base.
+ * items (260001_…) and everything taken from the SETOP and SUDECAP bases.
  */
-const usesOutrosSection = (code: string): boolean => code.startsWith('2600') || isSetopCode(code);
+const usesOutrosSection = (code: string): boolean => code.startsWith('2600') || isExternalCode(code);
 
 interface SelectedItemOccurrence {
   id: string;
@@ -103,58 +104,6 @@ const sanitizeUnit = (unit: unknown): string | undefined => {
   const trimmed = unit.trim();
   return trimmed && trimmed !== '[object Object]' ? trimmed : undefined;
 };
-
-/** How far the fade reaches into a scroll area, in pixels. */
-const SCROLL_FADE_SIZE = 40;
-
-/**
- * Fades the edges of a scroll container in proportion to how far it is from
- * the top and from the bottom, so content that continues past the edge looks
- * cut off softly instead of abruptly. The scrollbar is hidden throughout the
- * app, so this is what tells the user there is more to see.
- *
- * The two lengths are written straight onto the element rather than held in
- * state: the budget list can hold hundreds of rows, and re-rendering it on
- * every scroll frame would make the scrolling itself stutter.
- *
- * This is a callback ref, not a ref plus an effect, because the editor returns
- * null until the workbook has loaded: an effect would run once against a node
- * that does not exist yet and never attach to the real one.
- */
-function useFadeScroll<T extends HTMLElement>() {
-  const cleanupRef = useRef<(() => void) | null>(null);
-
-  return useCallback((el: T | null) => {
-    cleanupRef.current?.();
-    cleanupRef.current = null;
-    if (!el) return;
-
-    const update = () => {
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      const scrollable = maxScroll > 1;
-      const top = scrollable ? Math.min(el.scrollTop, SCROLL_FADE_SIZE) : 0;
-      const bottom = scrollable ? Math.min(maxScroll - el.scrollTop, SCROLL_FADE_SIZE) : 0;
-      el.style.setProperty('--fade-top', `${top}px`);
-      el.style.setProperty('--fade-bottom', `${bottom}px`);
-    };
-
-    update();
-    el.addEventListener('scroll', update, { passive: true });
-
-    // The list grows and shrinks as items are added, removed or expanded, and
-    // the panel itself resizes with the window; both change what is cut off.
-    const resizeObserver = new ResizeObserver(update);
-    resizeObserver.observe(el);
-    const mutationObserver = new MutationObserver(update);
-    mutationObserver.observe(el, { childList: true, subtree: true });
-
-    cleanupRef.current = () => {
-      el.removeEventListener('scroll', update);
-      resizeObserver.disconnect();
-      mutationObserver.disconnect();
-    };
-  }, []);
-}
 
 /**
  * Grows row heights so nothing is clipped in the exported sheet.
@@ -288,15 +237,15 @@ function buildTree(items: CatalogItem[]): TreeNode[] {
 }
 
 /**
- * Builds the SETOP branch of the catalogue tree.
+ * Builds the branch of the catalogue tree for the SETOP and SUDECAP bases.
  *
  * The SEE codes encode their own nesting, which buildTree reads off the digits;
- * SETOP codes do not, so the shape comes from the fields the generator wrote:
+ * their codes do not, so the shape comes from the fields the generators wrote:
  * each table (edificação, rodoviárias, consultoria) holds its group headers,
  * and each group holds its services. Services listed before any group header
  * hang directly off their table, which is where the source puts them.
  */
-function buildSetopTree(items: CatalogItem[]): TreeNode[] {
+function buildExternalTree(items: CatalogItem[]): TreeNode[] {
   const tables = new Map<string, TreeNode>();
   const groups = new Map<string, TreeNode>();
 
@@ -344,10 +293,13 @@ export function Editor() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [setopCatalog, setSetopCatalog] = useState<CatalogItem[]>([]);
-  const [baseFilter, setBaseFilter] = useState<BaseFilter>('ambas');
+  // SETOP and SUDECAP together: their codes never collide, so one list serves lookups.
+  const [externalCatalog, setExternalCatalog] = useState<CatalogItem[]>([]);
+  const [activeBases, setActiveBases] = useState<BaseId[]>(ALL_BASES);
   const [priceBase, setPriceBase] = useState<PriceBase>(DEFAULT_PRICE_BASE);
   const [searchTerm, setSearchTerm] = useState('');
+  // Filters the services already in the budget; the catalogue search above is separate.
+  const [budgetSearch, setBudgetSearch] = useState('');
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   interface HistoryState {
@@ -364,7 +316,6 @@ export function Editor() {
   const [copyMemoryMode, setCopyMemoryMode] = useState<string | null>(null);
   const [selectedItemsForCopy, setSelectedItemsForCopy] = useState<Set<string>>(new Set());
 
-  const budgetListRef = useFadeScroll<HTMLDivElement>();
 
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -455,7 +406,7 @@ export function Editor() {
     if (!id || historyIndex === -1 || currentUserId === null || isReadOnly) return;
     const saveDraft = async () => {
       await db.items.saveAll(id, selectedItems.map(i => {
-        // SETOP services are stored like custom items: the SEE catalogue has
+        // SETOP and SUDECAP services are stored like custom items: the SEE catalogue has
         // no entry to rebuild their description, unit and price from.
         const payload = usesOutrosSection(i.item)
           ? { occurrences: i.occurrences, source: i.source, custom: { code: i.customCode, title: i.customTitle, description: i.customDescription, unit: i.customUnit, price: i.customPrice } }
@@ -531,16 +482,18 @@ export function Editor() {
       
       const currentBase = (wb.base_precos || '2025') as PriceBase;
       setPriceBase(currentBase);
-      // Both bases are awaited together: a budget may hold SETOP services, and
-      // restoring one needs its catalogue entry, so starting without it would
-      // silently drop those items from the budget.
-      Promise.all([loadCatalog(currentBase), loadSetopCatalog().catch(err => {
-        console.error('Base SETOP indisponível:', err);
+      // All bases are awaited together: a budget may hold SETOP or SUDECAP
+      // services, and restoring one needs its catalogue entry, so starting
+      // without it would silently drop those items from the budget.
+      const loadExternal = (base: 'SETOP' | 'SUDECAP') => loadExternalCatalog(base).catch(err => {
+        console.error(`Base ${base} indisponível:`, err);
         return [] as CatalogItem[];
-      })])
-        .then(([data, setopData]: [CatalogItem[], CatalogItem[]]) => {
+      });
+      Promise.all([loadCatalog(currentBase), loadExternal('SETOP'), loadExternal('SUDECAP')])
+        .then(([data, setopData, sudecapData]: [CatalogItem[], CatalogItem[], CatalogItem[]]) => {
+          const externalData = [...setopData, ...sudecapData];
           setCatalog(data);
-          setSetopCatalog(setopData);
+          setExternalCatalog(externalData);
 
           let restoredItems: SelectedItem[] = [];
           if (loadedItems.length > 0) {
@@ -549,8 +502,8 @@ export function Editor() {
               // Support dynamic custom item IDs like 260001_abc1234
               const isCustomDynamic = typeof itemCode === 'string' && itemCode.startsWith('260001_');
               const lookupCode = isCustomDynamic ? '260001' : itemCode;
-              const catItem = isSetopCode(lookupCode)
-                ? setopData.find(c => c.item === lookupCode)
+              const catItem = isExternalCode(lookupCode)
+                ? externalData.find(c => c.item === lookupCode)
                 : data.find(c => c.item === lookupCode);
               if (!catItem) return null;
               
@@ -670,7 +623,8 @@ export function Editor() {
   }, [id, navigate, versionId]);
 
   const seeTree = useMemo(() => buildTree(catalog), [catalog]);
-  const setopTree = useMemo(() => buildSetopTree(setopCatalog), [setopCatalog]);
+  const setopTree = useMemo(() => buildExternalTree(externalCatalog.filter(c => c.source === 'SETOP')), [externalCatalog]);
+  const sudecapTree = useMemo(() => buildExternalTree(externalCatalog.filter(c => c.source === 'SUDECAP')), [externalCatalog]);
   // Who the workbook was shared by, for the notice shown to a reader.
   useEffect(() => {
     if (!isReadOnly || !id) return;
@@ -681,11 +635,32 @@ export function Editor() {
     return () => { cancelled = true; };
   }, [isReadOnly, id]);
 
-  const tree = useMemo(() => {
-    if (baseFilter === 'SEE') return seeTree;
-    if (baseFilter === 'SETOP') return setopTree;
-    return [...seeTree, ...setopTree];
-  }, [baseFilter, seeTree, setopTree]);
+  const tree = useMemo(() => [
+    ...(activeBases.includes('SEE') ? seeTree : []),
+    ...(activeBases.includes('SETOP') ? setopTree : []),
+    ...(activeBases.includes('SUDECAP') ? sudecapTree : []),
+  ], [activeBases, seeTree, setopTree, sudecapTree]);
+
+  // What a search turns up in the bases that are switched off, offered below the
+  // real results so a service is never missed just because its base is unchecked.
+  const otherBasesTree = useMemo(() => [
+    ...(activeBases.includes('SEE') ? [] : seeTree),
+    ...(activeBases.includes('SETOP') ? [] : setopTree),
+    ...(activeBases.includes('SUDECAP') ? [] : sudecapTree),
+  ], [activeBases, seeTree, setopTree, sudecapTree]);
+
+  // The last base cannot be switched off: an empty catalogue panel would look broken.
+  const toggleBase = (base: BaseId, on: boolean) => {
+    setActiveBases(prev => {
+      if (on) return prev.includes(base) ? prev : ALL_BASES.filter(b => b === base || prev.includes(b));
+      return prev.length > 1 ? prev.filter(b => b !== base) : prev;
+    });
+  };
+  const activeBasesLabel = activeBases.length === ALL_BASES.length
+    ? 'Todas'
+    : activeBases.length === 1
+      ? BASE_OPTIONS.find(option => option.value === activeBases[0])?.short
+      : `${activeBases.length} bases`;
 
   const handleClose = () => {
     const isSaved = JSON.stringify(selectedItems) === lastSavedItemsJson;
@@ -736,9 +711,9 @@ export function Editor() {
       setCustomItemFields({ code: '', title: '', description: '', unit: '', price: 0 });
     } else if (item.item.startsWith('2600')) {
       setCustomItemFields({ code: item.item, title: '', description: item.description, unit: item.unit, price: item.price });
-    } else if (isSetopCode(item.item)) {
-      // A SETOP service lands in the "OUTROS" block, which is filled from the
-      // custom fields, so they start out holding what the SETOP base says.
+    } else if (isExternalCode(item.item)) {
+      // A SETOP or SUDECAP service lands in the "OUTROS" block, which is filled from the
+      // custom fields, so they start out holding what its base says.
       setCustomItemFields({ code: item.item, title: '', description: item.description, unit: item.unit, price: item.price });
     }
 
@@ -830,8 +805,8 @@ export function Editor() {
 
   const saveForm = () => {
     if (!activeFormItem) return;
-    const catItem = isSetopCode(activeFormItem)
-      ? setopCatalog.find(c => c.item === activeFormItem)
+    const catItem = isExternalCode(activeFormItem)
+      ? externalCatalog.find(c => c.item === activeFormItem)
       : catalog.find(c => c.item === activeFormItem || activeFormItem.startsWith(c.item));
     const baseCatItem = catalog.find(c => c.item === '260001');
     if (!catItem && !baseCatItem) return;
@@ -937,10 +912,10 @@ export function Editor() {
 
         const colA = cellText(row.getCell(1).value).trim();
         const isItemCode = /^\d{6}$/.test(colA) && !colA.endsWith('00');
-        // A SETOP service is exported into the OUTROS block under its own code,
+        // A SETOP or SUDECAP service is exported into the OUTROS block under its own code,
         // so reading a sheet back has to recognise it there too.
-        const isSetop = isSetopCode(colA);
-        const isCustom = colA.startsWith('2600') || isSetop;
+        const isExternal = isExternalCode(colA);
+        const isCustom = colA.startsWith('2600') || isExternal;
 
         let occMemory = cellText(row.getCell(7).value).trim();
         let occQtyVal = row.getCell(8).value;
@@ -959,8 +934,8 @@ export function Editor() {
           currentTotalQty = (qty !== null && qty !== undefined && qty !== '') ? String(qty).trim() : '';
 
           const lookupCode = isCustom ? '260001' : currentItemCode;
-          const catItem = isSetop
-            ? setopCatalog.find(c => c.item === colA)
+          const catItem = isExternal
+            ? externalCatalog.find(c => c.item === colA)
             : catalog.find(c => c.item === lookupCode);
 
           if (catItem && (currentTotalQty || occQty || occMemory || occLocation)) {
@@ -1152,7 +1127,7 @@ export function Editor() {
         .filter((slot): slot is CatalogItem => !!slot && Array.isArray(slot.rows) && slot.rows.length > 0)
         .map(slot => slot.rows);
 
-      // Hand-written custom items and SETOP services share this block: neither
+      // Hand-written custom items and SETOP/SUDECAP services share this block: neither
       // has a row of its own in the SEE template.
       const customItems = selectedItems.filter(i => usesOutrosSection(i.item));
       const customRowsByItem = new Map<string, number[]>();
@@ -1864,7 +1839,9 @@ export function Editor() {
     }
   };
 
-  const renderTree = (nodes: TreeNode[], term: string, level: number = 0): ReactNode => {
+  // `groupName` keeps the accordions of one list from closing those of another
+  // list that is on screen at the same time (they share the `name` attribute).
+  const renderTree = (nodes: TreeNode[], term: string, level: number = 0, groupName: string = 'catalog-categories'): ReactNode => {
     const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const normalizedTerm = normalize(term);
     
@@ -1879,7 +1856,7 @@ export function Editor() {
     return nodes.filter(filterNode).map(node => {
       if (node.isCategory) {
         return (
-          <details key={node.item} name={`catalog-categories-${level}`} className="group mb-1" open={!!term}>
+          <details key={node.item} name={`${groupName}-${level}`} className="group mb-1" open={!!term}>
             <summary className="flex items-center gap-2 p-2 bg-slate-200 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700/80 rounded-md cursor-pointer list-none select-none border border-transparent dark:border-slate-700 transition-colors">
               <ChevronRight size={16} className="text-slate-500 dark:text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
               <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-transparent dark:border-slate-700 shrink-0">{node.item}</span>
@@ -1898,7 +1875,7 @@ export function Editor() {
               </div>
             </summary>
             <div className="pl-4 mt-1 border-l-2 border-slate-100 dark:border-slate-700 ml-3 flex flex-col gap-1">
-              {renderTree(node.children, term, level + 1)}
+              {renderTree(node.children, term, level + 1, groupName)}
             </div>
           </details>
         );
@@ -2055,8 +2032,17 @@ export function Editor() {
 
   const groupedSelected = useMemo(() => {
     const groups: Record<string, Record<string, SelectedItem[]>> = {};
-    selectedItems.forEach(item => {
-      // Custom and SETOP services carry codes the SEE prefixes cannot classify
+    const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const term = normalize(budgetSearch.trim());
+    // Everything an item shows in the list: its code and description, the
+    // custom fields, and what was written in each memory and location.
+    const matches = (item: SelectedItem) => !term || normalize([
+      item.item, item.description, item.customCode, item.customTitle, item.customDescription,
+      ...item.occurrences.flatMap(o => [o.memory, o.location]),
+    ].filter(Boolean).join(' ')).includes(term);
+
+    selectedItems.filter(matches).forEach(item => {
+      // Custom, SETOP and SUDECAP services carry codes the SEE prefixes cannot classify
       // (ED-50701 would ask for category "ED0000"), and they are exported in
       // the OUTROS block, so that is where the list shows them too.
       const inOutros = usesOutrosSection(item.item);
@@ -2078,7 +2064,7 @@ export function Editor() {
       groups[mainGroupName][subGroupName].push(item);
     });
     return groups;
-  }, [selectedItems, catalog]);
+  }, [selectedItems, catalog, budgetSearch]);
 
   const uniqueLocations = useMemo(() => {
     const locs = new Set<string>();
@@ -2353,19 +2339,30 @@ export function Editor() {
                     onChange={e => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Select value={baseFilter} onValueChange={value => setBaseFilter(value as BaseFilter)}>
-                  <SelectTrigger
-                    className="w-[108px] shrink-0 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 focus:ring-emerald-500 rounded-lg shadow-sm !h-[52px]"
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className="w-[116px] shrink-0 h-[52px] px-3 flex items-center justify-between gap-1 text-sm bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 data-[state=open]:ring-2 data-[state=open]:ring-emerald-500"
                     title="Bases de preços exibidas no catálogo"
                   >
-                    <SelectValue>{BASE_FILTERS.find(option => option.value === baseFilter)?.short}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent position="popper" sideOffset={4}>
-                    {BASE_FILTERS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <span className="truncate">{activeBasesLabel}</span>
+                    <ChevronDown size={16} className="shrink-0 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuLabel className="text-xs text-slate-500">Bases de preços</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {BASE_OPTIONS.map(option => (
+                      <DropdownMenuCheckboxItem
+                        key={option.value}
+                        checked={activeBases.includes(option.value)}
+                        // Keeps the menu open so several bases can be switched in one go.
+                        onSelect={e => e.preventDefault()}
+                        onCheckedChange={checked => toggleBase(option.value, checked === true)}
+                      >
+                        {option.label}
+                      </DropdownMenuCheckboxItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </section>
 
@@ -2375,7 +2372,33 @@ export function Editor() {
                 {catalog.length === 0 ? (
                    <div className="text-center p-8 text-slate-400">Carregando catálogo...</div>
                 ) : (
-                   renderTree(tree, searchTerm)
+                   (() => {
+                     const results = renderTree(tree, searchTerm) as ReactNode[];
+                     const suggestions = searchTerm && otherBasesTree.length > 0
+                       ? renderTree(otherBasesTree, searchTerm, 0, 'catalog-suggestions') as ReactNode[]
+                       : [];
+                     return (
+                       <>
+                         {results}
+                         {searchTerm && results.length === 0 && suggestions.length > 0 && (
+                           <p className="text-center text-sm text-slate-400 py-4">Nenhum resultado nas bases marcadas.</p>
+                         )}
+                         {suggestions.length > 0 && (
+                           <div className="mt-3">
+                             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1 pb-2 flex items-center gap-2">
+                               <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                               Sugestões de outras bases
+                               <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                             </p>
+                             {/* Faded like a watermark until pointed at, so it reads as a suggestion and not a result. */}
+                             <div className="opacity-50 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                               {suggestions}
+                             </div>
+                           </div>
+                         )}
+                       </>
+                     );
+                   })()
                 )}
               </div>
             </section>
@@ -2405,7 +2428,30 @@ export function Editor() {
               </div>
 
               {/* Linha 2: Totais */}
-              <div className={`grid gap-3 print:hidden ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+              <div className="flex gap-3 print:hidden">
+              {/* Busca nos itens já lançados, à esquerda dos totais */}
+              <div className="relative w-[30%] min-w-[170px] shrink-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-8 h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm"
+                  placeholder="Buscar no orçamento"
+                  title="Buscar nos itens já lançados no orçamento"
+                  value={budgetSearch}
+                  onChange={e => setBudgetSearch(e.target.value)}
+                />
+                {budgetSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setBudgetSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title="Limpar busca"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <div className={`grid gap-3 flex-1 min-w-0 ${totalProj > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <div className="bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 rounded-lg px-3 h-[52px] flex flex-col justify-center shadow-sm">
                   <span className="text-[10px] uppercase font-bold text-sky-700 dark:text-sky-400">Custo Direto</span>
                   <span className="text-sm font-bold text-sky-900 dark:text-sky-200">{(totalObra + totalProj).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
@@ -2429,12 +2475,15 @@ export function Editor() {
                   <span className="text-sm font-bold text-emerald-950 dark:text-emerald-200">{grandTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
               </div>
+              </div>
             </section>
 
             {/* Caixa 4: Lista do Orçamento */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0 overflow-hidden">
-              <div ref={budgetListRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar fade-scroll p-3 space-y-6 print:overflow-visible print:p-0">
-            {selectedItems.length === 0 ? (
+              <div className="budget-scroll flex-1 min-h-0 overflow-y-auto p-3 space-y-6 print:overflow-visible print:p-0">
+            {selectedItems.length > 0 && budgetSearch && Object.keys(groupedSelected).length === 0 ? (
+              <p className="text-center text-sm text-slate-400 py-8">Nenhum item do orçamento corresponde à busca.</p>
+            ) : selectedItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
                 <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-full">
                   <FileSpreadsheet size={48} className="text-slate-300" />
@@ -2821,7 +2870,7 @@ export function Editor() {
                     setPriceBase(newBase);
                     // Update prices of selected items (keep quantities, update prices from new catalog)
                     setSelectedItems(prev => prev.map(item => {
-                      // Custom and SETOP items keep their own prices: changing
+                      // Custom, SETOP and SUDECAP items keep their own prices: changing
                       // the SEE base does not reprice another base's services.
                       if (usesOutrosSection(item.item) && item.customPrice !== undefined) return item;
                       const newCatItem = newCatalogData.find(c => c.item === item.item);

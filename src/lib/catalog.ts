@@ -13,33 +13,42 @@ export interface CatalogItem {
   extendedDescription?: string;
   /** Which price base the entry came from. Absent means the SEE base. */
   source?: CatalogSource;
-  /** SETOP only: the table (SETOP-ED / SETOP-RO / SETOP-CO) it belongs to. */
+  /** SETOP and SUDECAP: the table (SETOP-ED, SUDECAP-01, ...) it belongs to. */
   table?: string;
-  /** SETOP only: the group header the service is listed under. */
+  /** SETOP and SUDECAP: the group header the service is listed under. */
   group?: string;
-  /** SETOP only: 0 for a table heading, 1 for a group heading. */
+  /** SETOP and SUDECAP: 0 for a table heading, 1 for a group heading. */
   level?: number;
 }
 
-export type CatalogSource = 'SEE' | 'SETOP';
+export type CatalogSource = 'SEE' | 'SETOP' | 'SUDECAP';
 
-/** Which bases the catalogue panel shows. */
-export type BaseFilter = 'ambas' | 'SEE' | 'SETOP';
+/** The price bases the catalogue panel can show; any combination can be on. */
+export type BaseId = CatalogSource;
 
 /** `short` is what the closed control shows, so it stays out of the way of the search field. */
-export const BASE_FILTERS: { value: BaseFilter; label: string; short: string }[] = [
-  { value: 'ambas', label: 'Ambas as bases', short: 'Ambas' },
-  { value: 'SEE', label: 'Somente SEE', short: 'SEE' },
-  { value: 'SETOP', label: 'Somente SETOP', short: 'SETOP' },
+export const BASE_OPTIONS: { value: BaseId; label: string; short: string }[] = [
+  { value: 'SEE', label: 'SEE', short: 'SEE' },
+  { value: 'SETOP', label: 'SETOP', short: 'SETOP' },
+  { value: 'SUDECAP', label: 'SUDECAP', short: 'SUDECAP' },
 ];
 
-export const SETOP_CATALOG_PATH = '/catalogo_setop.json';
+export const ALL_BASES: BaseId[] = BASE_OPTIONS.map(option => option.value);
 
-/** Matches a SETOP service code, as used across the app to route an item. */
-export const SETOP_CODE_RE = /^(?:ED|RO|CO)-\d+$/;
+/** The bases whose services go into the "OUTROS" block of the spreadsheet. */
+export type ExternalBase = Exclude<BaseId, 'SEE'>;
 
-export const isSetopCode = (code: string): boolean => SETOP_CODE_RE.test(code);
+const EXTERNAL_BASES: Record<ExternalBase, { path: string; codeRe: RegExp }> = {
+  SETOP: { path: '/catalogo_setop.json', codeRe: /^(?:ED|RO|CO)-\d+$/ },
+  SUDECAP: { path: '/catalogo_sudecap.json', codeRe: /^SU-\d+(?:\.\d+)+$/ },
+};
 
+export const isSetopCode = (code: string): boolean => EXTERNAL_BASES.SETOP.codeRe.test(code);
+
+export const isSudecapCode = (code: string): boolean => EXTERNAL_BASES.SUDECAP.codeRe.test(code);
+
+/** Whether a service code belongs to a base other than SEE, as used across the app to route an item. */
+export const isExternalCode = (code: string): boolean => isSetopCode(code) || isSudecapCode(code);
 export type PriceBase = '2025' | '2026';
 
 export const PRICE_BASES: { value: PriceBase; label: string }[] = [
@@ -92,36 +101,38 @@ export async function loadCatalog(base: PriceBase): Promise<CatalogItem[]> {
   return data;
 }
 
-let setopCatalogCache: CatalogItem[] | null = null;
-let setopCatalogPending: Promise<CatalogItem[]> | null = null;
+const externalCache: Partial<Record<ExternalBase, CatalogItem[]>> = {};
+const externalPending: Partial<Record<ExternalBase, Promise<CatalogItem[]>>> = {};
 
 /**
- * Loads and caches the SETOP (SICOR-MG) catalogue.
+ * Loads and caches one of the external catalogues (SETOP or SUDECAP).
  *
- * This one file holds over six thousand services, so the in-flight promise is
- * cached as well: the editor asks for it while rendering, and without that a
- * second render would start a second download of the same few megabytes.
+ * These files hold thousands of services, so the in-flight promise is cached
+ * as well: the editor asks for them while rendering, and without that a second
+ * render would start a second download of the same few megabytes.
  */
-export async function loadSetopCatalog(): Promise<CatalogItem[]> {
-  if (setopCatalogCache) return setopCatalogCache;
-  if (setopCatalogPending) return setopCatalogPending;
+export async function loadExternalCatalog(base: ExternalBase): Promise<CatalogItem[]> {
+  const cached = externalCache[base];
+  if (cached) return cached;
+  const pending = externalPending[base];
+  if (pending) return pending;
 
-  setopCatalogPending = fetch(SETOP_CATALOG_PATH)
+  const request = fetch(EXTERNAL_BASES[base].path)
     .then(res => {
-      if (!res.ok) throw new Error(`Falha ao carregar a base SETOP (${res.status})`);
+      if (!res.ok) throw new Error(`Falha ao carregar a base ${base} (${res.status})`);
       return res.json();
     })
     .then((data: CatalogItem[]) => {
-      setopCatalogCache = data;
+      externalCache[base] = data;
       return data;
     })
     .finally(() => {
-      setopCatalogPending = null;
+      delete externalPending[base];
     });
 
-  return setopCatalogPending;
+  externalPending[base] = request;
+  return request;
 }
-
 /**
  * Clears the cache for a specific base or all bases.
  */
