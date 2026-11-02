@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check, Sparkles } from 'lucide-react';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check, Sparkles, Share2 } from 'lucide-react';
 import { db } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
@@ -48,6 +48,12 @@ export function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState<{ id: string, total: number, city: string, escola: string, date: Date }[]>([]);
   const [userName, setUserName] = useState('');
   const [periodFilter, setPeriodFilter] = useState('15d');
+
+  // The database returns the user's own workbooks together with the ones other
+  // people shared with them; this id is what tells the two apart.
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
+  const isSharedWithMe = (wb: Workbook) => currentUserId !== null && wb.user_id !== currentUserId;
 
   const navigate = useNavigate();
 
@@ -120,7 +126,14 @@ export function Dashboard() {
   const loadData = async () => {
     const list = await db.workbooks.list();
     setWorkbooks(list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-    
+
+    const uid = await db.auth.getUserId();
+    setCurrentUserId(uid);
+    if (uid) {
+      const sharedIds = list.filter(w => w.user_id !== uid).map(w => w.id);
+      setOwnerNames(await db.sharing.ownerNames(sharedIds));
+    }
+
     const user = await db.auth.getUser();
     if (user) {
       if (user.nome) { setFormEngenheiro(user.nome); setUserName(user.nome); }
@@ -537,6 +550,9 @@ export function Dashboard() {
 
   const handleDelete = (wb: Workbook, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    // Only the owner can delete; the database would refuse anyway, so the
+    // confirmation is not even offered for a shared workbook.
+    if (isSharedWithMe(wb)) return;
     setWorkbookToDelete(wb);
   };
 
@@ -570,8 +586,13 @@ export function Dashboard() {
     try {
       setIsCloningWorkbook(true);
       const wb = workbookToClone;
+      // The copy belongs to whoever clones it. Taking the original's owner
+      // would be refused for a shared workbook, and for a reader the clone is
+      // exactly how to get an editable copy of it.
+      const uid = await db.auth.getUserId();
+      if (!uid) throw new Error('Sessão expirada');
       const newWb = await db.workbooks.create({
-        user_id: wb.user_id,
+        user_id: uid,
         escola: wb.escola + " - Cópia",
         municipio: wb.municipio,
         sre: wb.sre,
@@ -654,8 +675,9 @@ export function Dashboard() {
   const { totalBalance, cityData } = useMemo(() => {
     if (!analyticsData.length) return { totalBalance: 0, cityData: [] };
 
-    // Include only items that are in filteredWorkbooks
-    const filteredWorkbookIds = new Set(filteredWorkbooks.map(w => w.id));
+    // Include only items that are in filteredWorkbooks, and only the user's
+    // own: what other people shared is theirs, not part of these totals.
+    const filteredWorkbookIds = new Set(filteredWorkbooks.filter(w => !isSharedWithMe(w)).map(w => w.id));
     let filtered = analyticsData.filter(d => filteredWorkbookIds.has(d.id));
 
     const now = new Date();
@@ -706,7 +728,7 @@ export function Dashboard() {
       .slice(0, 5);
 
     return { totalBalance: grandTotal, cityData: processedCities };
-  }, [analyticsData, periodFilter, filteredWorkbooks]);
+  }, [analyticsData, periodFilter, filteredWorkbooks, currentUserId]);
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col transition-colors">
@@ -971,22 +993,24 @@ export function Dashboard() {
                   </span>
                   
                   <div className="flex items-center gap-0.5 ml-1">
-                    <button 
+                    <button
                       type="button"
                       onClick={(e) => handleClone(wb, e)}
                       className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-full transition-colors"
-                      title="Clonar Planilha"
+                      title={isSharedWithMe(wb) ? 'Criar uma cópia editável' : 'Clonar Planilha'}
                     >
                       <Copy size={14} />
                     </button>
-                    <button 
-                      type="button"
-                      onClick={(e) => handleDelete(wb, e)}
-                      className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full transition-colors"
-                      title="Excluir Planilha"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {!isSharedWithMe(wb) && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(wb, e)}
+                        className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full transition-colors"
+                        title="Excluir Planilha"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -994,6 +1018,18 @@ export function Dashboard() {
               <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 line-clamp-2 group-hover:text-emerald-700 transition-colors">
                 {wb.escola || 'Escola sem nome'}
               </h3>
+
+              {isSharedWithMe(wb) && (
+                <span
+                  className="inline-flex items-center gap-1.5 self-start max-w-full text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800"
+                  title="Você tem acesso somente para leitura a este orçamento"
+                >
+                  <Share2 size={12} className="shrink-0" />
+                  <span className="truncate">
+                    {ownerNames[wb.id] ? `Compartilhado por ${ownerNames[wb.id]}` : 'Compartilhado com você'}
+                  </span>
+                </span>
+              )}
               
               <div className="flex items-center justify-between mt-auto w-full gap-1">
                 <div className="text-base sm:text-lg font-bold text-emerald-700 dark:text-[#00ff88] dark:drop-shadow-[0_0_5px_rgba(0,255,136,0.3)] flex-1 truncate text-left">
@@ -1144,16 +1180,18 @@ export function Dashboard() {
                 <Clock className="text-emerald-600" /> Versões do Orçamento
               </h2>
               <div className="flex gap-2">
-                <button 
-                  onClick={(e) => {
-                    setIsVersionsModalOpen(false);
-                    if(selectedWorkbook) handleDelete(selectedWorkbook, e);
-                  }} 
-                  className="flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-                >
-                  <Trash2 size={18} />
-                  Excluir Planilha
-                </button>
+                {!isSharedWithMe(selectedWorkbook) && (
+                  <button
+                    onClick={(e) => {
+                      setIsVersionsModalOpen(false);
+                      if(selectedWorkbook) handleDelete(selectedWorkbook, e);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
+                  >
+                    <Trash2 size={18} />
+                    Excluir Planilha
+                  </button>
+                )}
                 <button onClick={() => setIsVersionsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 rounded-lg transition-colors">
                   <LogOut size={20} className="rotate-45" />
                 </button>
@@ -1166,8 +1204,14 @@ export function Dashboard() {
                 className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors flex justify-between items-center"
               >
                 <div>
-                  <h3 className="font-bold text-emerald-800 dark:text-emerald-100">Rascunho Atual (Trabalhando)</h3>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-1">Sua sessão atual com as últimas modificações.</p>
+                  <h3 className="font-bold text-emerald-800 dark:text-emerald-100">
+                    {isSharedWithMe(selectedWorkbook) ? 'Rascunho Atual (somente leitura)' : 'Rascunho Atual (Trabalhando)'}
+                  </h3>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-1">
+                    {isSharedWithMe(selectedWorkbook)
+                      ? 'O estado mais recente do orçamento, como o dono o deixou.'
+                      : 'Sua sessão atual com as últimas modificações.'}
+                  </p>
                 </div>
                 <div className="bg-emerald-600 text-white p-2 rounded-full">
                   <Plus size={16} />
@@ -1251,30 +1295,34 @@ export function Dashboard() {
                           </div>
                           <div className="flex flex-col md:items-end justify-center gap-2">
                              <div className="flex items-center justify-end gap-2 w-full">
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    handleEditVersion(e, v);
-                                  }}
-                                  className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 z-10"
-                                  title="Renomear versão"
-                                >
-                                  <Edit2 size={16} />
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setVersionToDelete({ id: v.id, name: v.name || 'Versão Salva' });
-                                  }}
-                                  className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 z-10"
-                                  title="Excluir versão"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                {!isSharedWithMe(selectedWorkbook) && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        handleEditVersion(e, v);
+                                      }}
+                                      className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 z-10"
+                                      title="Renomear versão"
+                                    >
+                                      <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        setVersionToDelete({ id: v.id, name: v.name || 'Versão Salva' });
+                                      }}
+                                      className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 z-10"
+                                      title="Excluir versão"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </>
+                                )}
                                <div className="text-slate-300 group-hover:text-emerald-600 transition-colors hidden md:block ml-1">
                                  <LogOut className="rotate-180" size={18} />
                                </div>

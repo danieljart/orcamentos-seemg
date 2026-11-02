@@ -49,8 +49,61 @@ export interface WorkbookVersion {
   name?: string;
 }
 
+export interface WorkbookMember {
+  user_id: string;
+  nome: string;
+  email: string;
+  role: 'leitor' | 'editor';
+  created_at: string;
+}
+
+export type SharingErrorKind =
+  | 'forbidden'      // caller is not the owner
+  | 'not_found'      // no user registered with that e-mail
+  | 'invalid'        // refused by the rules (sharing with yourself, role unavailable)
+  | 'unavailable'    // database/sharing.sql has not been run on this project yet
+  | 'unknown';
+
+export class SharingError extends Error {
+  kind: SharingErrorKind;
+  constructor(kind: SharingErrorKind, message: string) {
+    super(message);
+    this.name = 'SharingError';
+    this.kind = kind;
+  }
+}
+
+/**
+ * Maps what the share_workbook() function raises onto something the UI can
+ * branch on. Codes are the ones declared in database/sharing.sql; the
+ * "unavailable" ones are what PostgREST answers when a function or table does
+ * not exist, i.e. the migration has not been applied.
+ */
+function toSharingError(error: { code?: string; message?: string; status?: number }): SharingError {
+  switch (error.code) {
+    case '42501': return new SharingError('forbidden', error.message || 'Sem permissão');
+    case 'P0002': return new SharingError('not_found', error.message || 'Usuário não encontrado');
+    case '22023': return new SharingError('invalid', error.message || 'Pedido inválido');
+    case 'PGRST202': // function not found in the schema cache
+    case 'PGRST205': // table not found in the schema cache
+    case '42883':    // undefined_function
+    case '42P01':    // undefined_table
+      return new SharingError('unavailable', 'O compartilhamento ainda não foi habilitado no banco de dados.');
+    default:
+      return new SharingError('unknown', error.message || 'Erro ao compartilhar');
+  }
+}
+
 export const db = {
   auth: {
+    /**
+     * Id of the signed-in user, read from the session rather than from the
+     * users table, so it is available even when the profile row is missing.
+     */
+    getUserId: async (): Promise<string | null> => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session ? session.user.id : null;
+    },
     getUser: async (): Promise<User | null> => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return null;
@@ -261,5 +314,41 @@ export const db = {
         .eq('id', id);
       if (error) throw error;
     }
+  },
+  sharing: {
+    /** Members of a workbook. Only the owner gets rows back. */
+    list: async (workbook_id: string): Promise<WorkbookMember[]> => {
+      const { data, error } = await supabase.rpc('list_workbook_members', { p_workbook_id: workbook_id });
+      if (error) throw toSharingError(error);
+      return (data || []) as WorkbookMember[];
+    },
+    /** Gives the user with this e-mail read access to the workbook. */
+    share: async (workbook_id: string, email: string): Promise<WorkbookMember> => {
+      const { data, error } = await supabase.rpc('share_workbook', {
+        p_workbook_id: workbook_id,
+        p_email: email,
+        p_role: 'leitor',
+      });
+      if (error) throw toSharingError(error);
+      return { ...(data as Omit<WorkbookMember, 'created_at'>), created_at: new Date().toISOString() };
+    },
+    /** The owner revokes someone's access, or a member leaves a shared workbook. */
+    remove: async (workbook_id: string, user_id: string): Promise<void> => {
+      const { error } = await supabase
+        .from('workbook_members')
+        .delete()
+        .eq('workbook_id', workbook_id)
+        .eq('user_id', user_id);
+      if (error) throw toSharingError(error);
+    },
+    /** Owner name for each workbook that was shared with the current user. */
+    ownerNames: async (workbook_ids: string[]): Promise<Record<string, string>> => {
+      if (workbook_ids.length === 0) return {};
+      const { data, error } = await supabase.rpc('shared_owner_names', { p_workbook_ids: workbook_ids });
+      // The names only decorate the card, so a database that has not been
+      // migrated yet must not stop the dashboard from loading.
+      if (error || !data) return {};
+      return Object.fromEntries((data as { workbook_id: string; owner_nome: string }[]).map(r => [r.workbook_id, r.owner_nome]));
+    },
   }
 };

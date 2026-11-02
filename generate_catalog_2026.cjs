@@ -14,6 +14,31 @@ const path = require('path');
  *   E (5) = PREÇO UNITÁRIO
  *   F (6) = TOTAL (formula)
  */
+const SUPERSCRIPT = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+
+/**
+ * Flattens any cell value to plain text. Units such as M² are stored as rich
+ * text ("M" plus a superscript "2"), so a bare toString() would produce
+ * "[object Object]"; superscript runs are mapped to the Unicode character.
+ */
+function cellText(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value !== 'object') return String(value);
+
+  if (Array.isArray(value.richText)) {
+    return value.richText.map(run => {
+      const text = run.text || '';
+      if (run.font && run.font.vertAlign === 'superscript') {
+        return text.replace(/[0-9]/g, d => SUPERSCRIPT[d]);
+      }
+      return text;
+    }).join('');
+  }
+  if ('result' in value) return value.result === null || value.result === undefined ? '' : String(value.result);
+  if ('text' in value) return String(value.text);
+  return '';
+}
+
 async function generateCatalog2026() {
   const workbook = new ExcelJS.Workbook();
   const xlsxPath = path.resolve(__dirname, '..', 'PLANILHA DE SERVIÇOS SEEMG REVISAO 00 2026.xlsx');
@@ -56,18 +81,9 @@ async function generateCatalog2026() {
     const nextRowNumber = (i + 1 < boundaries.length) ? boundaries[i + 1].row : rowNumber + 1;
     const row = worksheet.getRow(rowNumber);
 
-    const descCell = row.getCell(2).value;
-    let description = '';
-    if (descCell) {
-      if (typeof descCell === 'object' && descCell.richText) {
-        description = descCell.richText.map(rt => rt.text).join('');
-      } else {
-        description = descCell.toString();
-      }
-    }
+    const description = cellText(row.getCell(2).value);
 
-    const unitCell = row.getCell(3).value;
-    const unit = unitCell ? unitCell.toString().trim() : '';
+    const unit = cellText(row.getCell(3).value).trim();
 
     const priceCell = row.getCell(5).value;
     let price = 0;
@@ -87,24 +103,16 @@ async function generateCatalog2026() {
     let itemRows = [];
     let extDesc = '';
 
-    if (isCategory) {
-      itemRows = [rowNumber];
-    } else {
-      for (let r = rowNumber; r < nextRowNumber; r++) {
-        itemRows.push(r);
-        if (r > rowNumber) {
-          const rCell = worksheet.getRow(r).getCell(2).value;
-          if (rCell) {
-            let t = '';
-            if (typeof rCell === 'object' && rCell.richText) {
-              t = rCell.richText.map(rt => rt.text).join('');
-            } else {
-              t = rCell.toString();
-            }
-            if (t.trim()) {
-              extDesc += t.trim() + '\n';
-            }
-          }
+    // Categories span up to the next boundary just like items do. The rows
+    // between a category header and its first item hold the measurement
+    // criteria shared by the whole group; leaving them out of `rows` orphans
+    // them, and the XLSX export drops every row no entry claims.
+    for (let r = rowNumber; r < nextRowNumber; r++) {
+      itemRows.push(r);
+      if (r > rowNumber && !isCategory) {
+        const t = cellText(worksheet.getRow(r).getCell(2).value);
+        if (t.trim()) {
+          extDesc += t.trim() + '\n';
         }
       }
     }

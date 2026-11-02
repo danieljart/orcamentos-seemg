@@ -11,7 +11,34 @@ export interface CatalogItem {
   isCategory: boolean;
   rows: number[];
   extendedDescription?: string;
+  /** Which price base the entry came from. Absent means the SEE base. */
+  source?: CatalogSource;
+  /** SETOP only: the table (SETOP-ED / SETOP-RO / SETOP-CO) it belongs to. */
+  table?: string;
+  /** SETOP only: the group header the service is listed under. */
+  group?: string;
+  /** SETOP only: 0 for a table heading, 1 for a group heading. */
+  level?: number;
 }
+
+export type CatalogSource = 'SEE' | 'SETOP';
+
+/** Which bases the catalogue panel shows. */
+export type BaseFilter = 'ambas' | 'SEE' | 'SETOP';
+
+/** `short` is what the closed control shows, so it stays out of the way of the search field. */
+export const BASE_FILTERS: { value: BaseFilter; label: string; short: string }[] = [
+  { value: 'ambas', label: 'Ambas as bases', short: 'Ambas' },
+  { value: 'SEE', label: 'Somente SEE', short: 'SEE' },
+  { value: 'SETOP', label: 'Somente SETOP', short: 'SETOP' },
+];
+
+export const SETOP_CATALOG_PATH = '/catalogo_setop.json';
+
+/** Matches a SETOP service code, as used across the app to route an item. */
+export const SETOP_CODE_RE = /^(?:ED|RO|CO)-\d+$/;
+
+export const isSetopCode = (code: string): boolean => SETOP_CODE_RE.test(code);
 
 export type PriceBase = '2025' | '2026';
 
@@ -63,6 +90,36 @@ export async function loadCatalog(base: PriceBase): Promise<CatalogItem[]> {
   const data: CatalogItem[] = await res.json();
   catalogCache[base] = data;
   return data;
+}
+
+let setopCatalogCache: CatalogItem[] | null = null;
+let setopCatalogPending: Promise<CatalogItem[]> | null = null;
+
+/**
+ * Loads and caches the SETOP (SICOR-MG) catalogue.
+ *
+ * This one file holds over six thousand services, so the in-flight promise is
+ * cached as well: the editor asks for it while rendering, and without that a
+ * second render would start a second download of the same few megabytes.
+ */
+export async function loadSetopCatalog(): Promise<CatalogItem[]> {
+  if (setopCatalogCache) return setopCatalogCache;
+  if (setopCatalogPending) return setopCatalogPending;
+
+  setopCatalogPending = fetch(SETOP_CATALOG_PATH)
+    .then(res => {
+      if (!res.ok) throw new Error(`Falha ao carregar a base SETOP (${res.status})`);
+      return res.json();
+    })
+    .then((data: CatalogItem[]) => {
+      setopCatalogCache = data;
+      return data;
+    })
+    .finally(() => {
+      setopCatalogPending = null;
+    });
+
+  return setopCatalogPending;
 }
 
 /**

@@ -64,6 +64,50 @@ body {
     scrollbar-width: none;  /* Firefox */
   }
 
+  /* Fades the top and bottom edges of a scroll area so cut-off content reads
+     as "there is more", compensating for the hidden scrollbar above. The two
+     lengths are driven from useFadeScroll and track the scroll position, so
+     each edge reaches full strength once there is content past it and falls
+     back to 0 at the ends — the first and last items are never dimmed. A mask
+     is used rather than an overlay gradient so it works over any background,
+     light or dark, without having to match the panel colour. */
+  @property --fade-top {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+  @property --fade-bottom {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  .fade-scroll {
+    --fade-top: 0px;
+    --fade-bottom: 0px;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-top),
+      #000 calc(100% - var(--fade-bottom)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-top),
+      #000 calc(100% - var(--fade-bottom)),
+      transparent 100%
+    );
+  }
+
+  @media print {
+    .fade-scroll {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+
   @keyframes seamlessFadeIn {
     0% {
       opacity: 0;

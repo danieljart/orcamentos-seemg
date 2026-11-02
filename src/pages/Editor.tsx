@@ -1,15 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { db } from '../services/db';
 import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
+import { ShareModal } from '../components/ShareModal';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
-import { loadCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel } from '../lib/catalog';
-import type { PriceBase } from '../lib/catalog';
+import { loadCatalog, loadSetopCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel, isSetopCode, BASE_FILTERS } from '../lib/catalog';
+import type { PriceBase, CatalogSource, BaseFilter } from '../lib/catalog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { PrintableSpreadsheet } from '../components/PrintableSpreadsheet';
@@ -24,7 +25,18 @@ interface CatalogItem {
   isCategory: boolean;
   rows: number[];
   extendedDescription?: string;
+  source?: CatalogSource;
+  table?: string;
+  group?: string;
+  level?: number;
 }
+
+/**
+ * True for an item the SEE template has no row of its own for, which therefore
+ * has to be written into the "OUTROS" block on export: the hand-written custom
+ * items (260001_…) and everything taken from the SETOP base.
+ */
+const usesOutrosSection = (code: string): boolean => code.startsWith('2600') || isSetopCode(code);
 
 interface SelectedItemOccurrence {
   id: string;
@@ -46,6 +58,188 @@ import { evaluateMath } from '../lib/math';
 
 interface TreeNode extends CatalogItem {
   children: TreeNode[];
+}
+
+const SUPERSCRIPT_DIGITS: Record<string, string> = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+
+/**
+ * Flattens an ExcelJS cell value to plain text.
+ *
+ * A cell is not always a string: rich text arrives as { richText: [...] },
+ * formulas as { formula, result }, hyperlinks as { text, hyperlink }. Calling
+ * toString() on any of those yields "[object Object]", which is how that
+ * string ended up stored as a unit. Superscript runs are mapped to the
+ * matching Unicode character so "M" + superscript "2" reads back as "M²".
+ */
+const cellText = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (value instanceof Date) return value.toLocaleDateString('pt-BR');
+  if (typeof value !== 'object') return String(value);
+
+  const cell = value as any;
+  if (Array.isArray(cell.richText)) {
+    return cell.richText.map((run: any) => {
+      const text = run?.text ?? '';
+      if (run?.font?.vertAlign === 'superscript') {
+        return String(text).replace(/[0-9]/g, (d: string) => SUPERSCRIPT_DIGITS[d]);
+      }
+      return String(text);
+    }).join('');
+  }
+  if ('result' in cell) return cell.result === null || cell.result === undefined ? '' : String(cell.result);
+  if ('text' in cell) return String(cell.text);
+  if ('error' in cell) return '';
+  return '';
+};
+
+/**
+ * Budgets saved before cellText() existed can carry the literal string
+ * "[object Object]" as their unit. Dropping it here lets the item fall back to
+ * the unit from the catalogue instead of showing that string on screen and in
+ * the export.
+ */
+const sanitizeUnit = (unit: unknown): string | undefined => {
+  if (typeof unit !== 'string') return undefined;
+  const trimmed = unit.trim();
+  return trimmed && trimmed !== '[object Object]' ? trimmed : undefined;
+};
+
+/** How far the fade reaches into a scroll area, in pixels. */
+const SCROLL_FADE_SIZE = 40;
+
+/**
+ * Fades the edges of a scroll container in proportion to how far it is from
+ * the top and from the bottom, so content that continues past the edge looks
+ * cut off softly instead of abruptly. The scrollbar is hidden throughout the
+ * app, so this is what tells the user there is more to see.
+ *
+ * The two lengths are written straight onto the element rather than held in
+ * state: the budget list can hold hundreds of rows, and re-rendering it on
+ * every scroll frame would make the scrolling itself stutter.
+ *
+ * This is a callback ref, not a ref plus an effect, because the editor returns
+ * null until the workbook has loaded: an effect would run once against a node
+ * that does not exist yet and never attach to the real one.
+ */
+function useFadeScroll<T extends HTMLElement>() {
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  return useCallback((el: T | null) => {
+    cleanupRef.current?.();
+    cleanupRef.current = null;
+    if (!el) return;
+
+    const update = () => {
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      const scrollable = maxScroll > 1;
+      const top = scrollable ? Math.min(el.scrollTop, SCROLL_FADE_SIZE) : 0;
+      const bottom = scrollable ? Math.min(maxScroll - el.scrollTop, SCROLL_FADE_SIZE) : 0;
+      el.style.setProperty('--fade-top', `${top}px`);
+      el.style.setProperty('--fade-bottom', `${bottom}px`);
+    };
+
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+
+    // The list grows and shrinks as items are added, removed or expanded, and
+    // the panel itself resizes with the window; both change what is cut off.
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(el);
+    const mutationObserver = new MutationObserver(update);
+    mutationObserver.observe(el, { childList: true, subtree: true });
+
+    cleanupRef.current = () => {
+      el.removeEventListener('scroll', update);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, []);
+}
+
+/**
+ * Grows row heights so nothing is clipped in the exported sheet.
+ *
+ * Excel only auto-fits a row's height while editing it; a file written by a
+ * library keeps whatever height it was given, so long memories of calculation
+ * and long locations come out cut off mid-line. There is no text metrics API
+ * here, so the number of lines is estimated from the text length against the
+ * width of the columns the cell spans, taking merges into account.
+ *
+ * Heights are only ever increased: rows the template sized deliberately, such
+ * as the header band, keep their own height unless their content needs more.
+ */
+function growRowsToFitContent(worksheet: any): void {
+  const DEFAULT_COLUMN_WIDTH = 8.43;
+  const FALLBACK_FONT_SIZE = 11;
+  // Width is counted in characters of the default font. Text set in a larger
+  // font fits proportionally fewer, and the 0.95 leaves a little slack so a
+  // word that wraps early does not spill past the last visible line.
+  const charsPerWidthUnit = (fontSize: number) => (FALLBACK_FONT_SIZE / fontSize) * 0.95;
+
+  const columnWidth = (col: number): number => {
+    const column = worksheet.getColumn(col);
+    return (column && column.width) || DEFAULT_COLUMN_WIDTH;
+  };
+
+  // Map every merged cell to the range it belongs to, so a description that
+  // spans B:F is measured against all of those columns together.
+  const spanByAnchor = new Map<string, { lastCol: number }>();
+  const covered = new Set<string>();
+  const merges: string[] = worksheet.model && worksheet.model.merges ? worksheet.model.merges : [];
+
+  for (const range of merges) {
+    const [from, to] = range.split(':');
+    const start = from && from.match(/([A-Z]+)(\d+)/);
+    const end = to && to.match(/([A-Z]+)(\d+)/);
+    if (!start || !end) continue;
+
+    const colOf = (letters: string) => letters.split('').reduce((acc, ch) => acc * 26 + (ch.charCodeAt(0) - 64), 0);
+    const c1 = colOf(start[1]);
+    const c2 = colOf(end[1]);
+    const r1 = parseInt(start[2], 10);
+    const r2 = parseInt(end[2], 10);
+
+    spanByAnchor.set(`${r1}:${c1}`, { lastCol: c2 });
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        if (r !== r1 || c !== c1) covered.add(`${r}:${c}`);
+      }
+    }
+  }
+
+  worksheet.eachRow((row: any, rowNumber: number) => {
+    let neededLines = 1;
+    let largestFont = FALLBACK_FONT_SIZE;
+
+    for (let col = 1; col <= 12; col++) {
+      if (covered.has(`${rowNumber}:${col}`)) continue;
+
+      const cell = row.getCell(col);
+      const text = cellText(cell.value);
+      if (!text) continue;
+
+      const span = spanByAnchor.get(`${rowNumber}:${col}`);
+      const lastCol = span ? span.lastCol : col;
+      let width = 0;
+      for (let c = col; c <= lastCol; c++) width += columnWidth(c);
+
+      const fontSize = (cell.font && cell.font.size) || FALLBACK_FONT_SIZE;
+      largestFont = Math.max(largestFont, fontSize);
+
+      const capacity = Math.max(1, Math.floor(width * charsPerWidthUnit(fontSize)));
+      const lines = text
+        .split(/\r?\n/)
+        .reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / capacity)), 0);
+
+      neededLines = Math.max(neededLines, lines);
+    }
+
+    const lineHeight = largestFont * 1.3;
+    const needed = Math.ceil(neededLines * lineHeight);
+    if (!row.height || row.height < needed) {
+      row.height = needed;
+    }
+  });
 }
 
 const getItemTotalQuantity = (item: SelectedItem): number => {
@@ -93,6 +287,43 @@ function buildTree(items: CatalogItem[]): TreeNode[] {
   return root;
 }
 
+/**
+ * Builds the SETOP branch of the catalogue tree.
+ *
+ * The SEE codes encode their own nesting, which buildTree reads off the digits;
+ * SETOP codes do not, so the shape comes from the fields the generator wrote:
+ * each table (edificação, rodoviárias, consultoria) holds its group headers,
+ * and each group holds its services. Services listed before any group header
+ * hang directly off their table, which is where the source puts them.
+ */
+function buildSetopTree(items: CatalogItem[]): TreeNode[] {
+  const tables = new Map<string, TreeNode>();
+  const groups = new Map<string, TreeNode>();
+
+  for (const item of items) {
+    const node: TreeNode = { ...item, children: [] };
+
+    if (item.level === 0) {
+      tables.set(item.item, node);
+    } else if (item.level === 1) {
+      groups.set(item.item, node);
+      tables.get(item.table || '')?.children.push(node);
+    } else {
+      const parent = groups.get(item.group || '') || tables.get(item.table || '');
+      parent?.children.push(node);
+    }
+  }
+
+  // Groups the tables shipped with no services under them would render as
+  // dead ends, so they are left out.
+  const nonEmpty = (node: TreeNode): boolean => node.children.length > 0;
+  for (const table of tables.values()) {
+    table.children = table.children.filter(child => !child.isCategory || nonEmpty(child));
+  }
+
+  return Array.from(tables.values()).filter(nonEmpty);
+}
+
 export function Editor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,7 +332,20 @@ export function Editor() {
 
   const [workbook, setWorkbook] = useState<Workbook | null>(null);
 
+  // Ownership decides what the editor allows. A workbook opened through a
+  // share belongs to someone else, and the database only lets that user read
+  // it, so every way of changing it is switched off here instead of failing
+  // later against the database. The two stay false until both the workbook
+  // and the session user are known, so an owner is never briefly locked out.
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const isReadOnly = !!workbook && currentUserId !== null && workbook.user_id !== currentUserId;
+  const isOwner = !!workbook && currentUserId !== null && workbook.user_id === currentUserId;
+  const [sharedByName, setSharedByName] = useState('');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [setopCatalog, setSetopCatalog] = useState<CatalogItem[]>([]);
+  const [baseFilter, setBaseFilter] = useState<BaseFilter>('ambas');
   const [priceBase, setPriceBase] = useState<PriceBase>(DEFAULT_PRICE_BASE);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -119,6 +363,8 @@ export function Editor() {
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [copyMemoryMode, setCopyMemoryMode] = useState<string | null>(null);
   const [selectedItemsForCopy, setSelectedItemsForCopy] = useState<Set<string>>(new Set());
+
+  const budgetListRef = useFadeScroll<HTMLDivElement>();
 
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -158,6 +404,7 @@ export function Editor() {
   };
 
   const updateItems = (newItems: SelectedItem[] | ((prev: SelectedItem[]) => SelectedItem[]), description: string = 'Alteração no orçamento') => {
+    if (isReadOnly) return;
     setSelectedItems(prev => {
       let next = typeof newItems === 'function' ? newItems(prev) : newItems;
       next = [...next].sort((a, b) => a.item.localeCompare(b.item));
@@ -173,6 +420,7 @@ export function Editor() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isReadOnly) return;
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         if (historyIndex > 0) {
@@ -196,16 +444,21 @@ export function Editor() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [history, historyIndex]);
+  }, [history, historyIndex, isReadOnly]);
 
   // Draft Auto-save
   useEffect(() => {
-    if (!id || historyIndex === -1) return;
+    // Waits for the session user so the draft is never written before
+    // ownership is known, and never at all by someone who only reads: saveAll
+    // deletes the rows before inserting, which for a reader would be refused
+    // halfway through.
+    if (!id || historyIndex === -1 || currentUserId === null || isReadOnly) return;
     const saveDraft = async () => {
       await db.items.saveAll(id, selectedItems.map(i => {
-        const isCustom = i.item.startsWith('2600');
-        const payload = isCustom 
-          ? { occurrences: i.occurrences, custom: { code: i.customCode, title: i.customTitle, description: i.customDescription, unit: i.customUnit, price: i.customPrice } } 
+        // SETOP services are stored like custom items: the SEE catalogue has
+        // no entry to rebuild their description, unit and price from.
+        const payload = usesOutrosSection(i.item)
+          ? { occurrences: i.occurrences, source: i.source, custom: { code: i.customCode, title: i.customTitle, description: i.customDescription, unit: i.customUnit, price: i.customPrice } }
           : { occurrences: i.occurrences };
         
         return {
@@ -218,9 +471,17 @@ export function Editor() {
     };
     const timer = setTimeout(saveDraft, 1000);
     return () => clearTimeout(timer);
-  }, [selectedItems, id, historyIndex]);
+  }, [selectedItems, id, historyIndex, currentUserId, isReadOnly]);
 
   const fetchUserProfile = async () => {
+    try {
+      // Taken from the session, not from the profile row, so a missing row
+      // cannot leave the owner of a workbook looking like a stranger to it.
+      setCurrentUserId(await db.auth.getUserId());
+    } catch (err) {
+      console.error('Error reading the session user:', err);
+    }
+
     try {
       const u = await db.auth.getUser();
       if (u) {
@@ -270,9 +531,16 @@ export function Editor() {
       
       const currentBase = (wb.base_precos || '2025') as PriceBase;
       setPriceBase(currentBase);
-      loadCatalog(currentBase)
-        .then((data: CatalogItem[]) => {
+      // Both bases are awaited together: a budget may hold SETOP services, and
+      // restoring one needs its catalogue entry, so starting without it would
+      // silently drop those items from the budget.
+      Promise.all([loadCatalog(currentBase), loadSetopCatalog().catch(err => {
+        console.error('Base SETOP indisponível:', err);
+        return [] as CatalogItem[];
+      })])
+        .then(([data, setopData]: [CatalogItem[], CatalogItem[]]) => {
           setCatalog(data);
+          setSetopCatalog(setopData);
 
           let restoredItems: SelectedItem[] = [];
           if (loadedItems.length > 0) {
@@ -281,7 +549,9 @@ export function Editor() {
               // Support dynamic custom item IDs like 260001_abc1234
               const isCustomDynamic = typeof itemCode === 'string' && itemCode.startsWith('260001_');
               const lookupCode = isCustomDynamic ? '260001' : itemCode;
-              const catItem = data.find(c => c.item === lookupCode);
+              const catItem = isSetopCode(lookupCode)
+                ? setopData.find(c => c.item === lookupCode)
+                : data.find(c => c.item === lookupCode);
               if (!catItem) return null;
               
               let parsedOccurrences = loaded.occurrences;
@@ -314,7 +584,7 @@ export function Editor() {
                 customCode: customData?.code,
                 customTitle: customData?.title,
                 customDescription: customData?.description,
-                customUnit: customData?.unit,
+                customUnit: sanitizeUnit(customData?.unit),
                 customPrice: customData?.price,
                 occurrences: parsedOccurrences || [{
                   id: loaded.id || Math.random().toString(36).substring(2, 11),
@@ -367,7 +637,7 @@ export function Editor() {
                           customCode: customData.code,
                           customTitle: customData.title,
                           customDescription: customData.title,
-                          customUnit: customData.unit,
+                          customUnit: sanitizeUnit(customData.unit),
                           customPrice: customData.price
                         })
                       });
@@ -399,11 +669,28 @@ export function Editor() {
     loadData();
   }, [id, navigate, versionId]);
 
-  const tree = useMemo(() => buildTree(catalog), [catalog]);
+  const seeTree = useMemo(() => buildTree(catalog), [catalog]);
+  const setopTree = useMemo(() => buildSetopTree(setopCatalog), [setopCatalog]);
+  // Who the workbook was shared by, for the notice shown to a reader.
+  useEffect(() => {
+    if (!isReadOnly || !id) return;
+    let cancelled = false;
+    db.sharing.ownerNames([id]).then(names => {
+      if (!cancelled && names[id]) setSharedByName(names[id]);
+    });
+    return () => { cancelled = true; };
+  }, [isReadOnly, id]);
+
+  const tree = useMemo(() => {
+    if (baseFilter === 'SEE') return seeTree;
+    if (baseFilter === 'SETOP') return setopTree;
+    return [...seeTree, ...setopTree];
+  }, [baseFilter, seeTree, setopTree]);
 
   const handleClose = () => {
     const isSaved = JSON.stringify(selectedItems) === lastSavedItemsJson;
-    if (!isSaved) {
+    // A reader has nothing to save, so never gets the "unsaved changes" prompt.
+    if (!isSaved && !isReadOnly) {
       setShowCloseConfirm(true);
     } else {
       navigate('/dashboard');
@@ -443,17 +730,22 @@ export function Editor() {
 
 
   const openForm = (item: CatalogItem) => {
+    if (isReadOnly) return;
     let targetItem = item;
     if (item.item === '260001') {
       setCustomItemFields({ code: '', title: '', description: '', unit: '', price: 0 });
     } else if (item.item.startsWith('2600')) {
+      setCustomItemFields({ code: item.item, title: '', description: item.description, unit: item.unit, price: item.price });
+    } else if (isSetopCode(item.item)) {
+      // A SETOP service lands in the "OUTROS" block, which is filled from the
+      // custom fields, so they start out holding what the SETOP base says.
       setCustomItemFields({ code: item.item, title: '', description: item.description, unit: item.unit, price: item.price });
     }
 
     const existing = item.item === '260001' ? undefined : selectedItems.find(i => i.item === targetItem.item);
     if (existing) {
       setFormOccurrences(existing.occurrences.length > 0 ? existing.occurrences : [{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
-      if (existing.item.startsWith('2600')) {
+      if (usesOutrosSection(existing.item)) {
         setCustomItemFields({ 
           code: existing.customCode || existing.item, 
           title: existing.customTitle || '',
@@ -538,11 +830,13 @@ export function Editor() {
 
   const saveForm = () => {
     if (!activeFormItem) return;
-    const catItem = catalog.find(c => c.item === activeFormItem || activeFormItem.startsWith(c.item));
+    const catItem = isSetopCode(activeFormItem)
+      ? setopCatalog.find(c => c.item === activeFormItem)
+      : catalog.find(c => c.item === activeFormItem || activeFormItem.startsWith(c.item));
     const baseCatItem = catalog.find(c => c.item === '260001');
     if (!catItem && !baseCatItem) return;
 
-    const isCustom = activeFormItem === '260001' || activeFormItem.startsWith('2600');
+    const isCustom = activeFormItem === '260001' || usesOutrosSection(activeFormItem);
     const isNewCustom = activeFormItem === '260001';
 
     const uniqueId = isNewCustom ? `260001_${Math.random().toString(36).substring(2, 9)}` : activeFormItem;
@@ -575,8 +869,9 @@ export function Editor() {
   };
 
   const openEditForm = (item: SelectedItem) => {
+    if (isReadOnly) return;
     setEditFormOccurrences(item.occurrences.length > 0 ? item.occurrences : [{ id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
-    if (item.item.startsWith('2600')) {
+    if (usesOutrosSection(item.item)) {
       setEditCustomItemFields({
         code: item.customCode || item.item,
         title: item.customTitle || '',
@@ -589,7 +884,7 @@ export function Editor() {
   };
 
   const saveEditForm = (itemCode: string) => {
-    const isCustom = itemCode.startsWith('2600');
+    const isCustom = usesOutrosSection(itemCode);
     updateItems(prev => prev.map(i => {
       if (i.item === itemCode) {
         return {
@@ -615,7 +910,7 @@ export function Editor() {
 
   const handleImportExcelCandidate = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || isReadOnly) return;
 
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -633,25 +928,27 @@ export function Editor() {
       let currentTotalQty = '';
 
       ws.eachRow((row) => {
-        const colB = String(row.getCell(2).value || '').toUpperCase();
-        const colC = String(row.getCell(3).value || '').toUpperCase();
+        const colB = cellText(row.getCell(2).value).toUpperCase();
+        const colC = cellText(row.getCell(3).value).toUpperCase();
         if ((colB + ' ' + colC).includes('TOTAL CUSTO =') || (colB + ' ' + colC).includes('TOTAL GERAL =') || (colB + ' ' + colC).includes('VALIDAÇÃO')) {
           currentItemCode = null;
           return;
         }
 
-        const colACell = row.getCell(1).value;
-        const colA = colACell ? colACell.toString().trim() : '';
+        const colA = cellText(row.getCell(1).value).trim();
         const isItemCode = /^\d{6}$/.test(colA) && !colA.endsWith('00');
-        const isCustom = colA.startsWith('2600');
+        // A SETOP service is exported into the OUTROS block under its own code,
+        // so reading a sheet back has to recognise it there too.
+        const isSetop = isSetopCode(colA);
+        const isCustom = colA.startsWith('2600') || isSetop;
 
-        let occMemory = row.getCell(7).value?.toString().trim() || '';
+        let occMemory = cellText(row.getCell(7).value).trim();
         let occQtyVal = row.getCell(8).value;
         if (occQtyVal && typeof occQtyVal === 'object' && 'result' in occQtyVal) {
           occQtyVal = (occQtyVal as any).result;
         }
         let occQty = (occQtyVal !== null && occQtyVal !== undefined && occQtyVal !== '') ? String(occQtyVal).trim() : '';
-        const occLocation = row.getCell(9).value?.toString().trim() || '';
+        const occLocation = cellText(row.getCell(9).value).trim();
 
         if (isItemCode || isCustom) {
           currentItemCode = colA;
@@ -662,20 +959,16 @@ export function Editor() {
           currentTotalQty = (qty !== null && qty !== undefined && qty !== '') ? String(qty).trim() : '';
 
           const lookupCode = isCustom ? '260001' : currentItemCode;
-          const catItem = catalog.find(c => c.item === lookupCode);
+          const catItem = isSetop
+            ? setopCatalog.find(c => c.item === colA)
+            : catalog.find(c => c.item === lookupCode);
 
           if (catItem && (currentTotalQty || occQty || occMemory || occLocation)) {
             let customData = null;
             if (isCustom) {
-              const customTitle = row.getCell(2).value;
-              let titleStr = '';
-              if (customTitle && typeof customTitle === 'object' && 'richText' in customTitle) {
-                titleStr = (customTitle as any).richText.map((rt: any) => rt.text).join('');
-              } else if (customTitle) {
-                titleStr = customTitle.toString();
-              }
-              const customUnit = row.getCell(3).value?.toString() || '';
-              const customPrice = parseFloat(row.getCell(5).value?.toString() || '0');
+              const titleStr = cellText(row.getCell(2).value);
+              const customUnit = cellText(row.getCell(3).value).trim();
+              const customPrice = parseFloat(cellText(row.getCell(5).value) || '0');
               customData = { code: currentItemCode, title: titleStr, unit: customUnit, price: customPrice };
             }
 
@@ -697,7 +990,7 @@ export function Editor() {
                   customCode: customData.code,
                   customTitle: customData.title,
                   customDescription: customData.title,
-                  customUnit: customData.unit,
+                  customUnit: sanitizeUnit(customData.unit),
                   customPrice: customData.price
                 })
               });
@@ -847,13 +1140,53 @@ export function Editor() {
       }
 
       // 2. Fill Item Occurrences, Quantities, and Custom Items
+
+      // Every custom item is backed by the same catalogue entry (260001), so
+      // resolving its rows through the catalogue sends them all to one pair of
+      // template rows and only the last one survives the export. The template
+      // ships one slot per custom item (260001..260006); hand each item its
+      // own slot so the whole "OUTROS" section comes out.
+      const CUSTOM_SLOT_CODES = ['260001', '260002', '260003', '260004', '260005', '260006'];
+      const customSlots = CUSTOM_SLOT_CODES
+        .map(code => catalog.find(c => c.item === code))
+        .filter((slot): slot is CatalogItem => !!slot && Array.isArray(slot.rows) && slot.rows.length > 0)
+        .map(slot => slot.rows);
+
+      // Hand-written custom items and SETOP services share this block: neither
+      // has a row of its own in the SEE template.
+      const customItems = selectedItems.filter(i => usesOutrosSection(i.item));
+      const customRowsByItem = new Map<string, number[]>();
+      customItems.forEach((item, idx) => {
+        if (idx < customSlots.length) customRowsByItem.set(item.item, customSlots[idx]);
+      });
+
+      // Anything past the sixth slot gets rows appended after the last one,
+      // so a budget is not capped at six services from outside the SEE base.
+      const overflowItems = customItems.slice(customSlots.length);
+      const overflowAnchorRow = customSlots.length > 0
+        ? customSlots[customSlots.length - 1][customSlots[customSlots.length - 1].length - 1]
+        : 0;
+
+      const rowsForItem = (item: SelectedItem): number[] => {
+        if (usesOutrosSection(item.item)) return customRowsByItem.get(item.item) || [];
+        const catItem = catalog.find(c => c.item === item.item);
+        return (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : item.rows;
+      };
+
+      /**
+       * The code an item is grouped under. Everything in the OUTROS block
+       * answers 260001 whatever its own code is, which keeps the category and
+       * subtotal matching below working off plain code prefixes.
+       */
+      const categoryCodeOf = (item: SelectedItem): string =>
+        usesOutrosSection(item.item) ? '260001' : item.item;
+
       const extraOccurrencesMap = new Map<number, SelectedItemOccurrence[]>();
 
       selectedItems.forEach(item => {
-        const isCustom = item.item.startsWith('2600');
-        const lookupCode = isCustom ? '260001' : item.item;
-        const catItem = catalog.find(c => c.item === lookupCode);
-        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : item.rows;
+        const isCustom = usesOutrosSection(item.item);
+        const targetRows = rowsForItem(item);
+        if (targetRows.length === 0) return;
 
         const totalQty = getItemTotalQuantity(item);
 
@@ -915,16 +1248,16 @@ export function Editor() {
       const categoryItemRowsMap = new Map<string, number[]>();
 
       selectedItems.forEach(item => {
-        const isCustom = item.item.startsWith('2600');
-        const lookupCode = isCustom ? '260001' : item.item;
-        const catItem = catalog.find(c => c.item === lookupCode);
-        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : item.rows;
+        // Overflow items have no template rows of their own, but their
+        // category header and subtotal still have to survive the pruning.
+        const targetRows = rowsForItem(item);
 
         targetRows.forEach(r => rowsToKeep.add(r));
+        const groupingCode = categoryCodeOf(item);
         catalog.forEach(cat => {
           if (cat.isCategory) {
             const prefix = cat.item.replace(/(00)+$/, '');
-            if (item.item.startsWith(prefix)) {
+            if (groupingCode.startsWith(prefix)) {
               activeCategoryCodes.add(cat.item);
               cat.rows.forEach(r => rowsToKeep.add(r));
               if (cat.item.endsWith('0000')) {
@@ -960,15 +1293,41 @@ export function Editor() {
         newR: number;
         sampleOldR?: number;
         extraOcc?: SelectedItemOccurrence;
+        /** Set when the row opens an OUTROS item that had no slot left. */
+        overflowItem?: SelectedItem;
       }
       const destRowPlan: DestRowPlanItem[] = [];
       const rowOldToNew = new Map<number, number>();
+      /** Destination row carrying each overflow item's code, price and total. */
+      const overflowMainRow = new Map<string, number>();
       let nextDestRow = 1;
 
       sortedKeptRows.forEach(oldR => {
         rowOldToNew.set(oldR, nextDestRow);
         destRowPlan.push({ type: 'src', oldR, newR: nextDestRow });
         nextDestRow++;
+
+        // Services that found no free slot are written straight after the last
+        // one, one row per occurrence, before the OUTROS subtotal.
+        if (oldR === overflowAnchorRow && overflowItems.length > 0) {
+          const sampleOldR = customSlots[customSlots.length - 1][0];
+          overflowItems.forEach(item => {
+            const occurrences = item.occurrences && item.occurrences.length > 0
+              ? item.occurrences
+              : [{ id: '', quantity: '', memory: '', location: '' }];
+            occurrences.forEach((occ, idx) => {
+              if (idx === 0) overflowMainRow.set(item.item, nextDestRow);
+              destRowPlan.push({
+                type: 'extra',
+                sampleOldR,
+                extraOcc: occ,
+                overflowItem: idx === 0 ? item : undefined,
+                newR: nextDestRow,
+              });
+              nextDestRow++;
+            });
+          });
+        }
 
         if (extraOccurrencesMap.has(oldR)) {
           const extras = extraOccurrencesMap.get(oldR)!;
@@ -1115,6 +1474,31 @@ export function Editor() {
           }
           if (occQtd > 0) newRow.getCell(8).value = occQtd;
           if (plan.extraOcc.location) newRow.getCell(9).value = plan.extraOcc.location;
+
+          // The first row of an overflow item also carries the item itself,
+          // the way a template slot would.
+          const item = plan.overflowItem;
+          if (item) {
+            if (item.customCode) newRow.getCell(1).value = item.customCode;
+
+            const richText = [];
+            if (item.customTitle) {
+              richText.push({ font: { bold: true }, text: item.customTitle + (item.customDescription ? '\r\n' : '') });
+            }
+            if (item.customDescription) {
+              richText.push({ font: { bold: false }, text: item.customDescription });
+            }
+            if (richText.length > 0) {
+              newRow.getCell(2).value = { richText };
+            } else if (item.customDescription) {
+              newRow.getCell(2).value = item.customDescription;
+            }
+
+            if (item.customUnit) newRow.getCell(3).value = item.customUnit;
+            const totalQty = getItemTotalQuantity(item);
+            if (totalQty > 0) newRow.getCell(4).value = totalQty;
+            if (item.customPrice !== undefined) newRow.getCell(5).value = item.customPrice;
+          }
         }
         newRow.commit();
       });
@@ -1174,12 +1558,17 @@ export function Editor() {
         const itemRows = categoryItemRowsMap.get(catCode) || [];
         if (itemRows.length > 0 && newSubtotalR) {
           const newRowsForCat = itemRows.map(r => rowOldToNew.get(r)!).filter(Boolean);
+          // Overflow rows sit after the last slot and still belong to OUTROS,
+          // so the summed range has to reach them.
+          if (catCode === '260000') {
+            overflowMainRow.forEach(r => newRowsForCat.push(r));
+          }
           const newFirstItemR = Math.min(...newRowsForCat);
           const newLastItemR = Math.max(...newRowsForCat);
 
           let catSum = 0;
           selectedItems.forEach(it => {
-            if (it.item.startsWith(catCode.slice(0, 2))) {
+            if (categoryCodeOf(it).startsWith(catCode.slice(0, 2))) {
               const qty = getItemTotalQuantity(it);
               const pr = it.customPrice !== undefined ? it.customPrice : it.price;
               catSum += (qty * pr);
@@ -1200,21 +1589,18 @@ export function Editor() {
 
       // Item total formulas with explicit results (Col F: D * E)
       selectedItems.forEach(it => {
-        const isCustom = it.item.startsWith('2600');
-        const lookupCode = isCustom ? '260001' : it.item;
-        const catItem = catalog.find(c => c.item === lookupCode);
-        const targetRows = (catItem && catItem.rows && catItem.rows.length > 0) ? catItem.rows : it.rows;
-        if (targetRows.length > 0) {
-          const newMainR = rowOldToNew.get(targetRows[0]);
-          if (newMainR) {
-            const qty = getItemTotalQuantity(it);
-            const pr = it.customPrice !== undefined ? it.customPrice : it.price;
-            const itemTot = Math.round(qty * pr * 100) / 100;
-            destWs.getRow(newMainR).getCell(6).value = {
-              formula: `D${newMainR}*E${newMainR}`,
-              result: itemTot
-            };
-          }
+        const targetRows = rowsForItem(it);
+        const newMainR = targetRows.length > 0
+          ? rowOldToNew.get(targetRows[0])
+          : overflowMainRow.get(it.item);
+        if (newMainR) {
+          const qty = getItemTotalQuantity(it);
+          const pr = it.customPrice !== undefined ? it.customPrice : it.price;
+          const itemTot = Math.round(qty * pr * 100) / 100;
+          destWs.getRow(newMainR).getCell(6).value = {
+            formula: `D${newMainR}*E${newMainR}`,
+            result: itemTot
+          };
         }
       });
 
@@ -1303,6 +1689,8 @@ export function Editor() {
           result: totalGeralVal
         };
       }
+
+      growRowsToFitContent(destWs);
 
       const buffer = await destWb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -1440,7 +1828,7 @@ export function Editor() {
   const grandTotal = totalBudget + bdiAmount;
 
   const saveToCloud = async () => {
-    if (!workbook) return;
+    if (!workbook || isReadOnly) return;
 
     const serializeForCompare = (items: any[]) => JSON.stringify(items.map(i => ({
       item: i.item_code || i.item, // handle both formats
@@ -1668,13 +2056,17 @@ export function Editor() {
   const groupedSelected = useMemo(() => {
     const groups: Record<string, Record<string, SelectedItem[]>> = {};
     selectedItems.forEach(item => {
-      const catPrefix = item.item.substring(0, 2) + "0000";
+      // Custom and SETOP services carry codes the SEE prefixes cannot classify
+      // (ED-50701 would ask for category "ED0000"), and they are exported in
+      // the OUTROS block, so that is where the list shows them too.
+      const inOutros = usesOutrosSection(item.item);
+      const catPrefix = inOutros ? "260000" : item.item.substring(0, 2) + "0000";
       const cat = catalog.find(c => c.item === catPrefix);
       const mainGroupName = cat ? cat.description : "Outros";
 
       const subCatPrefix = item.item.substring(0, 4) + "00";
-      const subCat = catalog.find(c => c.item === subCatPrefix);
-      
+      const subCat = inOutros ? undefined : catalog.find(c => c.item === subCatPrefix);
+
       let subGroupName = "";
       if (subCat && subCat.item !== catPrefix && subCat.description && subCat.description.trim() !== '') {
         subGroupName = subCat.description;
@@ -1797,21 +2189,41 @@ export function Editor() {
             </div>
           </div>
           <div className="hidden md:flex gap-3 items-center">
-            <button
-              onClick={() => setIsHistoryModalOpen(true)}
-              className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border border-emerald-700 hover:border-emerald-500"
-              title="Histórico de Alterações (Ctrl+Z / Ctrl+Y)"
-            >
-              <History size={18} />
-              <span className="hidden sm:inline">Histórico</span>
-            </button>
+            {isOwner && (
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors border border-emerald-700 hover:border-emerald-500"
+                title="Compartilhar este orçamento com outros usuários"
+              >
+                <Share2 size={18} />
+                <span className="hidden sm:inline">Compartilhar</span>
+              </button>
+            )}
+            {isReadOnly && (
+              <span className="flex items-center gap-2 text-amber-100 bg-amber-500/20 border border-amber-400/40 px-3 py-2 rounded-lg text-sm font-bold" title="Você tem acesso somente para leitura a este orçamento">
+                <Lock size={16} />
+                <span className="hidden sm:inline">Somente leitura</span>
+              </span>
+            )}
+            {!isReadOnly && (
+              <button
+                onClick={() => setIsHistoryModalOpen(true)}
+                className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border border-emerald-700 hover:border-emerald-500"
+                title="Histórico de Alterações (Ctrl+Z / Ctrl+Y)"
+              >
+                <History size={18} />
+                <span className="hidden sm:inline">Histórico</span>
+              </button>
+            )}
 
             <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
-              <label className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 border border-slate-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer">
-                <FileSpreadsheet size={18} />
-                <span className="hidden sm:inline">Importar</span>
-                <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcelCandidate} />
-              </label>
+              {!isReadOnly && (
+                <label className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 border border-slate-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer">
+                  <FileSpreadsheet size={18} />
+                  <span className="hidden sm:inline">Importar</span>
+                  <input type="file" accept=".xlsx" className="hidden" onChange={handleImportExcelCandidate} />
+                </label>
+              )}
               <button
                 onClick={handleExportPdf}
                 disabled={selectedItems.length === 0 || isExportingPdf}
@@ -1835,13 +2247,15 @@ export function Editor() {
               <div className="bg-emerald-900/40 border border-emerald-700/50 rounded-lg">
                 <ThemeToggle />
               </div>
-              <button 
-                onClick={saveToCloud}
-                disabled={isCloudSaveDisabled}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors ${isCloudSaveDisabled ? 'bg-emerald-900/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
-              >
-                <Save size={18} /> {isSaving ? 'Salvando...' : 'Salvar Nuvem'}
-              </button>
+              {!isReadOnly && (
+                <button
+                  onClick={saveToCloud}
+                  disabled={isCloudSaveDisabled}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors ${isCloudSaveDisabled ? 'bg-emerald-900/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+                >
+                  <Save size={18} /> {isSaving ? 'Salvando...' : 'Salvar Nuvem'}
+                </button>
+              )}
               <button onClick={handleClose} className="p-2 bg-emerald-900/50 hover:bg-red-600 rounded-lg transition-colors border border-emerald-700 hover:border-red-600" title="Fechar Editor">
                 <X size={20} className="text-emerald-100" />
               </button>
@@ -1852,17 +2266,28 @@ export function Editor() {
 
       <main className="container mx-auto h-full flex flex-col gap-3 p-3 pb-20 md:pb-3 print:hidden flex-1 min-h-0 overflow-hidden">
         
+        {isReadOnly && (
+          <div role="status" className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 rounded-lg px-3 py-2 text-sm shrink-0 print:hidden">
+            <Lock size={16} className="shrink-0" />
+            <span>
+              Orçamento compartilhado{sharedByName ? <> por <strong>{sharedByName}</strong></> : ''}. Você pode visualizar e exportar, mas não alterar.
+            </span>
+          </div>
+        )}
+
         {/* Dados da Obra Info (FULL WIDTH) */}
         <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/50 rounded-lg px-3 h-[52px] shadow-sm flex flex-col justify-center relative group print:hidden shrink-0">
-          <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button 
-              onClick={() => setIsHeaderEditModalOpen(true)}
-              className="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 p-1.5 rounded-md shadow-sm border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
-              title="Editar Dados da Obra"
-            >
-              <Edit2 size={16} />
-            </button>
-          </div>
+          {!isReadOnly && (
+            <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setIsHeaderEditModalOpen(true)}
+                className="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 p-1.5 rounded-md shadow-sm border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
+                title="Editar Dados da Obra"
+              >
+                <Edit2 size={16} />
+              </button>
+            </div>
+          )}
           <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-x-4 pr-12 w-full">
             <div className="overflow-hidden flex-shrink min-w-[100px] max-w-[250px]">
               <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Escola</span>
@@ -1913,18 +2338,34 @@ export function Editor() {
 
         <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 overflow-hidden">
           {/* Lado Esquerdo: Busca e Catálogo */}
-          <div className="flex flex-col h-[50vh] lg:h-full lg:w-1/3 gap-3 print:hidden min-h-0 overflow-hidden">
+          {/* The catalogue is only for adding services, which a reader cannot do. */}
+          <div className={`flex flex-col h-[50vh] lg:h-full lg:w-1/3 gap-3 print:hidden min-h-0 overflow-hidden ${isReadOnly ? 'hidden' : ''}`}>
             {/* Caixa 1: Pesquisa */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-3 shrink-0">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="text"
-                  className="w-full pl-10 pr-4 h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm"
-                  placeholder="Buscar por nome ou código do serviço no catálogo..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-4 h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm"
+                    placeholder="Buscar por nome ou código do serviço no catálogo..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Select value={baseFilter} onValueChange={value => setBaseFilter(value as BaseFilter)}>
+                  <SelectTrigger
+                    className="w-[108px] shrink-0 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 focus:ring-emerald-500 rounded-lg shadow-sm !h-[52px]"
+                    title="Bases de preços exibidas no catálogo"
+                  >
+                    <SelectValue>{BASE_FILTERS.find(option => option.value === baseFilter)?.short}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4}>
+                    {BASE_FILTERS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </section>
 
@@ -1941,7 +2382,7 @@ export function Editor() {
           </div>
 
           {/* Lado Direito: Itens Selecionados */}
-          <div className="flex flex-col h-full lg:w-2/3 print:border-none print:shadow-none print:h-auto print:block print:w-full gap-3 min-h-0 overflow-hidden">
+          <div className={`flex flex-col h-full ${isReadOnly ? 'lg:w-full' : 'lg:w-2/3'} print:border-none print:shadow-none print:h-auto print:block print:w-full gap-3 min-h-0 overflow-hidden`}>
             
             {/* Caixa 3: Totais */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-3 shrink-0 print:bg-white print:border-none print:shadow-none print:p-0 print:mb-6">
@@ -1992,7 +2433,7 @@ export function Editor() {
 
             {/* Caixa 4: Lista do Orçamento */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0 overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 space-y-6 print:overflow-visible print:p-0">
+              <div ref={budgetListRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar fade-scroll p-3 space-y-6 print:overflow-visible print:p-0">
             {selectedItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
                 <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-full">
@@ -2073,7 +2514,7 @@ export function Editor() {
                                 </span>
                                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
                                 </div>
-                                {!isEditing && (
+                                {!isEditing && !isReadOnly && (
                                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
                                     <button onClick={(e) => handleStartCopy(item.item, e)} className={`p-1.5 rounded ${copyMemoryMode === item.item ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
                                       <Copy size={14}/>
@@ -2169,7 +2610,7 @@ export function Editor() {
                         {/* RIGHT INLINE FORM */}
                         {isEditing && (
                           <div className="p-3 bg-emerald-50/50 dark:bg-emerald-900/20 border-t border-emerald-100 dark:border-emerald-800 flex flex-col gap-3">
-                            {item.item.startsWith('2600') && (
+                            {usesOutrosSection(item.item) && (
                               <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white dark:bg-slate-800 rounded border border-emerald-200">
                                 <div className="sm:col-span-1">
                                   <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Código</label>
@@ -2327,17 +2768,27 @@ export function Editor() {
         >
           {isExporting ? <Loader2 className="animate-spin" size={22} /> : <Download size={22} />}
         </button>
-        <button 
-          onClick={saveToCloud}
-          disabled={isCloudSaveDisabled}
-          className={`flex-1 flex items-center justify-center h-12 rounded-lg shadow-sm transition-colors ${isCloudSaveDisabled ? 'bg-emerald-900/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
-        >
-          <Save size={22} />
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={saveToCloud}
+            disabled={isCloudSaveDisabled}
+            className={`flex-1 flex items-center justify-center h-12 rounded-lg shadow-sm transition-colors ${isCloudSaveDisabled ? 'bg-emerald-900/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+          >
+            <Save size={22} />
+          </button>
+        )}
         <button onClick={handleClose} className="flex-1 flex items-center justify-center h-12 bg-emerald-900/50 hover:bg-red-600 text-emerald-100 hover:text-white rounded-lg transition-colors border border-emerald-700 hover:border-red-600" title="Fechar Editor">
           <X size={24} />
         </button>
       </div>
+
+      {isShareModalOpen && isOwner && id && (
+        <ShareModal
+          workbookId={id}
+          workbookName={`${workbook.escola}${workbook.servicos ? ` — ${workbook.servicos}` : ''}`}
+          onClose={() => setIsShareModalOpen(false)}
+        />
+      )}
 
       {/* HEADER EDIT MODAL */}
       {isHeaderEditModalOpen && (
@@ -2370,8 +2821,9 @@ export function Editor() {
                     setPriceBase(newBase);
                     // Update prices of selected items (keep quantities, update prices from new catalog)
                     setSelectedItems(prev => prev.map(item => {
-                      // Custom items keep their manual prices
-                      if (item.item.startsWith('2600') && item.customPrice !== undefined) return item;
+                      // Custom and SETOP items keep their own prices: changing
+                      // the SEE base does not reprice another base's services.
+                      if (usesOutrosSection(item.item) && item.customPrice !== undefined) return item;
                       const newCatItem = newCatalogData.find(c => c.item === item.item);
                       if (newCatItem) {
                         return { ...item, price: newCatItem.price, description: newCatItem.description, unit: newCatItem.unit, extendedDescription: newCatItem.extendedDescription, rows: newCatItem.rows };
