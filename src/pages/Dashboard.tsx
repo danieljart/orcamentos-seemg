@@ -10,7 +10,7 @@ import { Base2026AnnouncementModal } from '../components/Base2026AnnouncementMod
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
-import { loadCatalog, DEFAULT_PRICE_BASE } from '../lib/catalog';
+import { loadCatalog, DEFAULT_PRICE_BASE, isExternalCode } from '../lib/catalog';
 import type { PriceBase } from '../lib/catalog';
 import { AccountSidebar } from '../components/AccountSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -88,7 +88,7 @@ export function Dashboard() {
 
   const checkAnnouncementPrompt = () => {
     try {
-      const seen = localStorage.getItem('seen_updates_v2026_math');
+      const seen = localStorage.getItem('seen_updates_v2026_bases_sharing');
       if (seen !== 'true') {
         setShowAnnouncement(true);
       }
@@ -602,12 +602,36 @@ export function Dashboard() {
         base_precos: wb.base_precos || '2026'
       });
 
+      // The editor reads from workbook_items (the live draft) when it opens
+      // normally, not from a saved version, so without copying it too the
+      // clone would look empty the moment it's opened.
+      const liveItems = await db.items.list(wb.id);
+      if (liveItems.length > 0) {
+        await db.items.saveAll(newWb.id, liveItems.map(({ item_code, quantity, memory, location }) => ({ item_code, quantity, memory, location })));
+      }
+
       const originalVersions = await db.versions.list(wb.id);
       if (originalVersions.length > 0) {
         const latestVersion = originalVersions[0];
-        const itemsToCopy = JSON.parse(latestVersion.items_json);
+        // items_json is a JSONB column: Supabase already hands it back parsed,
+        // so parsing it again throws "[object Object] is not valid JSON" —
+        // this was failing every clone of a workbook with a saved version.
+        const rawItems = latestVersion.items_json;
+        const itemsToCopy = typeof rawItems === 'string' ? JSON.parse(rawItems) : rawItems;
         if (itemsToCopy && itemsToCopy.length > 0) {
           await db.versions.create(newWb.id, itemsToCopy);
+          // A finalized workbook can have all its content only in a saved
+          // version, with nothing in the live draft (as above); in that case
+          // the version is also what rebuilds workbook_items for the clone.
+          if (liveItems.length === 0) {
+            await db.items.saveAll(newWb.id, itemsToCopy.map((i: any) => {
+              const usesOutrosSection = i.item.startsWith('2600') || isExternalCode(i.item);
+              const payload = usesOutrosSection
+                ? { occurrences: i.occurrences, source: i.source, custom: { code: i.customCode, title: i.customTitle, description: i.customDescription, unit: i.customUnit, price: i.customPrice } }
+                : { occurrences: i.occurrences };
+              return { item_code: i.item, quantity: '', memory: JSON.stringify(payload), location: '' };
+            }));
+          }
         }
       }
 

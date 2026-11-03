@@ -2536,23 +2536,15 @@ export function Editor() {
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
-                      const sourceItemForUnit = copyMemoryMode ? selectedItems.find(i => i.item === copyMemoryMode) : null;
-                      const canBeCopiedTo = copyMemoryMode && !isCopySource && sourceItemForUnit && (sourceItemForUnit.customUnit || sourceItemForUnit.unit) === (item.customUnit || item.unit);
-                      const isUnavailableForCopy = copyMemoryMode && !isCopySource && !canBeCopiedTo;
 
                       return (
-                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isUnavailableForCopy ? 'opacity-40 grayscale bg-slate-200 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 pointer-events-none' : (isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/80 print:bg-white hover:border-emerald-200 dark:hover:border-emerald-700')}`}>
+                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isCopySource ? 'border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-300 dark:ring-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/30' : isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/80 print:bg-white hover:border-emerald-200 dark:hover:border-emerald-700'}`}>
                         <div className="p-3 hover:shadow-md transition-shadow group relative">
                           <div className="w-full min-w-0">
                             <div className="print:hidden">
                               <div className="flex items-center justify-between mb-0.5">
                                 <div className="flex items-center gap-2">
-                                {copyMemoryMode && copyMemoryMode !== item.item && (() => {
-                                  const sourceItem = selectedItems.find(i => i.item === copyMemoryMode);
-                                  const targetUnit = item.customUnit || item.unit;
-                                  const sourceUnit = sourceItem ? (sourceItem.customUnit || sourceItem.unit) : null;
-                                  return sourceUnit === targetUnit;
-                                })() && (
+                                {copyMemoryMode && copyMemoryMode !== item.item && (
                                   <button onClick={(e) => { e.stopPropagation(); toggleItemForCopy(item.item); }} className="text-slate-400 hover:text-emerald-600">
                                     {selectedItemsForCopy.has(item.item) ? <CheckSquare size={16} className="text-emerald-600" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded" />}
                                   </button>
@@ -3160,7 +3152,7 @@ export function Editor() {
               <span>Copiando memória de cálculo...</span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Selecione os itens na lista que deverão receber a mesma memória e local.
+              Selecione os itens na lista que deverão receber a mesma memória e local, mesmo que a unidade seja diferente.
             </p>
             <div className="flex justify-end gap-3 mt-1">
               <button onClick={cancelCopyMemory} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
