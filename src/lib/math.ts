@@ -16,9 +16,32 @@ interface Token {
   value: string;
 }
 
+/**
+ * Results are cached by input string. The editor calls this for every
+ * occurrence of every item on each render — totals, subtotals, the group
+ * headers, the print mirror — so the same handful of expressions get parsed
+ * hundreds of times per keystroke. Parsing is pure, so the answer for a given
+ * string never changes; the cache is bounded so a long session editing many
+ * different expressions can't grow it without limit.
+ */
+const evalCache = new Map<string, string>();
+const EVAL_CACHE_LIMIT = 5000;
+
 export function evaluateMath(expr: any): string {
   if (expr === null || expr === undefined || expr === '') return '';
 
+  const cacheKey = typeof expr === 'string' ? expr : String(expr);
+  const cached = evalCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const result = evaluateMathUncached(expr);
+
+  if (evalCache.size >= EVAL_CACHE_LIMIT) evalCache.clear();
+  evalCache.set(cacheKey, result);
+  return result;
+}
+
+function evaluateMathUncached(expr: any): string {
   try {
     let raw = String(expr).trim();
     if (raw.startsWith('=')) {

@@ -1,6 +1,7 @@
-import { useMemo, Fragment } from 'react';
+import { useMemo, Fragment, memo } from 'react';
 import type { Workbook } from '../services/db';
 import { evaluateMath } from '../lib/math';
+import { isExternalCode } from '../lib/catalog';
 
 interface SelectedItemOccurrence {
   id: string;
@@ -38,9 +39,17 @@ interface Props {
   catalog: CatalogItem[];
 }
 
+// Custom items and everything from the SETOP/SUDECAP bases carry codes the
+// SEE prefixes can't classify, and are grouped in the sheet's "OUTROS"
+// (260000) block — same rule the real XLSX export uses.
+const usesOutrosSection = (code: string): boolean => code.startsWith('2600') || isExternalCode(code);
+
 const getItemTotalQuantity = (item: SelectedItem) => {
   if (!item.occurrences) return 0;
-  return item.occurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+  const sum = item.occurrences.reduce((acc, occ) => acc + (Number(evaluateMath(occ.quantity)) || 0), 0);
+  // evaluateMath rounds each occurrence to 2 decimals, but summing several of
+  // those floats can still drift (e.g. 13.770000000000001); round the sum too.
+  return Math.round(sum * 100) / 100;
 };
 
 const formatCurrency = (val: number) => {
@@ -53,7 +62,14 @@ const formatNumber = (val: number) => {
 
 const BORDER_STYLE = { border: '1px solid #000000' };
 
-export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props) {
+/**
+ * Hidden mirror of the official sheet, used as the source for the PDF export.
+ * It is mounted all the time (the export screenshots it on demand), so it is
+ * memoized: without that it rebuilt this whole table — hundreds of rows, plus
+ * a catalogue lookup per row — on every keystroke anywhere in the editor,
+ * even though none of its three props had changed.
+ */
+export const PrintableSpreadsheet = memo(function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props) {
   const is2026 = (workbook.base_precos || '2026') === '2026';
 
   const getBdiRate = (iss?: string) => {
@@ -86,17 +102,33 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
   const bdiProjAmount = totalProj * bdiProjRate;
   const grandTotal = totalBudget + bdiObraAmount + bdiProjAmount;
 
+  // One pass over the catalogue instead of a linear find() per group, per
+  // subgroup and per item (which, with a few thousand catalogue entries and
+  // a hundred-odd items, was hundreds of thousands of comparisons a render).
+  const catalogByItem = useMemo(() => {
+    const map = new Map<string, CatalogItem>();
+    for (const c of catalog) if (!map.has(c.item)) map.set(c.item, c);
+    return map;
+  }, [catalog]);
+
+  const catalogByDescription = useMemo(() => {
+    const map = new Map<string, CatalogItem>();
+    for (const c of catalog) if (!map.has(c.description)) map.set(c.description, c);
+    return map;
+  }, [catalog]);
+
   // Group items hierarchically exactly like the spreadsheet
   const groupedSelected = useMemo(() => {
     const groups: Record<string, Record<string, SelectedItem[]>> = {};
     selectedItems.forEach(item => {
-      const catPrefix = item.item.substring(0, 2) + "0000";
-      const cat = catalog.find(c => c.item === catPrefix);
+      const inOutros = usesOutrosSection(item.item);
+      const catPrefix = inOutros ? '260000' : (item.item.substring(0, 2) + "0000");
+      const cat = catalogByItem.get(catPrefix);
       const mainGroupName = cat ? cat.description : "OUTROS";
 
-      const subCatPrefix = item.item.substring(0, 4) + "00";
-      const subCat = catalog.find(c => c.item === subCatPrefix);
-      
+      const subCatPrefix = inOutros ? catPrefix : (item.item.substring(0, 4) + "00");
+      const subCat = catalogByItem.get(subCatPrefix);
+
       let subGroupName = "";
       if (subCat && subCat.item !== catPrefix && subCat.description && subCat.description.trim() !== '') {
         subGroupName = subCat.description;
@@ -108,7 +140,7 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
       groups[mainGroupName][subGroupName].push(item);
     });
     return groups;
-  }, [selectedItems, catalog]);
+  }, [selectedItems, catalogByItem]);
 
   const formattedDate = useMemo(() => {
     if (workbook.data_elaboracao) {
@@ -216,7 +248,7 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
 
           {/* CORPO DA PLANILHA - CATEGORIAS, ITENS E MEMÓRIAS */}
           {Object.entries(groupedSelected).map(([mainGroupName, subGroups]) => {
-            const mainGroupCat = catalog.find(c => c.description === mainGroupName);
+            const mainGroupCat = catalogByDescription.get(mainGroupName);
             const mainGroupCode = mainGroupCat ? mainGroupCat.item : '';
 
             return (
@@ -236,7 +268,7 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
 
                 {/* SUBGRUPOS E ITENS */}
                 {Object.entries(subGroups).map(([subGroupName, items]) => {
-                  const subGroupCat = catalog.find(c => c.description === subGroupName);
+                  const subGroupCat = catalogByDescription.get(subGroupName);
                   const subGroupCode = subGroupCat ? subGroupCat.item : '';
                   const subGroupTotal = items.reduce((acc, item) => {
                     const price = item.customPrice !== undefined ? item.customPrice : item.price;
@@ -270,7 +302,7 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
                         const extraOccs = occs.slice(1);
 
                         // Extended technical specification from catalog
-                        const catalogItem = catalog.find(c => c.item === item.item);
+                        const catalogItem = catalogByItem.get(item.item);
                         const extDesc = catalogItem?.extendedDescription || item.customDescription || '';
 
                         return (
@@ -487,4 +519,4 @@ export function PrintableSpreadsheet({ workbook, selectedItems, catalog }: Props
       </table>
     </div>
   );
-}
+});

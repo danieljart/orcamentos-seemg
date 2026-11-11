@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, memo, useDeferredValue } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, ChevronDown } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, ChevronDown, StickyNote } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -8,6 +8,7 @@ import { db } from '../services/db';
 import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { ShareModal } from '../components/ShareModal';
+import { NotesPanel } from '../components/NotesPanel';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
 import { loadCatalog, loadExternalCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel, isExternalCode, BASE_OPTIONS, ALL_BASES } from '../lib/catalog';
 import type { PriceBase, CatalogSource, BaseId } from '../lib/catalog';
@@ -191,9 +192,77 @@ function growRowsToFitContent(worksheet: any): void {
   });
 }
 
+/**
+ * Cleans a stored quantity string for display. Typing normally always goes
+ * through evaluateMath, which already rounds to 2 decimals, but some rows
+ * were written before that rounding existed (or arrived via import/clone),
+ * and showing those raw can print a float tail like 21.431099999999997.
+ */
+const formatQty = (q: string): string => {
+  if (!q) return q;
+  const evaluated = evaluateMath(q);
+  return evaluated || q;
+};
+
 const getItemTotalQuantity = (item: SelectedItem): number => {
   if (!item.occurrences) return 0;
-  return item.occurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+  const sum = item.occurrences.reduce((acc, occ) => acc + (Number(evaluateMath(occ.quantity)) || 0), 0);
+  // evaluateMath already rounds each occurrence to 2 decimals, but summing
+  // several of those floats can still land on e.g. 13.770000000000001
+  // (binary floating point), which then printed straight in the UI and the
+  // exported sheet. Rounding the sum the same way keeps it a clean number.
+  return Math.round(sum * 100) / 100;
+};
+
+/** Accent- and case-insensitive form used for catalogue searching. */
+const normalizeSearchText = (s: string): string =>
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+// Normalizing a description is not free, and the search walks every node of
+// every active base on each keystroke. The tree nodes are rebuilt only when
+// the catalogue itself changes, so caching per node object is enough and the
+// entries are collected along with the nodes.
+const normalizedDescriptions = new WeakMap<object, string>();
+const normalizedDescriptionOf = (node: { description: string }): string => {
+  const cached = normalizedDescriptions.get(node);
+  if (cached !== undefined) return cached;
+  const value = normalizeSearchText(node.description);
+  normalizedDescriptions.set(node, value);
+  return value;
+};
+
+// Pure occurrence helpers — no closure over component state, just the
+// setState passed in — so both Editor and the memoized BudgetItemRow below
+// can call them directly.
+const updateOccurrence = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, field: keyof SelectedItemOccurrence, value: string) => {
+  setState(state.map(occ => occ.id === id ? { ...occ, [field]: value } : occ));
+};
+
+const handleOccurrenceMathChange = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, value: string) => {
+  const result = evaluateMath(value);
+  setState(state.map(occ => occ.id === id ? { ...occ, memory: value, quantity: result ? String(result) : occ.quantity } : occ));
+};
+
+const addOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>) => {
+  setState(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
+};
+
+const removeOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string) => {
+  setState(prev => prev.filter(occ => occ.id !== id));
+};
+
+const duplicateOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, occ: SelectedItemOccurrence) => {
+  setState(prev => {
+    const index = prev.findIndex(o => o.id === occ.id);
+    const newOcc = { ...occ, id: Math.random().toString(36).substring(2, 11) };
+    const newArr = [...prev];
+    if (index !== -1) {
+      newArr.splice(index + 1, 0, newOcc);
+    } else {
+      newArr.push(newOcc);
+    }
+    return newArr;
+  });
 };
 
 function buildTree(items: CatalogItem[]): TreeNode[] {
@@ -273,6 +342,285 @@ function buildExternalTree(items: CatalogItem[]): TreeNode[] {
   return Array.from(tables.values()).filter(nonEmpty);
 }
 
+interface CustomItemFieldsShape {
+  code: string;
+  title: string;
+  description: string;
+  unit: string;
+  price: number;
+}
+
+const EMPTY_OCCURRENCES: SelectedItemOccurrence[] = [];
+const EMPTY_CUSTOM_FIELDS: CustomItemFieldsShape = { code: '', title: '', description: '', unit: '', price: 0 };
+
+interface BudgetItemRowProps {
+  item: SelectedItem;
+  isReadOnly: boolean;
+  isEditing: boolean;
+  isCopySource: boolean;
+  copyModeActive: boolean;
+  isInCopySelection: boolean;
+  isDescExpanded: boolean;
+  // Only meaningful while isEditing; the parent passes the stable EMPTY_*
+  // constants above for every other row, so those 139 other rows see the
+  // exact same prop value every render and memo can skip them.
+  editFormOccurrences: SelectedItemOccurrence[];
+  setEditFormOccurrences: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>;
+  editCustomItemFields: CustomItemFieldsShape;
+  setEditCustomItemFields: React.Dispatch<React.SetStateAction<CustomItemFieldsShape>>;
+  onToggleForCopy: (itemCode: string) => void;
+  onStartCopy: (itemId: string, e: React.MouseEvent) => void;
+  onToggleDescription: (itemCode: string, e: React.MouseEvent) => void;
+  onEdit: (item: SelectedItem) => void;
+  onRemove: (itemCode: string) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: (itemCode: string) => void;
+}
+
+/**
+ * One row of the budget list, split out of the big Object.entries(...).map()
+ * below and wrapped in memo so it only re-renders when ITS OWN props change.
+ * Before this, every keystroke in one item's edit form — memory, quantity,
+ * location, even an unrelated budget — re-built the JSX for every other item
+ * in the list too (measured well over 100ms per keystroke on a 140-item
+ * budget), because the whole list lived in one render pass with no
+ * boundaries. The callbacks passed in are all reference-stable (see the
+ * ref-backed wrappers in Editor), which is what makes the memo comparison
+ * actually hold for the rows that aren't being touched.
+ */
+const BudgetItemRow = memo(function BudgetItemRow({
+  item, isReadOnly, isEditing, isCopySource, copyModeActive, isInCopySelection, isDescExpanded,
+  editFormOccurrences, setEditFormOccurrences, editCustomItemFields, setEditCustomItemFields,
+  onToggleForCopy, onStartCopy, onToggleDescription, onEdit, onRemove, onCancelEdit, onSaveEdit,
+}: BudgetItemRowProps) {
+  const isCustom = usesOutrosSection(item.item);
+  const price = item.customPrice !== undefined ? item.customPrice : item.price;
+  const totalQty = getItemTotalQuantity(item);
+
+  return (
+    <div className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isCopySource ? 'border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-300 dark:ring-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/30' : isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/80 print:bg-white hover:border-emerald-200 dark:hover:border-emerald-700'}`}>
+      <div className="p-3 hover:shadow-md transition-shadow group relative">
+        <div className="w-full min-w-0">
+          <div className="print:hidden">
+            <div className="flex items-center justify-between mb-0.5">
+              <div className="flex items-center gap-2">
+              {copyModeActive && !isCopySource && (
+                <button onClick={(e) => { e.stopPropagation(); onToggleForCopy(item.item); }} className="text-slate-400 hover:text-emerald-600">
+                  {isInCopySelection ? <CheckSquare size={16} className="text-emerald-600" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded" />}
+                </button>
+              )}
+              <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 px-1.5 rounded border border-slate-200 dark:border-slate-600">{item.customCode || item.item}</span>
+              <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-1.5 rounded border border-slate-200 dark:border-slate-700">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
+              </span>
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{totalQty} {item.customUnit || item.unit}</span>
+              </div>
+              {!isEditing && !isReadOnly && (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                  <button onClick={(e) => onStartCopy(item.item, e)} className={`p-1.5 rounded ${isCopySource ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
+                    <Copy size={14}/>
+                  </button>
+                  <button onClick={() => onEdit(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
+                    <Edit2 size={14}/>
+                  </button>
+                  <button onClick={() => onRemove(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded" title="Remover">
+                    <Trash2 size={14}/>
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex flex-col flex-1">
+                <div className="flex items-start gap-1">
+                  <div className={`flex-1 ${isDescExpanded ? '' : 'line-clamp-3'}`}>
+                    <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-snug whitespace-pre-wrap" title={item.customTitle || item.customDescription || item.description}>
+                      {item.customTitle || item.customDescription || item.description}
+                    </p>
+                    {item.customTitle && item.customDescription && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-pre-wrap">{item.customDescription}</p>
+                    )}
+                    {(item.extendedDescription && isDescExpanded) && (
+                      <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 font-normal">{item.extendedDescription}</div>
+                    )}
+                  </div>
+                  {(item.extendedDescription || (item.customDescription && item.customDescription.length > 50) || item.description.length > 80) && (
+                    <button onClick={(e) => onToggleDescription(item.item, e)} className="p-0.5 text-slate-400 hover:text-emerald-600 transition-colors shrink-0 mt-0.5" title="Ver descrição completa">
+                      {isDescExpanded ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-200 whitespace-nowrap bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 mt-0.5">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalQty * price)}
+              </span>
+            </div>
+            {(item.occurrences && item.occurrences.length > 1) ? (
+              <div className="mt-3 text-[11px] border-t border-dashed border-emerald-200 dark:border-slate-700 pt-2 flex flex-col gap-1 w-full">
+                {item.occurrences.map((occ) => {
+                  const subtotal = (Number(evaluateMath(occ.quantity)) || 0) * price;
+                  return (
+                    <div key={occ.id} className="flex flex-wrap justify-between items-center text-slate-600 dark:text-slate-300 bg-emerald-100/40 dark:bg-emerald-900/20 p-1.5 rounded gap-2">
+                      <span className="flex-1 min-w-[120px] truncate" title={occ.location}><b>Local:</b> {occ.location || '-'}</span>
+                      <span className="flex-1 min-w-[100px] truncate" title={occ.memory}><b>Memória:</b> {occ.memory || '-'}</span>
+                      <span className="w-[80px]"><b>Qtd:</b> {formatQty(occ.quantity)} {item.customUnit || item.unit}</span>
+                      <span className="w-[120px] text-right font-medium text-emerald-700 dark:text-emerald-400"><b>Subtotal:</b> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotal)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1"><b>Local:</b> {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
+            )}
+          </div>
+
+          {/* Layout Específico para Impressão */}
+          <div className="hidden print:block print:!text-black">
+            <div className="flex justify-between items-start mb-1 border-b pb-1">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold text-slate-700 bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300 print:!text-black print:bg-slate-100 px-1.5 rounded border border-slate-200 dark:border-slate-600 print:border-slate-300">{item.customCode || item.item}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:!text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
+                  {item.customTitle && item.customDescription && (
+                    <span className="text-xs font-normal text-slate-500 dark:text-slate-400 print:!text-black line-clamp-1">{item.customDescription}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="text-xs text-slate-700 dark:text-slate-300 print:!text-black mt-2 space-y-1">
+              {item.occurrences?.map((occ) => (
+                <div key={occ.id} className="grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 grid-cols-5">
+                  <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
+                  <p className="truncate" title={occ.memory}><strong>Memória:</strong> {occ.memory || '-'}</p>
+                  <p><strong>Qtd:</strong> {formatQty(occ.quantity)} {item.customUnit || item.unit}</p>
+                  <p><strong>{item.occurrences!.length > 1 ? 'Subtotal' : 'Total'}:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * price)}</p>
+                </div>
+              ))}
+              {item.occurrences!.length > 1 && (
+                <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:!text-black">
+                  <p>Qtd Total: {totalQty} {item.customUnit || item.unit}</p>
+                  <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}</p>
+                  <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalQty * price)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT INLINE FORM */}
+      {isEditing && (
+        <div className="p-3 bg-emerald-50/50 dark:bg-emerald-900/20 border-t border-emerald-100 dark:border-emerald-800 flex flex-col gap-3">
+          {isCustom && (
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white dark:bg-slate-800 rounded border border-emerald-200">
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Código</label>
+                <input type="text" value={editCustomItemFields.code} onChange={e => setEditCustomItemFields({...editCustomItemFields, code: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Título</label>
+                <input type="text" value={editCustomItemFields.title} onChange={e => setEditCustomItemFields({...editCustomItemFields, title: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Ex: Piso Cerâmico" />
+              </div>
+              <div className="sm:col-span-4">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Descrição</label>
+                <input type="text" value={editCustomItemFields.description} onChange={e => setEditCustomItemFields({...editCustomItemFields, description: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Detalhes opcionais..." />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Unidade</label>
+                <input type="text" value={editCustomItemFields.unit} onChange={e => setEditCustomItemFields({...editCustomItemFields, unit: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Preço</label>
+                <input type="number" step="0.01" value={editCustomItemFields.price} onChange={e => setEditCustomItemFields({...editCustomItemFields, price: Number(e.target.value)})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {editFormOccurrences.map((occ, idx) => (
+              <div key={occ.id} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-700/60">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    Local #{idx + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => duplicateOccurrence(setEditFormOccurrences, occ)}
+                      className="text-slate-400 hover:text-emerald-600 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700"
+                      title="Duplicar Local"
+                    >
+                      <Copy size={13}/>
+                    </button>
+                    {editFormOccurrences.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)}
+                        className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30"
+                        title="Remover Local"
+                      >
+                        <Trash2 size={13}/>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[1fr_56px] gap-2 items-start">
+                  <div className="min-w-0">
+                    <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                      placeholder="Ex: 2*5, 3^2, raiz(16)"
+                      value={occ.memory}
+                      onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 text-center truncate" title={`Qtd. (${item.customUnit || item.unit})`}>
+                      Qtd
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full px-1 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-bold"
+                      placeholder="Qtd"
+                      value={occ.quantity}
+                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção</label>
+                  <input
+                    type="text"
+                    list="locations-list"
+                    className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="Ex: Bloco A, Sala 3"
+                    value={occ.location}
+                    onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between items-center mt-1">
+            <button onClick={() => addOccurrence(setEditFormOccurrences)} className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+              <Plus size={16}/> Adicionar Local
+            </button>
+            <div className="flex gap-2">
+              <button onClick={onCancelEdit} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:bg-slate-700 rounded-md">Cancelar</button>
+              <button onClick={() => onSaveEdit(item.item)} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
+                <CheckCircle size={16}/> Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
 export function Editor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -292,14 +640,31 @@ export function Editor() {
   const [sharedByName, setSharedByName] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
+  // Free-form notes kept with the workbook, never written into the exported
+  // XLSX or PDF. Hidden by default; a button in the header shows/hides the
+  // panel. notesUnavailable is set the first time a save fails because
+  // database/notepad.sql has not been run yet, so it doesn't fail silently.
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [notesText, setNotesText] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesUnavailable, setNotesUnavailable] = useState(false);
+
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   // SETOP and SUDECAP together: their codes never collide, so one list serves lookups.
   const [externalCatalog, setExternalCatalog] = useState<CatalogItem[]>([]);
   const [activeBases, setActiveBases] = useState<BaseId[]>(ALL_BASES);
   const [priceBase, setPriceBase] = useState<PriceBase>(DEFAULT_PRICE_BASE);
   const [searchTerm, setSearchTerm] = useState('');
+  // Same idea as the budget search below: the catalogue tree spans the SEE,
+  // SETOP and SUDECAP bases together (around ten thousand entries), so its
+  // filtering runs against the deferred value and never blocks typing.
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   // Filters the services already in the budget; the catalogue search above is separate.
   const [budgetSearch, setBudgetSearch] = useState('');
+  // The input itself always shows what was just typed; the filtering of the
+  // list runs against this deferred copy, at a lower priority, so a big
+  // budget re-filtering can never hold up the next character appearing.
+  const deferredBudgetSearch = useDeferredValue(budgetSearch);
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   interface HistoryState {
@@ -404,6 +769,16 @@ export function Editor() {
     // deletes the rows before inserting, which for a reader would be refused
     // halfway through.
     if (!id || historyIndex === -1 || currentUserId === null || isReadOnly) return;
+    // Opening a past version (?version=...) is for looking at it, not for
+    // silently replacing the live draft with it the moment a second passes.
+    if (versionId) return;
+    // Never write the very first, untouched state right after load: if the
+    // initial fetch of the draft came back empty or incomplete without
+    // throwing (a dropped connection, a backgrounded tab, ...), this would be
+    // the one save that persists that wrong snapshot over the real data.
+    // Once the user makes any change, history grows past this single entry
+    // and autosaving resumes normally.
+    if (historyIndex === 0 && history.length === 1) return;
     const saveDraft = async () => {
       await db.items.saveAll(id, selectedItems.map(i => {
         // SETOP and SUDECAP services are stored like custom items: the SEE catalogue has
@@ -422,7 +797,32 @@ export function Editor() {
     };
     const timer = setTimeout(saveDraft, 1000);
     return () => clearTimeout(timer);
-  }, [selectedItems, id, historyIndex, currentUserId, isReadOnly]);
+  }, [selectedItems, id, historyIndex, currentUserId, isReadOnly, versionId, history.length]);
+
+  // Notes Auto-save. Runs independently of the draft/items autosave above —
+  // it only ever touches workbooks.observacoes, never the item rows or the
+  // exported sheet.
+  useEffect(() => {
+    if (!id || !workbook || isReadOnly || notesUnavailable) return;
+    if (notesText === (workbook.observacoes || '')) return;
+    setIsSavingNotes(true);
+    const timer = setTimeout(async () => {
+      try {
+        await db.workbooks.update(id, { observacoes: notesText });
+        setWorkbook(wb => wb ? { ...wb, observacoes: notesText } : wb);
+      } catch (err: any) {
+        // database/notepad.sql has not been run yet: the column doesn't
+        // exist, so stop retrying for the rest of this session instead of
+        // failing on every keystroke.
+        if (err?.code === 'PGRST204' || err?.code === '42703') setNotesUnavailable(true);
+        console.error('Erro ao salvar notas:', err);
+      } finally {
+        setIsSavingNotes(false);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notesText, id, isReadOnly, notesUnavailable]);
 
   const fetchUserProfile = async () => {
     try {
@@ -456,6 +856,7 @@ export function Editor() {
       }
       setWorkbook(wb);
       setHeaderForm(wb);
+      setNotesText(wb.observacoes || '');
 
       let loadedItems: any[] = [];
       
@@ -635,6 +1036,15 @@ export function Editor() {
     return () => { cancelled = true; };
   }, [isReadOnly, id]);
 
+  // A string key of the item codes currently in the budget. Its VALUE (not
+  // reference) stays the same while an existing item's memory, quantity or
+  // location is edited — only adding or removing an item changes it — so a
+  // useMemo keyed on it can tell "an item was added/removed" apart from
+  // "the text inside one was edited", which raw `selectedItems` cannot: that
+  // array gets a new reference on every keystroke in any budget field.
+  const selectedItemCodesKey = useMemo(() => selectedItems.map(i => i.item).join('|'), [selectedItems]);
+  const selectedItemCodesSet = useMemo(() => new Set(selectedItemCodesKey ? selectedItemCodesKey.split('|') : []), [selectedItemCodesKey]);
+
   const tree = useMemo(() => [
     ...(activeBases.includes('SEE') ? seeTree : []),
     ...(activeBases.includes('SETOP') ? setopTree : []),
@@ -671,38 +1081,6 @@ export function Editor() {
       navigate('/dashboard');
     }
   };
-
-  const updateOccurrence = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, field: keyof SelectedItemOccurrence, value: string) => {
-    setState(state.map(occ => occ.id === id ? { ...occ, [field]: value } : occ));
-  };
-
-  const handleOccurrenceMathChange = (state: SelectedItemOccurrence[], setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string, value: string) => {
-    const result = evaluateMath(value);
-    setState(state.map(occ => occ.id === id ? { ...occ, memory: value, quantity: result ? String(result) : occ.quantity } : occ));
-  };
-
-  const addOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>) => {
-    setState(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), memory: '', quantity: '', location: '' }]);
-  };
-
-  const removeOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, id: string) => {
-    setState(prev => prev.filter(occ => occ.id !== id));
-  };
-
-  const duplicateOccurrence = (setState: React.Dispatch<React.SetStateAction<SelectedItemOccurrence[]>>, occ: SelectedItemOccurrence) => {
-    setState(prev => {
-      const index = prev.findIndex(o => o.id === occ.id);
-      const newOcc = { ...occ, id: Math.random().toString(36).substring(2, 11) };
-      const newArr = [...prev];
-      if (index !== -1) {
-        newArr.splice(index + 1, 0, newOcc);
-      } else {
-        newArr.push(newOcc);
-      }
-      return newArr;
-    });
-  };
-
 
   const openForm = (item: CatalogItem) => {
     if (isReadOnly) return;
@@ -882,6 +1260,41 @@ export function Editor() {
   const handleRemoveItem = (itemCode: string) => {
     updateItems(prev => prev.filter(i => i.item !== itemCode), `Item ${itemCode} removido`);
   };
+
+  // Reference-stable wrappers for BudgetItemRow (wrapped in React.memo).
+  // These functions close over state that changes every keystroke
+  // (editFormOccurrences, editCustomItemFields, historyIndex, ...), so a
+  // plain useCallback with the "right" deps would still get a new identity
+  // on exactly the renders where it matters, which would make memo compare
+  // unequal on every one of the 140 rows and defeat the whole point. A ref
+  // always holds the latest version of the function, and the stable wrapper
+  // below just calls whatever is in the ref — so the prop identity handed to
+  // every row never changes, while the behavior is always up to date.
+  const toggleDescriptionRef = useRef(toggleDescription);
+  toggleDescriptionRef.current = toggleDescription;
+  const stableToggleDescription = useCallback((itemCode: string, e: React.MouseEvent) => toggleDescriptionRef.current(itemCode, e), []);
+
+  const handleStartCopyRef = useRef(handleStartCopy);
+  handleStartCopyRef.current = handleStartCopy;
+  const stableHandleStartCopy = useCallback((itemId: string, e: React.MouseEvent) => handleStartCopyRef.current(itemId, e), []);
+
+  const toggleItemForCopyRef = useRef(toggleItemForCopy);
+  toggleItemForCopyRef.current = toggleItemForCopy;
+  const stableToggleItemForCopy = useCallback((itemId: string) => toggleItemForCopyRef.current(itemId), []);
+
+  const openEditFormRef = useRef(openEditForm);
+  openEditFormRef.current = openEditForm;
+  const stableOpenEditForm = useCallback((item: SelectedItem) => openEditFormRef.current(item), []);
+
+  const saveEditFormRef = useRef(saveEditForm);
+  saveEditFormRef.current = saveEditForm;
+  const stableSaveEditForm = useCallback((itemCode: string) => saveEditFormRef.current(itemCode), []);
+
+  const handleRemoveItemRef = useRef(handleRemoveItem);
+  handleRemoveItemRef.current = handleRemoveItem;
+  const stableHandleRemoveItem = useCallback((itemCode: string) => handleRemoveItemRef.current(itemCode), []);
+
+  const stableCancelEdit = useCallback(() => setActiveRightEditItem(null), []);
 
   const handleImportExcelCandidate = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1731,7 +2144,7 @@ export function Editor() {
 
       const pageWidth = 297;
       const pageHeight = 210;
-      const margin = 5; // mm
+      const margin = 6; // mm, on every side
       const printableWidth = pageWidth - (margin * 2); // 287mm
       const pageContentHeight = pageHeight - (margin * 2); // 200mm
 
@@ -1784,7 +2197,11 @@ export function Editor() {
     }
   };
 
-  const { totalObra, totalProj, totalBudget } = selectedItems.reduce((acc, item) => {
+  // Walks every item and every occurrence, so it is kept off the path of
+  // keystrokes that don't change the budget itself (editing a draft field,
+  // typing in a search box): those re-render the editor without touching
+  // selectedItems.
+  const { totalObra, totalProj, totalBudget } = useMemo(() => selectedItems.reduce((acc, item) => {
     const cost = getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price);
     acc.totalBudget += cost;
     if (item.item.startsWith('24')) {
@@ -1793,7 +2210,7 @@ export function Editor() {
       acc.totalObra += cost;
     }
     return acc;
-  }, { totalObra: 0, totalProj: 0, totalBudget: 0 });
+  }, { totalObra: 0, totalProj: 0, totalBudget: 0 }), [selectedItems]);
 
   const bdiRate = getBdiRate(workbook?.iss);
   const bdiProjRate = is2026Base ? 0.2958 : 0.2926;
@@ -1841,19 +2258,30 @@ export function Editor() {
 
   // `groupName` keeps the accordions of one list from closing those of another
   // list that is on screen at the same time (they share the `name` attribute).
-  const renderTree = (nodes: TreeNode[], term: string, level: number = 0, groupName: string = 'catalog-categories'): ReactNode => {
-    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const normalizedTerm = normalize(term);
-    
+  // `budget` caps how many services a single search may draw: a one or two
+  // letter term matches thousands of entries across the three bases, and
+  // expanding all of them at once is what used to stall typing. The cap is
+  // high enough that a real search is never truncated, and the panel says so
+  // when it is.
+  const renderTree = (nodes: TreeNode[], term: string, level: number = 0, groupName: string = 'catalog-categories', budget?: { left: number }): ReactNode => {
+    const normalizedTerm = normalizeSearchText(term);
+
     const filterNode = (node: TreeNode): boolean => {
       if (!term) return true;
-      if (normalize(node.description).includes(normalizedTerm)) return true;
+      // The normalized description is cached per node: this walk covers every
+      // entry of every active base on each keystroke, and re-normalizing the
+      // same thousands of descriptions each time was most of the search cost.
+      if (normalizedDescriptionOf(node).includes(normalizedTerm)) return true;
       if (node.item.includes(term)) return true;
       if (node.children.some(filterNode)) return true;
       return false;
     };
 
     return nodes.filter(filterNode).map(node => {
+      if (budget && !node.isCategory) {
+        if (budget.left <= 0) return null;
+        budget.left -= 1;
+      }
       if (node.isCategory) {
         return (
           <details key={node.item} name={`${groupName}-${level}`} className="group mb-1" open={!!term}>
@@ -1875,15 +2303,15 @@ export function Editor() {
               </div>
             </summary>
             <div className="pl-4 mt-1 border-l-2 border-slate-100 dark:border-slate-700 ml-3 flex flex-col gap-1">
-              {renderTree(node.children, term, level + 1, groupName)}
+              {renderTree(node.children, term, level + 1, groupName, budget)}
             </div>
           </details>
         );
       } else {
         const isCustomNode = node.item === '260001';
-        const isAdded = isCustomNode 
+        const isAdded = isCustomNode
           ? false
-          : selectedItems.some(i => i.item === node.item);
+          : selectedItemCodesSet.has(node.item);
         
         const isFormActive = isCustomNode
           ? activeFormItem?.startsWith('2600')
@@ -2030,10 +2458,19 @@ export function Editor() {
     });
   };
 
+  // catalog.find(c => c.description === name) was repeated for every group and
+  // subgroup heading on every render of the budget list; this builds the
+  // lookup once per catalog load instead of scanning it over and over.
+  const catalogByDescription = useMemo(() => {
+    const map = new Map<string, CatalogItem>();
+    for (const c of catalog) if (!map.has(c.description)) map.set(c.description, c);
+    return map;
+  }, [catalog]);
+
   const groupedSelected = useMemo(() => {
     const groups: Record<string, Record<string, SelectedItem[]>> = {};
     const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    const term = normalize(budgetSearch.trim());
+    const term = normalize(deferredBudgetSearch.trim());
     // Everything an item shows in the list: its code and description, the
     // custom fields, and what was written in each memory and location.
     const matches = (item: SelectedItem) => !term || normalize([
@@ -2064,7 +2501,26 @@ export function Editor() {
       groups[mainGroupName][subGroupName].push(item);
     });
     return groups;
-  }, [selectedItems, catalog, budgetSearch]);
+  }, [selectedItems, catalog, deferredBudgetSearch]);
+
+  // The group and subgroup headings each show a sum over their items, and
+  // every one of those sums walks the occurrences through evaluateMath. Doing
+  // that inline in the JSX meant redoing all of it on every render, including
+  // renders caused by typing in a field that changes none of it.
+  const groupTotals = useMemo(() => {
+    const main: Record<string, number> = {};
+    const sub: Record<string, number> = {};
+    for (const [mainGroupName, subGroups] of Object.entries(groupedSelected)) {
+      let mainTotal = 0;
+      for (const [subGroupName, items] of Object.entries(subGroups)) {
+        const subTotal = items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+        sub[`${mainGroupName}\u0000${subGroupName}`] = subTotal;
+        mainTotal += subTotal;
+      }
+      main[mainGroupName] = mainTotal;
+    }
+    return { main, sub };
+  }, [groupedSelected]);
 
   const uniqueLocations = useMemo(() => {
     const locs = new Set<string>();
@@ -2078,9 +2534,40 @@ export function Editor() {
     return Array.from(locs).sort();
   }, [selectedItems]);
 
+  // The catalogue tree is built from thousands of entries (SEE + SETOP +
+  // SUDECAP), and renderTree's only real dependency on the budget is which
+  // item codes are in it (selectedItemCodesSet), not the live `selectedItems`
+  // array. Without this memo, every keystroke anywhere in the component —
+  // typing in an already-added item's memory or location, in the edit form,
+  // even unrelated state like a toast — re-ran that whole tree walk and
+  // rebuilt thousands of elements, which is what made typing feel laggy.
+  const CATALOG_RENDER_CAP = 400;
+  const catalogBudgetLeft = useRef(CATALOG_RENDER_CAP);
+  const catalogResults = useMemo(
+    () => {
+      // Only a search can explode the node count: with no term the tree is
+      // just the collapsed category headings.
+      const budget = deferredSearchTerm ? { left: CATALOG_RENDER_CAP } : undefined;
+      const nodes = renderTree(tree, deferredSearchTerm, 0, 'catalog-categories', budget) as ReactNode[];
+      catalogBudgetLeft.current = budget ? budget.left : CATALOG_RENDER_CAP;
+      return nodes;
+    },
+    [tree, deferredSearchTerm, selectedItemCodesSet, activeFormItem, expandedDescriptions, formOccurrences, customItemFields]
+  );
+  const catalogTruncated = !!deferredSearchTerm && catalogBudgetLeft.current <= 0;
+  const catalogSuggestions = useMemo(
+    () => (deferredSearchTerm && otherBasesTree.length > 0 ? renderTree(otherBasesTree, deferredSearchTerm, 0, 'catalog-suggestions', { left: CATALOG_RENDER_CAP }) as ReactNode[] : []),
+    [otherBasesTree, deferredSearchTerm, selectedItemCodesSet, activeFormItem, expandedDescriptions, formOccurrences, customItemFields]
+  );
+
+  // Serializing the whole budget is not something to redo on every keystroke
+  // in an unrelated field, so it only reruns when the budget itself changes.
+  // Declared above the early return below: hooks must run on every render.
+  const selectedItemsJson = useMemo(() => JSON.stringify(selectedItems), [selectedItems]);
+
   if (!workbook) return null;
 
-  const isCloudSaveDisabled = isSaving || JSON.stringify(selectedItems) === lastSavedItemsJson;
+  const isCloudSaveDisabled = isSaving || selectedItemsJson === lastSavedItemsJson;
 
   return (
     <div className="h-screen overflow-hidden bg-slate-100 dark:bg-slate-800/50 flex flex-col print:h-auto print:overflow-visible print:bg-white">
@@ -2194,13 +2681,21 @@ export function Editor() {
             {!isReadOnly && (
               <button
                 onClick={() => setIsHistoryModalOpen(true)}
-                className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border border-emerald-700 hover:border-emerald-500"
+                className="flex items-center gap-2 text-emerald-200 hover:text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors border border-emerald-700 hover:border-emerald-500"
                 title="Histórico de Alterações (Ctrl+Z / Ctrl+Y)"
               >
                 <History size={18} />
                 <span className="hidden sm:inline">Histórico</span>
               </button>
             )}
+            <button
+              onClick={() => setIsNotesOpen(v => !v)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border ${isNotesOpen ? 'bg-emerald-700 text-white border-emerald-500' : 'text-emerald-200 hover:text-white border-emerald-700 hover:border-emerald-500'}`}
+              title="Notas e observações (não entram na planilha exportada)"
+            >
+              <StickyNote size={18} />
+              <span className="hidden sm:inline">Notas</span>
+            </button>
 
             <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
               {!isReadOnly && (
@@ -2372,33 +2867,30 @@ export function Editor() {
                 {catalog.length === 0 ? (
                    <div className="text-center p-8 text-slate-400">Carregando catálogo...</div>
                 ) : (
-                   (() => {
-                     const results = renderTree(tree, searchTerm) as ReactNode[];
-                     const suggestions = searchTerm && otherBasesTree.length > 0
-                       ? renderTree(otherBasesTree, searchTerm, 0, 'catalog-suggestions') as ReactNode[]
-                       : [];
-                     return (
-                       <>
-                         {results}
-                         {searchTerm && results.length === 0 && suggestions.length > 0 && (
-                           <p className="text-center text-sm text-slate-400 py-4">Nenhum resultado nas bases marcadas.</p>
-                         )}
-                         {suggestions.length > 0 && (
-                           <div className="mt-3">
-                             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1 pb-2 flex items-center gap-2">
-                               <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
-                               Sugestões de outras bases
-                               <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
-                             </p>
-                             {/* Faded like a watermark until pointed at, so it reads as a suggestion and not a result. */}
-                             <div className="opacity-50 hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                               {suggestions}
-                             </div>
-                           </div>
-                         )}
-                       </>
-                     );
-                   })()
+                   <>
+                     {catalogResults}
+                     {catalogTruncated && (
+                       <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 py-2">
+                         Mostrando os primeiros {CATALOG_RENDER_CAP} serviços. Escreva mais para afinar a busca.
+                       </p>
+                     )}
+                     {deferredSearchTerm && catalogResults.length === 0 && catalogSuggestions.length > 0 && (
+                       <p className="text-center text-sm text-slate-400 py-4">Nenhum resultado nas bases marcadas.</p>
+                     )}
+                     {catalogSuggestions.length > 0 && (
+                       <div className="mt-3">
+                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1 pb-2 flex items-center gap-2">
+                           <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                           Sugestões de outras bases
+                           <span className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                         </p>
+                         {/* Faded like a watermark until pointed at, so it reads as a suggestion and not a result. */}
+                         <div className="opacity-50 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                           {catalogSuggestions}
+                         </div>
+                       </div>
+                     )}
+                   </>
                 )}
               </div>
             </section>
@@ -2481,7 +2973,7 @@ export function Editor() {
             {/* Caixa 4: Lista do Orçamento */}
             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col flex-1 print:border-none print:shadow-none min-h-0 overflow-hidden">
               <div className="budget-scroll flex-1 min-h-0 overflow-y-auto p-3 space-y-6 print:overflow-visible print:p-0">
-            {selectedItems.length > 0 && budgetSearch && Object.keys(groupedSelected).length === 0 ? (
+            {selectedItems.length > 0 && deferredBudgetSearch && Object.keys(groupedSelected).length === 0 ? (
               <p className="text-center text-sm text-slate-400 py-8">Nenhum item do orçamento corresponde à busca.</p>
             ) : selectedItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 print:hidden">
@@ -2492,15 +2984,12 @@ export function Editor() {
               </div>
             ) : (
               Object.entries(groupedSelected).map(([mainGroupName, subGroups]) => {
-                let mainGroupTotal = 0;
-                Object.values(subGroups).forEach(items => {
-                  mainGroupTotal += items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
-                });
+                const mainGroupTotal = groupTotals.main[mainGroupName] || 0;
 
                 return (
                 <div key={mainGroupName} className="flex flex-col gap-[2px] mb-6">
                   {(() => {
-                    const mainGroupCat = catalog.find(c => c.description === mainGroupName);
+                    const mainGroupCat = catalogByDescription.get(mainGroupName);
                     const mainGroupCode = mainGroupCat ? mainGroupCat.item : null;
                     return (
                       <div className="bg-emerald-200 dark:bg-emerald-800/50 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:shadow-none print:border-emerald-300">
@@ -2516,9 +3005,9 @@ export function Editor() {
                   })()}
                   <div className="flex flex-col gap-[2px]">
                     {Object.entries(subGroups).map(([subGroupName, items]) => {
-                      const subGroupCat = catalog.find(c => c.description === subGroupName);
+                      const subGroupCat = catalogByDescription.get(subGroupName);
                       const subGroupCode = subGroupCat ? subGroupCat.item : null;
-                      const subGroupTotal = items.reduce((acc, item) => acc + (getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price)), 0);
+                      const subGroupTotal = groupTotals.sub[`${mainGroupName}\u0000${subGroupName}`] || 0;
                       return (
                       <div key={subGroupName} className="flex flex-col gap-[2px]">
                         {subGroupName && (
@@ -2536,230 +3025,29 @@ export function Editor() {
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
-
                       return (
-                      <div key={item.item} className={`flex flex-col border rounded-lg transition-all overflow-hidden ${isCopySource ? 'border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-300 dark:ring-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/30' : isEditing ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/80 print:bg-white hover:border-emerald-200 dark:hover:border-emerald-700'}`}>
-                        <div className="p-3 hover:shadow-md transition-shadow group relative">
-                          <div className="w-full min-w-0">
-                            <div className="print:hidden">
-                              <div className="flex items-center justify-between mb-0.5">
-                                <div className="flex items-center gap-2">
-                                {copyMemoryMode && copyMemoryMode !== item.item && (
-                                  <button onClick={(e) => { e.stopPropagation(); toggleItemForCopy(item.item); }} className="text-slate-400 hover:text-emerald-600">
-                                    {selectedItemsForCopy.has(item.item) ? <CheckSquare size={16} className="text-emerald-600" /> : <div className="w-4 h-4 border-2 border-slate-300 rounded" />}
-                                  </button>
-                                )}
-                                <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 px-1.5 rounded border border-slate-200 dark:border-slate-600">{item.customCode || item.item}</span>
-                                <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-1.5 rounded border border-slate-200 dark:border-slate-700">
-                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}
-                                </span>
-                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{getItemTotalQuantity(item)} {item.customUnit || item.unit}</span>
-                                </div>
-                                {!isEditing && !isReadOnly && (
-                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                                    <button onClick={(e) => handleStartCopy(item.item, e)} className={`p-1.5 rounded ${copyMemoryMode === item.item ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
-                                      <Copy size={14}/>
-                                    </button>
-                                    <button onClick={() => openEditForm(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
-                                      <Edit2 size={14}/>
-                                    </button>
-                                    <button onClick={() => handleRemoveItem(item.item)} className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded" title="Remover">
-                                      <Trash2 size={14}/>
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex justify-between items-start gap-2">
-                                <div className="flex flex-col flex-1">
-                                  <div className="flex items-start gap-1">
-                                    <div className={`flex-1 ${expandedDescriptions.has(item.item) ? '' : 'line-clamp-3'}`}>
-                                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-snug whitespace-pre-wrap" title={item.customTitle || item.customDescription || item.description}>
-                                        {item.customTitle || item.customDescription || item.description}
-                                      </p>
-                                      {item.customTitle && item.customDescription && (
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-pre-wrap">{item.customDescription}</p>
-                                      )}
-                                      {(item.extendedDescription && expandedDescriptions.has(item.item)) && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 font-normal">{item.extendedDescription}</div>
-                                      )}
-                                    </div>
-                                    {(item.extendedDescription || (item.customDescription && item.customDescription.length > 50) || item.description.length > 80) && (
-                                      <button onClick={(e) => toggleDescription(item.item, e)} className="p-0.5 text-slate-400 hover:text-emerald-600 transition-colors shrink-0 mt-0.5" title="Ver descrição completa">
-                                        {expandedDescriptions.has(item.item) ? <EyeOff size={14} /> : <Eye size={14} />}
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-200 whitespace-nowrap bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 mt-0.5">
-                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}
-                                </span>
-                              </div>
-                              {(item.occurrences && item.occurrences.length > 1) ? (
-                                <div className="mt-3 text-[11px] border-t border-dashed border-emerald-200 dark:border-slate-700 pt-2 flex flex-col gap-1 w-full">
-                                  {item.occurrences.map((occ) => {
-                                    const price = item.customPrice !== undefined ? item.customPrice : item.price;
-                                    const subtotal = (Number(evaluateMath(occ.quantity)) || 0) * price;
-                                    return (
-                                      <div key={occ.id} className="flex flex-wrap justify-between items-center text-slate-600 dark:text-slate-300 bg-emerald-100/40 dark:bg-emerald-900/20 p-1.5 rounded gap-2">
-                                        <span className="flex-1 min-w-[120px] truncate" title={occ.location}><b>Local:</b> {occ.location || '-'}</span>
-                                        <span className="flex-1 min-w-[100px] truncate" title={occ.memory}><b>Memória:</b> {occ.memory || '-'}</span>
-                                        <span className="w-[80px]"><b>Qtd:</b> {occ.quantity} {item.customUnit || item.unit}</span>
-                                        <span className="w-[120px] text-right font-medium text-emerald-700 dark:text-emerald-400"><b>Subtotal:</b> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotal)}</span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1"><b>Local:</b> {item.occurrences?.map(o => o.location).filter(Boolean).join(' | ') || '-'}</p>
-                              )}
-                            </div>
-                            
-                            {/* Layout Específico para Impressão */}
-                            <div className="hidden print:block print:!text-black">
-                              <div className="flex justify-between items-start mb-1 border-b pb-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold text-slate-700 bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300 print:!text-black print:bg-slate-100 px-1.5 rounded border border-slate-200 dark:border-slate-600 print:border-slate-300">{item.customCode || item.item}</span>
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 print:!text-black line-clamp-2">{item.customTitle || item.customDescription || item.description}</span>
-                                    {item.customTitle && item.customDescription && (
-                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 print:!text-black line-clamp-1">{item.customDescription}</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-xs text-slate-700 dark:text-slate-300 print:!text-black mt-2 space-y-1">
-                                {item.occurrences?.map((occ) => (
-                                  <div key={occ.id} className="grid gap-2 border-b border-dashed border-slate-200 dark:border-slate-700 pb-1 grid-cols-5">
-                                    <p className="truncate col-span-2"><strong>Local:</strong> {occ.location || '-'}</p>
-                                    <p className="truncate" title={occ.memory}><strong>Memória:</strong> {occ.memory || '-'}</p>
-                                    <p><strong>Qtd:</strong> {occ.quantity} {item.customUnit || item.unit}</p>
-                                    <p><strong>{item.occurrences!.length > 1 ? 'Subtotal' : 'Total'}:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(evaluateMath(occ.quantity)) || 0) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
-                                  </div>
-                                ))}
-                                {item.occurrences!.length > 1 && (
-                                  <div className="flex justify-end gap-6 pt-1 font-bold text-slate-800 dark:text-slate-200 print:!text-black">
-                                    <p>Qtd Total: {getItemTotalQuantity(item)} {item.customUnit || item.unit}</p>
-                                    <p>Unitário: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.customPrice !== undefined ? item.customPrice : item.price)}</p>
-                                    <p>Preço Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getItemTotalQuantity(item) * (item.customPrice !== undefined ? item.customPrice : item.price))}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* RIGHT INLINE FORM */}
-                        {isEditing && (
-                          <div className="p-3 bg-emerald-50/50 dark:bg-emerald-900/20 border-t border-emerald-100 dark:border-emerald-800 flex flex-col gap-3">
-                            {usesOutrosSection(item.item) && (
-                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 p-3 bg-white dark:bg-slate-800 rounded border border-emerald-200">
-                                <div className="sm:col-span-1">
-                                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Código</label>
-                                  <input type="text" value={editCustomItemFields.code} onChange={e => setEditCustomItemFields({...editCustomItemFields, code: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
-                                </div>
-                                <div className="sm:col-span-3">
-                                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Título</label>
-                                  <input type="text" value={editCustomItemFields.title} onChange={e => setEditCustomItemFields({...editCustomItemFields, title: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Ex: Piso Cerâmico" />
-                                </div>
-                                <div className="sm:col-span-4">
-                                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Descrição</label>
-                                  <input type="text" value={editCustomItemFields.description} onChange={e => setEditCustomItemFields({...editCustomItemFields, description: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" placeholder="Detalhes opcionais..." />
-                                </div>
-                                <div className="sm:col-span-2">
-                                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Unidade</label>
-                                  <input type="text" value={editCustomItemFields.unit} onChange={e => setEditCustomItemFields({...editCustomItemFields, unit: e.target.value})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
-                                </div>
-                                <div className="sm:col-span-2">
-                                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Preço</label>
-                                  <input type="number" step="0.01" value={editCustomItemFields.price} onChange={e => setEditCustomItemFields({...editCustomItemFields, price: Number(e.target.value)})} className="w-full px-2 py-1.5 rounded border text-sm outline-none focus:border-emerald-500" />
-                                </div>
-                              </div>
-                            )}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                              {editFormOccurrences.map((occ, idx) => (
-                                <div key={occ.id} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
-                                  <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-700/60">
-                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                                      Local #{idx + 1}
-                                    </span>
-                                    <div className="flex items-center gap-1">
-                                      <button 
-                                        type="button" 
-                                        onClick={() => duplicateOccurrence(setEditFormOccurrences, occ)} 
-                                        className="text-slate-400 hover:text-emerald-600 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700" 
-                                        title="Duplicar Local"
-                                      >
-                                        <Copy size={13}/>
-                                      </button>
-                                      {editFormOccurrences.length > 1 && (
-                                        <button 
-                                          type="button" 
-                                          onClick={() => removeOccurrence(setEditFormOccurrences, occ.id)} 
-                                          className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30" 
-                                          title="Remover Local"
-                                        >
-                                          <Trash2 size={13}/>
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-[1fr_56px] gap-2 items-start">
-                                    <div className="min-w-0">
-                                      <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                        <Calculator size={12} className="text-emerald-600"/> Memória de Cálculo
-                                      </label>
-                                      <input
-                                        type="text"
-                                        className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                        placeholder="Ex: 2*5, 3^2, raiz(16)"
-                                        value={occ.memory}
-                                        onChange={e => handleOccurrenceMathChange(editFormOccurrences, setEditFormOccurrences, occ.id, e.target.value)}
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 text-center truncate" title={`Qtd. (${item.customUnit || item.unit})`}>
-                                        Qtd
-                                      </label>
-                                      <input
-                                        type="number"
-                                        className="w-full px-1 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-800 text-center font-bold"
-                                        placeholder="Qtd"
-                                        value={occ.quantity}
-                                        onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'quantity', e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Local de Intervenção</label>
-                                    <input
-                                      type="text"
-                                      list="locations-list"
-                                      className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                      placeholder="Ex: Bloco A, Sala 3"
-                                      value={occ.location}
-                                      onChange={e => updateOccurrence(editFormOccurrences, setEditFormOccurrences, occ.id, 'location', e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="flex justify-between items-center mt-1">
-                              <button onClick={() => addOccurrence(setEditFormOccurrences)} className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                                <Plus size={16}/> Adicionar Local
-                              </button>
-                              <div className="flex gap-2">
-                                <button onClick={() => setActiveRightEditItem(null)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:bg-slate-700 rounded-md">Cancelar</button>
-                                <button onClick={() => saveEditForm(item.item)} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md flex items-center gap-2">
-                                  <CheckCircle size={16}/> Salvar Alterações
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )})}
+                        <BudgetItemRow
+                          key={item.item}
+                          item={item}
+                          isReadOnly={isReadOnly}
+                          isEditing={isEditing}
+                          isCopySource={isCopySource}
+                          copyModeActive={!!copyMemoryMode}
+                          isInCopySelection={selectedItemsForCopy.has(item.item)}
+                          isDescExpanded={expandedDescriptions.has(item.item)}
+                          editFormOccurrences={isEditing ? editFormOccurrences : EMPTY_OCCURRENCES}
+                          setEditFormOccurrences={setEditFormOccurrences}
+                          editCustomItemFields={isEditing ? editCustomItemFields : EMPTY_CUSTOM_FIELDS}
+                          setEditCustomItemFields={setEditCustomItemFields}
+                          onToggleForCopy={stableToggleItemForCopy}
+                          onStartCopy={stableHandleStartCopy}
+                          onToggleDescription={stableToggleDescription}
+                          onEdit={stableOpenEditForm}
+                          onRemove={stableHandleRemoveItem}
+                          onCancelEdit={stableCancelEdit}
+                          onSaveEdit={stableSaveEditForm}
+                        />
+                      );})}
                         </div>
                       </div>
                     ); })}
@@ -2828,6 +3116,17 @@ export function Editor() {
           workbookId={id}
           workbookName={`${workbook.escola}${workbook.servicos ? ` — ${workbook.servicos}` : ''}`}
           onClose={() => setIsShareModalOpen(false)}
+        />
+      )}
+
+      {isNotesOpen && (
+        <NotesPanel
+          value={notesText}
+          onChange={setNotesText}
+          onClose={() => setIsNotesOpen(false)}
+          isSaving={isSavingNotes}
+          isReadOnly={isReadOnly}
+          unavailable={notesUnavailable}
         />
       )}
 

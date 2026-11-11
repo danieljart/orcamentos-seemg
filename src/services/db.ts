@@ -28,6 +28,8 @@ export interface Workbook {
   data_elaboracao?: string;
   rev?: string;
   status?: string;
+  /** Free-form notes/scratch calculations, kept out of the exported sheet and PDF. */
+  observacoes?: string;
   created_at: string;
   updated_at: string;
 }

@@ -208,7 +208,10 @@ export function Dashboard() {
           
           let qty = 0;
           if (parsedOccurrences && Array.isArray(parsedOccurrences)) {
-            qty = parsedOccurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+            // Same rounding as the editor's getItemTotalQuantity: summing several
+            // already-rounded floats can still drift (e.g. 13.770000000000001).
+            const rawQty = parsedOccurrences.reduce((sum, occ) => sum + (Number(evaluateMath(occ.quantity)) || 0), 0);
+            qty = Math.round(rawQty * 100) / 100;
           } else {
             qty = Number(evaluateMath(i.quantity || '0')) || 0;
           }
@@ -222,13 +225,17 @@ export function Dashboard() {
         }
 
 
-        let bdiRate = 0.2443;
-        if (wb.iss === '2') bdiRate = 0.2246;
-        else if (wb.iss === '2.5') bdiRate = 0.2279;
-        else if (wb.iss === '3') bdiRate = 0.2312;
-        else if (wb.iss === '4') bdiRate = 0.2377;
-        else if (wb.iss === '5') bdiRate = 0.2443;
-        const bdiProjRate = 0.2926;
+        // Both rate ladders depend on the price base, same as the editor's
+        // getBdiRate/bdiProjRate: using the 2025 rates here for a 2026
+        // workbook was undercounting every card's total on this screen.
+        const is2026Base = wb.base_precos === '2026';
+        let bdiRate = is2026Base ? 0.2474 : 0.2443;
+        if (wb.iss === '2') bdiRate = is2026Base ? 0.2278 : 0.2246;
+        else if (wb.iss === '2.5') bdiRate = is2026Base ? 0.2310 : 0.2279;
+        else if (wb.iss === '3') bdiRate = is2026Base ? 0.2342 : 0.2312;
+        else if (wb.iss === '4') bdiRate = is2026Base ? 0.2408 : 0.2377;
+        else if (wb.iss === '5') bdiRate = is2026Base ? 0.2474 : 0.2443;
+        const bdiProjRate = is2026Base ? 0.2958 : 0.2926;
         const totalComBdi = (wbTotalObra * (1 + bdiRate)) + (wbTotalProj * (1 + bdiProjRate));
         grandTotal += totalComBdi;
         const city = wb.municipio || 'Sem Município';
