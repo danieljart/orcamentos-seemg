@@ -665,6 +665,8 @@ export function Editor() {
   // list runs against this deferred copy, at a lower priority, so a big
   // budget re-filtering can never hold up the next character appearing.
   const deferredBudgetSearch = useDeferredValue(budgetSearch);
+  // Tracks which result the user has navigated to with Enter.
+  const [budgetSearchIdx, setBudgetSearchIdx] = useState(0);
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   interface HistoryState {
@@ -2503,6 +2505,26 @@ export function Editor() {
     return groups;
   }, [selectedItems, catalog, deferredBudgetSearch]);
 
+  // Flat list of matching item codes in display order — used for Enter-key navigation.
+  const budgetMatchIds = useMemo(() => {
+    if (!deferredBudgetSearch) return [] as string[];
+    const ids: string[] = [];
+    Object.values(groupedSelected).forEach(subGroups => {
+      Object.values(subGroups).forEach(its => {
+        its.forEach(it => ids.push(it.item));
+      });
+    });
+    return ids;
+  }, [groupedSelected, deferredBudgetSearch]);
+
+  // When the match list changes (new search term), reset to first result and scroll to it.
+  useEffect(() => {
+    setBudgetSearchIdx(0);
+    if (budgetMatchIds.length > 0) {
+      document.getElementById(`budget-item-${budgetMatchIds[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [budgetMatchIds]);
+
   // The group and subgroup headings each show a sum over their items, and
   // every one of those sums walks the occurrences through evaluateMath. Doing
   // that inline in the JSX meant redoing all of it on every render, including
@@ -2926,16 +2948,30 @@ export function Editor() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="text"
-                  className="w-full pl-10 pr-8 h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm"
+                  className={`w-full pl-10 ${deferredBudgetSearch && budgetMatchIds.length > 0 ? 'pr-20' : 'pr-8'} h-[52px] border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow outline-none text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 shadow-sm`}
                   placeholder="Buscar no orçamento"
-                  title="Buscar nos itens já lançados no orçamento"
+                  title="Buscar nos itens já lançados no orçamento — Enter avança ao próximo, Shift+Enter volta"
                   value={budgetSearch}
                   onChange={e => setBudgetSearch(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key !== 'Enter' || budgetMatchIds.length === 0) return;
+                    e.preventDefault();
+                    const nextIdx = e.shiftKey
+                      ? (budgetSearchIdx - 1 + budgetMatchIds.length) % budgetMatchIds.length
+                      : (budgetSearchIdx + 1) % budgetMatchIds.length;
+                    setBudgetSearchIdx(nextIdx);
+                    document.getElementById(`budget-item-${budgetMatchIds[nextIdx]}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                  }}
                 />
+                {deferredBudgetSearch && budgetMatchIds.length > 0 && (
+                  <span className="absolute right-8 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 font-mono pointer-events-none select-none">
+                    {budgetSearchIdx + 1}/{budgetMatchIds.length}
+                  </span>
+                )}
                 {budgetSearch && (
                   <button
                     type="button"
-                    onClick={() => setBudgetSearch('')}
+                    onClick={() => { setBudgetSearch(''); setBudgetSearchIdx(0); }}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     title="Limpar busca"
                   >
@@ -3025,9 +3061,14 @@ export function Editor() {
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
+                      const isNavHighlighted = !!deferredBudgetSearch && budgetMatchIds[budgetSearchIdx] === item.item;
                       return (
-                        <BudgetItemRow
+                        <div
                           key={item.item}
+                          id={`budget-item-${item.item}`}
+                          className={isNavHighlighted ? 'ring-2 ring-emerald-400 ring-offset-1 rounded-lg' : undefined}
+                        >
+                        <BudgetItemRow
                           item={item}
                           isReadOnly={isReadOnly}
                           isEditing={isEditing}
@@ -3047,6 +3088,7 @@ export function Editor() {
                           onCancelEdit={stableCancelEdit}
                           onSaveEdit={stableSaveEditForm}
                         />
+                        </div>
                       );})}
                         </div>
                       </div>
