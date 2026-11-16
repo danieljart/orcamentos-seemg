@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo, useDeferredValue } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, LockOpen, ChevronDown, StickyNote, Replace, ClipboardPaste } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, LockOpen, ChevronDown, StickyNote, Replace, ClipboardPaste, Sparkles } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -10,6 +10,7 @@ import { SchoolSearch } from '../components/SchoolSearch';
 import { ShareModal } from '../components/ShareModal';
 import { NotesPanel } from '../components/NotesPanel';
 import { ItemPickerModal } from '../components/ItemPickerModal';
+import { WhatsNewModal } from '../components/WhatsNewModal';
 import type { PickableItem } from '../components/ItemPickerModal';
 import { normalizeSearchText, rankEntry, RANK_NO_MATCH, RANK_STARTS_WITH } from '../lib/search';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
@@ -803,6 +804,7 @@ export function Editor() {
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importCandidateItems, setImportCandidateItems] = useState<SelectedItem[]>([]);
   const [importSearchTerm, setImportSearchTerm] = useState('');
@@ -2946,6 +2948,15 @@ export function Editor() {
               <span className="hidden sm:inline">Notas</span>
             </button>
 
+            <button
+              onClick={() => setIsWhatsNewOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors mr-2 border text-emerald-200 hover:text-white border-emerald-700 hover:border-emerald-500"
+              title="Ver as novidades da última atualização"
+            >
+              <Sparkles size={18} className="text-amber-300" />
+              <span className="hidden sm:inline">Novidades</span>
+            </button>
+
             <div className="flex gap-2 mr-2 border-r border-emerald-700/50 pr-5">
               {!isReadOnly && (
                 <label className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 border border-slate-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer">
@@ -3460,6 +3471,8 @@ export function Editor() {
           unavailable={notesUnavailable}
         />
       )}
+
+      <WhatsNewModal isOpen={isWhatsNewOpen} onClose={() => setIsWhatsNewOpen(false)} />
 
       <ItemPickerModal
         open={!!picker && !isReadOnly}

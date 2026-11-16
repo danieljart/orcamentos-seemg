@@ -6,7 +6,7 @@ import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
 import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
-import { Base2026AnnouncementModal } from '../components/Base2026AnnouncementModal';
+import { WhatsNewModal, hasSeenWhatsNew } from '../components/WhatsNewModal';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
@@ -87,12 +87,7 @@ export function Dashboard() {
   }, []);
 
   const checkAnnouncementPrompt = () => {
-    try {
-      const seen = localStorage.getItem('seen_updates_v2026_bases_sharing');
-      if (seen !== 'true') {
-        setShowAnnouncement(true);
-      }
-    } catch (e) {}
+    if (!hasSeenWhatsNew()) setShowAnnouncement(true);
   };
 
   const fetchUserProfile = async () => {
@@ -1434,8 +1429,8 @@ export function Dashboard() {
         }} />
       )}
 
-      {/* NOVIDADE 2026 ANNOUNCEMENT MODAL */}
-      <Base2026AnnouncementModal 
+      {/* MODAL DE NOVIDADES */}
+      <WhatsNewModal 
         isOpen={showAnnouncement} 
         onClose={() => setShowAnnouncement(false)} 
       />
