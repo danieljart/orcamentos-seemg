@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo, useDeferredValue } from 'react';
 import type { ReactNode } from 'react';
-import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, ChevronDown, StickyNote } from 'lucide-react';
+import { Search, Plus, Trash2, Download, FileSpreadsheet, CheckCircle, Edit2, X, Calculator, Save, AlertTriangle, ChevronRight, Printer, Loader2, History, Eye, EyeOff, Copy, CheckSquare, Share2, Lock, LockOpen, ChevronDown, StickyNote, Replace, ClipboardPaste } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -9,6 +9,9 @@ import type { Workbook } from '../services/db';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { ShareModal } from '../components/ShareModal';
 import { NotesPanel } from '../components/NotesPanel';
+import { ItemPickerModal } from '../components/ItemPickerModal';
+import type { PickableItem } from '../components/ItemPickerModal';
+import { normalizeSearchText, rankEntry, RANK_NO_MATCH, RANK_STARTS_WITH } from '../lib/search';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
 import { loadCatalog, loadExternalCatalog, getTemplatePath, DEFAULT_PRICE_BASE, getPriceBaseLabel, isExternalCode, BASE_OPTIONS, ALL_BASES } from '../lib/catalog';
 import type { PriceBase, CatalogSource, BaseId } from '../lib/catalog';
@@ -214,10 +217,6 @@ const getItemTotalQuantity = (item: SelectedItem): number => {
   return Math.round(sum * 100) / 100;
 };
 
-/** Accent- and case-insensitive form used for catalogue searching. */
-const normalizeSearchText = (s: string): string =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
 // Normalizing a description is not free, and the search walks every node of
 // every active base on each keystroke. The tree nodes are rebuilt only when
 // the catalogue itself changes, so caching per node object is enough and the
@@ -230,6 +229,81 @@ const normalizedDescriptionOf = (node: { description: string }): string => {
   normalizedDescriptions.set(node, value);
   return value;
 };
+
+// Ranking walks every node of every active base, and the renderer asks for the
+// same node's rank again at each level it recurses through. Cached per node
+// for as long as the term holds; a new term starts a new map, and the entries
+// are collected along with the tree nodes themselves.
+let rankCache = new WeakMap<object, number>();
+let rankCacheTerm: string | null = null;
+
+const rankNodeFor = (node: TreeNode, term: string, normalizedTerm: string): number => {
+  const cached = rankCache.get(node);
+  if (cached !== undefined) return cached;
+
+  let rank = rankEntry(normalizedDescriptionOf(node), node.item, term, normalizedTerm);
+
+  // A category is worth as much as the best thing inside it, so a group
+  // holding an exact hit is not pushed below one that merely mentions the word.
+  if (rank !== RANK_STARTS_WITH) {
+    for (const child of node.children) {
+      const childRank = rankNodeFor(child, term, normalizedTerm);
+      if (childRank === RANK_NO_MATCH) continue;
+      if (rank === RANK_NO_MATCH || childRank < rank) rank = childRank;
+      if (rank === RANK_STARTS_WITH) break;
+    }
+  }
+
+  rankCache.set(node, rank);
+  return rank;
+};
+
+/**
+ * Which group and subgroup heading an item sits under in the budget list.
+ * Shared by the grouping itself and by the jump-to-item lookup, so a folded
+ * section can be reopened by the same key it was closed with.
+ */
+const groupNamesFor = (code: string, catalogByItem: Map<string, CatalogItem>): { main: string; sub: string } => {
+  // Custom, SETOP and SUDECAP services carry codes the SEE prefixes cannot
+  // classify (ED-50701 would ask for category "ED0000"), and they are exported
+  // in the OUTROS block, so that is where the list shows them too.
+  const inOutros = usesOutrosSection(code);
+  const catPrefix = inOutros ? '260000' : code.substring(0, 2) + '0000';
+  const cat = catalogByItem.get(catPrefix);
+  const main = cat ? cat.description : 'Outros';
+
+  const subCat = inOutros ? undefined : catalogByItem.get(code.substring(0, 4) + '00');
+  const sub = subCat && subCat.item !== catPrefix && subCat.description && subCat.description.trim() !== ''
+    ? subCat.description
+    : '';
+  return { main, sub };
+};
+
+/** Key of a subgroup inside its main group, flat so one Set holds both levels. */
+const subGroupKey = (main: string, sub: string) => `${main}\u0000${sub}`;
+
+/** localStorage prefix for the sections a workbook has folded away. */
+const COLLAPSED_GROUPS_KEY = 'collapsedGroups:';
+
+const newOccurrenceId = () => Math.random().toString(36).substring(2, 11);
+
+/**
+ * Builds a budget entry from a catalogue service, matching what the add form
+ * produces. A SETOP or SUDECAP service is exported through the OUTROS block,
+ * which is filled from the custom fields, so those start out holding what its
+ * own base says about it.
+ */
+const budgetEntryFrom = (source: CatalogItem, occurrences: SelectedItemOccurrence[]): SelectedItem => ({
+  ...source,
+  occurrences,
+  ...(usesOutrosSection(source.item) && {
+    customCode: source.item,
+    customTitle: '',
+    customDescription: source.description,
+    customUnit: source.unit,
+    customPrice: source.price,
+  }),
+});
 
 // Pure occurrence helpers — no closure over component state, just the
 // setState passed in — so both Editor and the memoized BudgetItemRow below
@@ -375,6 +449,8 @@ interface BudgetItemRowProps {
   onRemove: (itemCode: string) => void;
   onCancelEdit: () => void;
   onSaveEdit: (itemCode: string) => void;
+  onReplace: (itemCode: string) => void;
+  onCopyQuantityTo: (itemCode: string) => void;
 }
 
 /**
@@ -392,6 +468,7 @@ const BudgetItemRow = memo(function BudgetItemRow({
   item, isReadOnly, isEditing, isCopySource, copyModeActive, isInCopySelection, isDescExpanded,
   editFormOccurrences, setEditFormOccurrences, editCustomItemFields, setEditCustomItemFields,
   onToggleForCopy, onStartCopy, onToggleDescription, onEdit, onRemove, onCancelEdit, onSaveEdit,
+  onReplace, onCopyQuantityTo,
 }: BudgetItemRowProps) {
   const isCustom = usesOutrosSection(item.item);
   const price = item.customPrice !== undefined ? item.customPrice : item.price;
@@ -419,6 +496,12 @@ const BudgetItemRow = memo(function BudgetItemRow({
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
                   <button onClick={(e) => onStartCopy(item.item, e)} className={`p-1.5 rounded ${isCopySource ? 'bg-emerald-100 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600'}`} title="Copiar Memória">
                     <Copy size={14}/>
+                  </button>
+                  <button onClick={() => onCopyQuantityTo(item.item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Colar este quantitativo em outro serviço (busca)">
+                    <ClipboardPaste size={14}/>
+                  </button>
+                  <button onClick={() => onReplace(item.item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Substituir por outro serviço, mantendo o quantitativo (busca)">
+                    <Replace size={14}/>
                   </button>
                   <button onClick={() => onEdit(item)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 hover:text-emerald-600 rounded" title="Editar">
                     <Edit2 size={14}/>
@@ -635,8 +718,13 @@ export function Editor() {
   // later against the database. The two stay false until both the workbook
   // and the session user are known, so an owner is never briefly locked out.
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const isReadOnly = !!workbook && currentUserId !== null && workbook.user_id !== currentUserId;
+  const isSharedReadOnly = !!workbook && currentUserId !== null && workbook.user_id !== currentUserId;
   const isOwner = !!workbook && currentUserId !== null && workbook.user_id === currentUserId;
+  // A finalized budget is closed to edits so a figure that was signed off is
+  // not changed by accident. It is the owner's own switch, not a permission:
+  // moving the status back to "Em revisão" reopens it.
+  const isFinalized = workbook?.status === 'Finalizado';
+  const isReadOnly = isSharedReadOnly || isFinalized;
   const [sharedByName, setSharedByName] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -667,6 +755,14 @@ export function Editor() {
   const deferredBudgetSearch = useDeferredValue(budgetSearch);
   // Tracks which result the user has navigated to with Enter.
   const [budgetSearchIdx, setBudgetSearchIdx] = useState(0);
+  // Sections folded away to focus on what is left; kept per workbook so a
+  // group marked done stays closed on the next visit.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  // Item the list should scroll to and flag, set when jumping from the catalogue.
+  const [jumpTarget, setJumpTarget] = useState<string | null>(null);
+  // Open item picker: replacing a service, or copying its quantities onto one
+  // that is not in the budget yet. Holds the code of the item it acts on.
+  const [picker, setPicker] = useState<{ mode: 'replace' | 'copyTo'; sourceCode: string } | null>(null);
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   interface HistoryState {
@@ -1030,13 +1126,13 @@ export function Editor() {
   const sudecapTree = useMemo(() => buildExternalTree(externalCatalog.filter(c => c.source === 'SUDECAP')), [externalCatalog]);
   // Who the workbook was shared by, for the notice shown to a reader.
   useEffect(() => {
-    if (!isReadOnly || !id) return;
+    if (!isSharedReadOnly || !id) return;
     let cancelled = false;
     db.sharing.ownerNames([id]).then(names => {
       if (!cancelled && names[id]) setSharedByName(names[id]);
     });
     return () => { cancelled = true; };
-  }, [isReadOnly, id]);
+  }, [isSharedReadOnly, id]);
 
   // A string key of the item codes currently in the budget. Its VALUE (not
   // reference) stays the same while an existing item's memory, quantity or
@@ -2267,19 +2363,24 @@ export function Editor() {
   // when it is.
   const renderTree = (nodes: TreeNode[], term: string, level: number = 0, groupName: string = 'catalog-categories', budget?: { left: number }): ReactNode => {
     const normalizedTerm = normalizeSearchText(term);
+    if (rankCacheTerm !== normalizedTerm) {
+      rankCache = new WeakMap<object, number>();
+      rankCacheTerm = normalizedTerm;
+    }
 
-    const filterNode = (node: TreeNode): boolean => {
-      if (!term) return true;
-      // The normalized description is cached per node: this walk covers every
-      // entry of every active base on each keystroke, and re-normalizing the
-      // same thousands of descriptions each time was most of the search cost.
-      if (normalizedDescriptionOf(node).includes(normalizedTerm)) return true;
-      if (node.item.includes(term)) return true;
-      if (node.children.some(filterNode)) return true;
-      return false;
-    };
+    // Keeping, then ordering: a node stays when it or anything under it
+    // matches anywhere, and the survivors are sorted by how direct that match
+    // is. Ties keep catalogue order, so codes still read in sequence.
+    let visible = nodes;
+    if (term) {
+      visible = nodes
+        .map((node, order) => ({ node, order, rank: rankNodeFor(node, term, normalizedTerm) }))
+        .filter(entry => entry.rank !== RANK_NO_MATCH)
+        .sort((a, b) => a.rank - b.rank || a.order - b.order)
+        .map(entry => entry.node);
+    }
 
-    return nodes.filter(filterNode).map(node => {
+    return visible.map(node => {
       if (budget && !node.isCategory) {
         if (budget.left <= 0) return null;
         budget.left -= 1;
@@ -2321,9 +2422,14 @@ export function Editor() {
 
         return (
           <div key={node.item} id={`catalog-item-${node.item}`} className={`flex flex-col border rounded-lg transition-colors overflow-hidden ${isAdded ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-200'}`}>
-            <div 
+            <div
               className="flex justify-between items-start gap-4 p-3 cursor-pointer"
-              onClick={() => !isAdded && (isFormActive ? setActiveFormItem(null) : openForm(node))}
+              title={isAdded ? 'Já lançado — clique para ver no orçamento' : undefined}
+              // An item already in the budget has nothing to add, so clicking it
+              // goes to where its quantities are instead of doing nothing.
+              onClick={() => isAdded
+                ? jumpToBudgetItem(node.item)
+                : (isFormActive ? setActiveFormItem(null) : openForm(node))}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
@@ -2469,41 +2575,156 @@ export function Editor() {
     return map;
   }, [catalog]);
 
+  // catalog.find(c => c.item === ...) ran twice per budget item on every
+  // regrouping; the catalogue only changes when the price base does.
+  const catalogByItem = useMemo(() => {
+    const map = new Map<string, CatalogItem>();
+    for (const c of catalog) if (!map.has(c.item)) map.set(c.item, c);
+    return map;
+  }, [catalog]);
+
   const groupedSelected = useMemo(() => {
     const groups: Record<string, Record<string, SelectedItem[]>> = {};
-    const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    const term = normalize(deferredBudgetSearch.trim());
+    const term = normalizeSearchText(deferredBudgetSearch.trim());
     // Everything an item shows in the list: its code and description, the
     // custom fields, and what was written in each memory and location.
-    const matches = (item: SelectedItem) => !term || normalize([
+    const matches = (item: SelectedItem) => !term || normalizeSearchText([
       item.item, item.description, item.customCode, item.customTitle, item.customDescription,
       ...item.occurrences.flatMap(o => [o.memory, o.location]),
     ].filter(Boolean).join(' ')).includes(term);
 
     selectedItems.filter(matches).forEach(item => {
-      // Custom, SETOP and SUDECAP services carry codes the SEE prefixes cannot classify
-      // (ED-50701 would ask for category "ED0000"), and they are exported in
-      // the OUTROS block, so that is where the list shows them too.
-      const inOutros = usesOutrosSection(item.item);
-      const catPrefix = inOutros ? "260000" : item.item.substring(0, 2) + "0000";
-      const cat = catalog.find(c => c.item === catPrefix);
-      const mainGroupName = cat ? cat.description : "Outros";
-
-      const subCatPrefix = item.item.substring(0, 4) + "00";
-      const subCat = inOutros ? undefined : catalog.find(c => c.item === subCatPrefix);
-
-      let subGroupName = "";
-      if (subCat && subCat.item !== catPrefix && subCat.description && subCat.description.trim() !== '') {
-        subGroupName = subCat.description;
-      }
-
-      if (!groups[mainGroupName]) groups[mainGroupName] = {};
-      if (!groups[mainGroupName][subGroupName]) groups[mainGroupName][subGroupName] = [];
-      
-      groups[mainGroupName][subGroupName].push(item);
+      const { main, sub } = groupNamesFor(item.item, catalogByItem);
+      if (!groups[main]) groups[main] = {};
+      if (!groups[main][sub]) groups[main][sub] = [];
+      groups[main][sub].push(item);
     });
     return groups;
-  }, [selectedItems, catalog, deferredBudgetSearch]);
+  }, [selectedItems, catalogByItem, deferredBudgetSearch]);
+
+  useEffect(() => {
+    if (!id) { setCollapsedGroups(new Set()); return; }
+    try {
+      const raw = localStorage.getItem(COLLAPSED_GROUPS_KEY + id);
+      setCollapsedGroups(raw ? new Set(JSON.parse(raw) as string[]) : new Set());
+    } catch {
+      setCollapsedGroups(new Set());
+    }
+  }, [id]);
+
+  const persistCollapsed = useCallback((next: Set<string>) => {
+    if (!id) return;
+    try {
+      localStorage.setItem(COLLAPSED_GROUPS_KEY + id, JSON.stringify([...next]));
+    } catch { /* private window: folding still works, it just is not remembered */ }
+  }, [id]);
+
+  const toggleGroupCollapsed = useCallback((key: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      persistCollapsed(next);
+      return next;
+    });
+  }, [persistCollapsed]);
+
+  const catalogByItemRef = useRef(catalogByItem);
+  catalogByItemRef.current = catalogByItem;
+
+  const jumpToBudgetItem = useCallback((code: string) => {
+    // A row inside a folded section has no element to scroll to, so whatever
+    // holds it is opened first and the scroll runs on the next render. The
+    // group is derived from the code rather than looked up among the items,
+    // so this also works for one that is being added in the same click.
+    const { main, sub } = groupNamesFor(code, catalogByItemRef.current);
+    const subKey = subGroupKey(main, sub);
+    setCollapsedGroups(prev => {
+      if (!prev.has(main) && !prev.has(subKey)) return prev;
+      const next = new Set(prev);
+      next.delete(main);
+      next.delete(subKey);
+      persistCollapsed(next);
+      return next;
+    });
+    setJumpTarget(code);
+  }, [persistCollapsed]);
+
+  useEffect(() => {
+    if (!jumpTarget) return;
+    document.getElementById(`budget-item-${jumpTarget}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const timer = setTimeout(() => setJumpTarget(null), 2000);
+    return () => clearTimeout(timer);
+  }, [jumpTarget]);
+
+  // Every service both bases offer, flat, for the replace and paste pickers.
+  // All bases are listed whatever is ticked in the catalogue filter, so the
+  // picker never dead-ends; each row says which base it came from.
+  const pickableItems = useMemo<PickableItem[]>(() => {
+    const out: PickableItem[] = [];
+    for (const c of catalog) if (!c.isCategory && c.item !== '260001') out.push({ ...c, source: 'SEE' });
+    for (const c of externalCatalog) if (!c.isCategory) out.push({ ...c, source: c.source });
+    return out;
+  }, [catalog, externalCatalog]);
+
+  const allCatalogByItem = useMemo(() => {
+    const map = new Map<string, CatalogItem>(catalogByItem);
+    for (const c of externalCatalog) if (!map.has(c.item)) map.set(c.item, c);
+    return map;
+  }, [catalogByItem, externalCatalog]);
+
+  // Anything already in the budget cannot be picked: replacing with it, or
+  // pasting onto it, would make a second row for the same service.
+  const pickerBlocked = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!picker) return map;
+    for (const item of selectedItems) {
+      map.set(item.item, item.item === picker.sourceCode ? 'é o item atual' : 'já no orçamento');
+    }
+    return map;
+  }, [picker, selectedItems]);
+
+  const handlePickItem = (chosen: PickableItem) => {
+    if (!picker) return;
+    const source = selectedItems.find(i => i.item === picker.sourceCode);
+    const replacement = allCatalogByItem.get(chosen.item);
+    setPicker(null);
+    if (!source || !replacement) return;
+
+    if (picker.mode === 'replace') {
+      updateItems(
+        prev => prev.map(i => (i.item === source.item ? budgetEntryFrom(replacement, source.occurrences) : i)),
+        `Serviço ${source.customCode || source.item} substituído por ${replacement.item}`,
+      );
+      showToast(`Serviço substituído. O quantitativo foi mantido.`, 'success');
+    } else {
+      const copied = source.occurrences.map(occ => ({ ...occ, id: newOccurrenceId() }));
+      updateItems(
+        prev => [...prev, budgetEntryFrom(replacement, copied)],
+        `Quantitativo de ${source.customCode || source.item} copiado para ${replacement.item}`,
+      );
+      showToast(`Serviço adicionado com o quantitativo copiado.`, 'success');
+    }
+    jumpToBudgetItem(chosen.item);
+  };
+
+  const stableOpenReplace = useCallback((code: string) => setPicker({ mode: 'replace', sourceCode: code }), []);
+  const stableOpenCopyTo = useCallback((code: string) => setPicker({ mode: 'copyTo', sourceCode: code }), []);
+
+  const [isReopening, setIsReopening] = useState(false);
+  const handleReopenForRevision = async () => {
+    if (!workbook || isReopening) return;
+    setIsReopening(true);
+    try {
+      const updated = await db.workbooks.update(workbook.id, { status: 'Em revisão' });
+      if (updated) setWorkbook(updated);
+      showToast('Orçamento reaberto para revisão.', 'success');
+    } catch (err: any) {
+      console.error('Error reopening workbook:', err);
+      showToast(`Não foi possível reabrir: ${err?.message || 'tente novamente.'}`, 'error');
+    } finally {
+      setIsReopening(false);
+    }
+  };
 
   // Flat list of matching item codes in display order — used for Enter-key navigation.
   const budgetMatchIds = useMemo(() => {
@@ -2694,10 +2915,16 @@ export function Editor() {
                 <span className="hidden sm:inline">Compartilhar</span>
               </button>
             )}
-            {isReadOnly && (
+            {isSharedReadOnly && (
               <span className="flex items-center gap-2 text-amber-100 bg-amber-500/20 border border-amber-400/40 px-3 py-2 rounded-lg text-sm font-bold" title="Você tem acesso somente para leitura a este orçamento">
                 <Lock size={16} />
                 <span className="hidden sm:inline">Somente leitura</span>
+              </span>
+            )}
+            {isFinalized && !isSharedReadOnly && (
+              <span className="flex items-center gap-2 text-indigo-100 bg-indigo-500/20 border border-indigo-400/40 px-3 py-2 rounded-lg text-sm font-bold" title="Orçamento finalizado: travado para edição até voltar ao status Em revisão">
+                <Lock size={16} />
+                <span className="hidden sm:inline">Finalizado</span>
               </span>
             )}
             {!isReadOnly && (
@@ -2769,7 +2996,7 @@ export function Editor() {
 
       <main className="container mx-auto h-full flex flex-col gap-3 p-3 pb-20 md:pb-3 print:hidden flex-1 min-h-0 overflow-hidden">
         
-        {isReadOnly && (
+        {isSharedReadOnly && (
           <div role="status" className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 rounded-lg px-3 py-2 text-sm shrink-0 print:hidden">
             <Lock size={16} className="shrink-0" />
             <span>
@@ -2778,9 +3005,28 @@ export function Editor() {
           </div>
         )}
 
+        {isFinalized && !isSharedReadOnly && (
+          <div role="status" className="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 text-indigo-800 dark:text-indigo-200 rounded-lg px-3 py-2 text-sm shrink-0 print:hidden">
+            <Lock size={16} className="shrink-0" />
+            <span className="flex-1">
+              Orçamento <strong>finalizado</strong> e travado para edição. Para voltar a alterá-lo, mude o status para "Em revisão".
+            </span>
+            <button
+              onClick={handleReopenForRevision}
+              disabled={isReopening}
+              className="flex items-center gap-2 shrink-0 bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-md text-sm font-bold transition-colors"
+              title="Mudar o status para Em revisão e destravar a edição"
+            >
+              {isReopening ? <Loader2 className="animate-spin" size={15} /> : <LockOpen size={15} />}
+              Reabrir para revisão
+            </button>
+          </div>
+        )}
+
         {/* Dados da Obra Info (FULL WIDTH) */}
         <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800/50 rounded-lg px-3 h-[52px] shadow-sm flex flex-col justify-center relative group print:hidden shrink-0">
-          {!isReadOnly && (
+          {/* Still reachable while finalized: this is where the status goes back to "Em revisão". */}
+          {!isSharedReadOnly && (
             <div className="absolute top-1/2 -translate-y-1/2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => setIsHeaderEditModalOpen(true)}
@@ -3021,6 +3267,11 @@ export function Editor() {
             ) : (
               Object.entries(groupedSelected).map(([mainGroupName, subGroups]) => {
                 const mainGroupTotal = groupTotals.main[mainGroupName] || 0;
+                // A search has to be able to reach everything, so while one is
+                // running the folded sections open up, exactly as the catalogue
+                // tree does. They fold back once the search is cleared.
+                const isMainCollapsed = !deferredBudgetSearch && collapsedGroups.has(mainGroupName);
+                const mainGroupCount = Object.values(subGroups).reduce((n, its) => n + its.length, 0);
 
                 return (
                 <div key={mainGroupName} className="flex flex-col gap-[2px] mb-6">
@@ -3028,45 +3279,81 @@ export function Editor() {
                     const mainGroupCat = catalogByDescription.get(mainGroupName);
                     const mainGroupCode = mainGroupCat ? mainGroupCat.item : null;
                     return (
-                      <div className="bg-emerald-200 dark:bg-emerald-800/50 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:shadow-none print:border-emerald-300">
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleGroupCollapsed(mainGroupName)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroupCollapsed(mainGroupName); } }}
+                        title={isMainCollapsed ? 'Abrir esta seção' : 'Fechar esta seção'}
+                        className="bg-emerald-200 dark:bg-emerald-800/50 border border-emerald-300 dark:border-emerald-700 rounded-lg px-3 py-2 shadow-sm print:shadow-none print:border-emerald-300 cursor-pointer select-none hover:bg-emerald-300/70 dark:hover:bg-emerald-800/80 transition-colors print:cursor-auto"
+                      >
                         <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-400 print:!text-emerald-900 uppercase tracking-wider flex justify-between items-center">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <ChevronRight size={16} className={`shrink-0 transition-transform print:hidden ${isMainCollapsed ? '' : 'rotate-90'}`} />
                             {mainGroupCode && <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-white/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 print:text-emerald-900 print:bg-white px-1.5 rounded border border-emerald-300/50 dark:border-emerald-700 print:border-emerald-300">{mainGroupCode}</span>}
-                            <span>{mainGroupName}</span>
+                            <span className="truncate">{mainGroupName}</span>
+                            {isMainCollapsed && (
+                              <span className="shrink-0 text-[10px] font-semibold normal-case tracking-normal text-emerald-800/80 dark:text-emerald-300/80 print:hidden">
+                                ({mainGroupCount} {mainGroupCount === 1 ? 'item' : 'itens'})
+                              </span>
+                            )}
                           </div>
-                          <span className="text-emerald-900 dark:text-emerald-400 print:!text-emerald-900 font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
+                          <span className="text-emerald-900 dark:text-emerald-400 print:!text-emerald-900 font-bold shrink-0 pl-2">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(mainGroupTotal)}</span>
                         </h3>
                       </div>
                     );
                   })()}
-                  <div className="flex flex-col gap-[2px]">
+                  {/* A folded section stays in the printout: it is only hidden on screen. */}
+                  <div className={`flex-col gap-[2px] ${isMainCollapsed ? 'hidden print:flex' : 'flex'}`}>
                     {Object.entries(subGroups).map(([subGroupName, items]) => {
                       const subGroupCat = catalogByDescription.get(subGroupName);
                       const subGroupCode = subGroupCat ? subGroupCat.item : null;
-                      const subGroupTotal = groupTotals.sub[`${mainGroupName}\u0000${subGroupName}`] || 0;
+                      const subKey = subGroupKey(mainGroupName, subGroupName);
+                      const subGroupTotal = groupTotals.sub[subKey] || 0;
+                      const isSubCollapsed = !deferredBudgetSearch && collapsedGroups.has(subKey);
                       return (
                       <div key={subGroupName} className="flex flex-col gap-[2px]">
                         {subGroupName && (
-                          <div className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/80 rounded-md px-3 py-1.5 shadow-sm print:shadow-none print:border-emerald-200">
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => toggleGroupCollapsed(subKey)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroupCollapsed(subKey); } }}
+                            title={isSubCollapsed ? 'Abrir este subgrupo' : 'Fechar este subgrupo'}
+                            className="bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/80 rounded-md px-3 py-1.5 shadow-sm print:shadow-none print:border-emerald-200 cursor-pointer select-none hover:bg-emerald-200/70 dark:hover:bg-emerald-900/70 transition-colors print:cursor-auto"
+                          >
                             <div className="flex justify-between items-center">
-                              <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900 uppercase tracking-wide flex items-center gap-2">
+                              <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900 uppercase tracking-wide flex items-center gap-2 min-w-0">
+                                <ChevronRight size={13} className={`shrink-0 transition-transform print:hidden ${isSubCollapsed ? '' : 'rotate-90'}`} />
                                 {subGroupCode && <span className="inline-flex items-center justify-center h-[18px] text-[10px] leading-none font-mono font-bold bg-white/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 print:text-emerald-900 print:bg-white px-1.5 rounded border border-emerald-300/50 dark:border-emerald-700 print:border-emerald-300">{subGroupCode}</span>}
-                                <span>{subGroupName}</span>
+                                <span className="truncate">{subGroupName}</span>
+                                {isSubCollapsed && (
+                                  <span className="shrink-0 text-[10px] font-semibold normal-case tracking-normal text-emerald-700/80 dark:text-emerald-300/80 print:hidden">
+                                    ({items.length} {items.length === 1 ? 'item' : 'itens'})
+                                  </span>
+                                )}
                               </p>
-                              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subGroupTotal)}</span>
+                              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 print:!text-emerald-900 shrink-0 pl-2">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subGroupTotal)}</span>
                             </div>
                           </div>
                         )}
-                        <div className="flex flex-col gap-[2px]">
+                        <div className={`flex-col gap-[2px] ${isSubCollapsed ? 'hidden print:flex' : 'flex'}`}>
                           {items.map(item => {
                       const isEditing = activeRightEditItem === item.item;
                       const isCopySource = copyMemoryMode === item.item;
                       const isNavHighlighted = !!deferredBudgetSearch && budgetMatchIds[budgetSearchIdx] === item.item;
+                      const isJumpTarget = jumpTarget === item.item;
                       return (
                         <div
                           key={item.item}
                           id={`budget-item-${item.item}`}
-                          className={isNavHighlighted ? 'ring-2 ring-emerald-400 ring-offset-1 rounded-lg' : undefined}
+                          className={
+                            isJumpTarget
+                              ? 'ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-slate-800 rounded-lg transition-shadow'
+                              : isNavHighlighted
+                                ? 'ring-2 ring-emerald-400 ring-offset-1 rounded-lg'
+                                : undefined
+                          }
                         >
                         <BudgetItemRow
                           item={item}
@@ -3087,6 +3374,8 @@ export function Editor() {
                           onRemove={stableHandleRemoveItem}
                           onCancelEdit={stableCancelEdit}
                           onSaveEdit={stableSaveEditForm}
+                          onReplace={stableOpenReplace}
+                          onCopyQuantityTo={stableOpenCopyTo}
                         />
                         </div>
                       );})}
@@ -3171,6 +3460,20 @@ export function Editor() {
           unavailable={notesUnavailable}
         />
       )}
+
+      <ItemPickerModal
+        open={!!picker && !isReadOnly}
+        title={picker?.mode === 'replace' ? 'Substituir serviço' : 'Colar quantitativo em outro serviço'}
+        hint={
+          picker?.mode === 'replace'
+            ? 'O serviço escolhido entra no lugar do atual, mantendo a memória de cálculo e as quantidades.'
+            : 'O serviço escolhido é adicionado ao orçamento com uma cópia da memória de cálculo e das quantidades.'
+        }
+        items={pickableItems}
+        blocked={pickerBlocked}
+        onPick={handlePickItem}
+        onClose={() => setPicker(null)}
+      />
 
       {/* HEADER EDIT MODAL */}
       {isHeaderEditModalOpen && (
