@@ -29,3 +29,6 @@ dist-ssr
 # Scratch & test outputs
 scratch/
 *.xlsx
+# Modelos oficiais da planilha de ajuste, lidos pelo módulo Ajustes
+!public/template_ajuste_2025.xlsx
+!public/template_ajuste_2026.xlsx

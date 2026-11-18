@@ -30,6 +30,10 @@ export interface Workbook {
   status?: string;
   /** Free-form notes/scratch calculations, kept out of the exported sheet and PDF. */
   observacoes?: string;
+  /** 'orcamento' (padrão) ou 'ajuste'. Ausente antes de database/ajustes.sql. */
+  modulo?: 'orcamento' | 'ajuste';
+  /** Dados do módulo Ajustes (ver src/lib/ajuste.ts). */
+  ajuste?: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -95,6 +99,19 @@ function toSharingError(error: { code?: string; message?: string; status?: numbe
       return new SharingError('unknown', error.message || 'Erro ao compartilhar');
   }
 }
+
+/**
+ * Whether a Supabase error means a column is not in the schema, which is what
+ * PostgREST answers before the migration that creates it has been run.
+ */
+export const isMissingColumnError = (error: unknown): boolean => {
+  const e = error as { code?: string; message?: string } | null;
+  if (!e) return false;
+  return e.code === 'PGRST204' || e.code === '42703' || /column .* (does not exist|schema cache)/i.test(e.message || '');
+};
+
+/** Ajustes are workbooks too; this tells the two modules apart. */
+export const isAjusteWorkbook = (wb: Pick<Workbook, 'modulo'>) => wb.modulo === 'ajuste';
 
 export const db = {
   auth: {

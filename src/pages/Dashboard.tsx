@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check, Sparkles, Share2 } from 'lucide-react';
-import { db } from '../services/db';
+import { FileSpreadsheet, Search, Plus, LogOut, Upload, Clock, Zap, User as UserIcon, Trash2, Copy, Fingerprint, Menu, Edit2, Check, Sparkles, Share2, Calculator } from 'lucide-react';
+import { db, isAjusteWorkbook } from '../services/db';
 import type { Workbook, WorkbookVersion } from '../services/db';
 import * as ExcelJS from 'exceljs';
 import { QuickEstimateModal } from '../components/QuickEstimateModal';
 import type { CartItem } from '../components/QuickEstimateModal';
 import { WhatsNewModal, hasSeenWhatsNew } from '../components/WhatsNewModal';
+import { MjolnirIcon } from '../components/ajuste/MjolnirIcon';
 import { CityStatisticsCard } from '../components/analytics/CityStatisticsCard';
 import { SchoolSearch } from '../components/SchoolSearch';
 import { getIssForMunicipio, saveIssForMunicipio } from '../lib/iss';
@@ -119,7 +120,8 @@ export function Dashboard() {
   };
 
   const loadData = async () => {
-    const list = await db.workbooks.list();
+    // Ajustes live in the same table; they have their own panel.
+    const list = (await db.workbooks.list()).filter(wb => !isAjusteWorkbook(wb));
     setWorkbooks(list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     const uid = await db.auth.getUserId();
@@ -856,6 +858,19 @@ export function Dashboard() {
       </header>
 
       <main className="container mx-auto flex-1 p-3 md:py-6">
+        {/* TROCA DE MÓDULO */}
+        <div className="inline-flex p-1 mb-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white shadow-sm">
+            <Calculator size={16} /> Orçamentos
+          </button>
+          <button
+            onClick={() => navigate('/ajustes')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
+          >
+            <MjolnirIcon size={16} bolt={false} /> Ajustes e Saldos
+          </button>
+        </div>
+
         {/* ANALYTICS SECTION */}
         <div className="mb-3">
           <CityStatisticsCard 

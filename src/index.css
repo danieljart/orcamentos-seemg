@@ -185,3 +185,11 @@ body {
     page-break-inside: avoid !important;
   }
 }
+
+/* Módulo Ajustes: o golpe do martelo no botão e na janela da marretada. */
+@keyframes marreta {
+  0% { transform: rotate(0deg); }
+  35% { transform: rotate(-40deg) translateY(-2px); }
+  65% { transform: rotate(18deg) scale(1.12); }
+  100% { transform: rotate(0deg); }
+}

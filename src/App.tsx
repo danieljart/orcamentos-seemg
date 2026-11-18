@@ -3,6 +3,9 @@ import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { Editor } from './pages/Editor';
 import { Account } from './pages/Account';
+import { AjustesDashboard } from './pages/AjustesDashboard';
+import { AjusteEditor } from './pages/AjusteEditor';
+import { AjustesGate } from './components/ajuste/AjustesGate';
 import { FloatingChat } from './components/FloatingChat';
 import { ConfirmModal } from './components/ConfirmModal';
 import { useEffect, useState } from 'react';
@@ -94,6 +97,8 @@ export default function App() {
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/auth" replace />} />
         <Route path="/editor/:id" element={user ? <Editor /> : <Navigate to="/auth" replace />} />
         <Route path="/conta" element={user ? <Account /> : <Navigate to="/auth" replace />} />
+        <Route path="/ajustes" element={user ? <AjustesGate><AjustesDashboard /></AjustesGate> : <Navigate to="/auth" replace />} />
+        <Route path="/ajuste/:id" element={user ? <AjustesGate><AjusteEditor /></AjustesGate> : <Navigate to="/auth" replace />} />
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} />
       </Routes>
       {user && <FloatingChat />}
