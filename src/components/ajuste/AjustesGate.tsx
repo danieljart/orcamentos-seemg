@@ -10,7 +10,9 @@ import { MjolnirIcon } from './MjolnirIcon';
  * sem acento e sem diferenciar maiúsculas: basta conter as duas palavras.
  */
 const LIBERADOS: string[][] = [
-  ['breno', 'drumond'],
+  // Carlos Eduardo Jardim: o cadastro pode estar como "Carlos Jardim" ou "Eduardo Jardim".
+  ['carlos', 'jardim'],
+  ['eduardo', 'jardim'],
   ['felipe', 'leal'],
   ['daniel', 'jardim'],
 ];
